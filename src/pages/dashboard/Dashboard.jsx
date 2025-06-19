@@ -1,9 +1,9 @@
 import React, { useEffect, useState } from 'react';
 import { collection, onSnapshot, query, orderBy, where } from 'firebase/firestore';
-import { db } from '../services/firebase';
+import { db } from '../../services/firebase';
 import { useNavigate, Link } from 'react-router-dom';
 import { FaUserPlus, FaBell, FaChartLine, FaUserCheck, FaUserClock, FaComments, FaTasks } from 'react-icons/fa';
-import { useAuth } from '../store/useAuth';
+import { useAuth } from '../../store/useAuth';
 
 function Dashboard() {
   const [conversations, setConversations] = useState([]);

@@ -1,16 +1,14 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { useAuth } from '../store/useAuth';
+import { useAuth } from '../../store/useAuth';
 
-const Register = () => {
-  const [name, setName] = useState('');
+const Login = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [confirmPassword, setConfirmPassword] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
-  const { register, isAuthenticated, isAdmin } = useAuth();
+  const { login, isAuthenticated, isAdmin } = useAuth();
   const navigate = useNavigate();
   
   // Redirect if already logged in
@@ -25,31 +23,38 @@ const Register = () => {
     setIsLoading(true);
     setError('');
     
-    // Validate passwords match
-    if (password !== confirmPassword) {
-      setError('Passwords do not match');
+    try {
+      const { success, error } = await login(email, password);
+      
+      if (success) {
+        // Redirect based on user role
+        navigate(isAdmin() ? '/admin' : '/dashboard');
+      } else {
+        setError(error || 'Invalid email or password. Please try again.');
+      }
+    } catch (err) {
+      setError('An unexpected error occurred. Please try again.');
+      console.error('Login error:', err);
+    } finally {
       setIsLoading(false);
-      return;
     }
-    
-    // Validate password strength
-    if (password.length < 6) {
-      setError('Password must be at least 6 characters');
-      setIsLoading(false);
-      return;
-    }
+  };
+
+  const handleDemoLogin = async () => {
+    setIsLoading(true);
+    setError('');
     
     try {
-      const { success, error } = await register(email, password, name);
+      const { success, error } = await login('demo@example.com', 'demo123');
       
       if (success) {
         navigate('/dashboard');
       } else {
-        setError(error || 'Failed to register. Please try again.');
+        setError(error || 'Failed to login with demo account. Please try again.');
       }
     } catch (err) {
       setError('An unexpected error occurred. Please try again.');
-      console.error('Registration error:', err);
+      console.error('Demo login error:', err);
     } finally {
       setIsLoading(false);
     }
@@ -70,7 +75,7 @@ const Register = () => {
         className="w-full max-w-md"
       >
         <div className="bg-slate-800 bg-opacity-80 backdrop-blur-sm p-8 rounded-2xl shadow-xl border border-slate-700">
-          <h2 className="text-3xl font-bold text-white mb-6 text-center">Create Account</h2>
+          <h2 className="text-3xl font-bold text-white mb-6 text-center">Welcome Back</h2>
           
           {error && (
             <div className="bg-red-500 bg-opacity-10 border border-red-500 border-opacity-50 text-red-500 p-3 rounded mb-4 text-sm">
@@ -79,22 +84,6 @@ const Register = () => {
           )}
           
           <form onSubmit={handleSubmit}>
-            <div className="mb-4">
-              <label className="block text-gray-300 mb-2" htmlFor="name">
-                Full Name
-              </label>
-              <input
-                id="name"
-                type="text"
-                value={name}
-                onChange={(e) => setName(e.target.value)}
-                className="w-full p-3 bg-slate-700 bg-opacity-50 border border-slate-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-white"
-                placeholder="John Doe"
-                required
-                disabled={isLoading}
-              />
-            </div>
-            
             <div className="mb-4">
               <label className="block text-gray-300 mb-2" htmlFor="email">
                 Email Address
@@ -111,10 +100,15 @@ const Register = () => {
               />
             </div>
             
-            <div className="mb-4">
-              <label className="block text-gray-300 mb-2" htmlFor="password">
-                Password
-              </label>
+            <div className="mb-6">
+              <div className="flex justify-between mb-2">
+                <label className="text-gray-300" htmlFor="password">
+                  Password
+                </label>
+                <Link to="/forgot-password" className="text-blue-400 text-sm hover:text-blue-300">
+                  Forgot Password?
+                </Link>
+              </div>
               <input
                 id="password"
                 type="password"
@@ -127,36 +121,36 @@ const Register = () => {
               />
             </div>
             
-            <div className="mb-6">
-              <label className="block text-gray-300 mb-2" htmlFor="confirmPassword">
-                Confirm Password
-              </label>
-              <input
-                id="confirmPassword"
-                type="password"
-                value={confirmPassword}
-                onChange={(e) => setConfirmPassword(e.target.value)}
-                className="w-full p-3 bg-slate-700 bg-opacity-50 border border-slate-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-white"
-                placeholder="••••••••"
-                required
-                disabled={isLoading}
-              />
-            </div>
-            
             <button
               type="submit"
               disabled={isLoading}
               className="w-full bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white py-3 rounded-lg font-medium transition-all duration-300 btn-hover"
             >
-              {isLoading ? 'Creating Account...' : 'Create Account'}
+              {isLoading ? 'Signing in...' : 'Sign In'}
             </button>
           </form>
           
           <div className="mt-6 text-center text-gray-400">
-            Already have an account?{' '}
-            <Link to="/login" className="text-blue-400 hover:text-blue-300">
-              Sign in
+            Don't have an account?{' '}
+            <Link to="/register" className="text-blue-400 hover:text-blue-300">
+              Sign up
             </Link>
+          </div>
+          
+          <div className="mt-8 pt-6 border-t border-slate-700 border-opacity-50 text-center">
+            <div className="bg-blue-500 bg-opacity-10 border border-blue-500 border-opacity-50 text-blue-400 p-3 rounded mb-4 text-sm">
+              <p className="font-medium mb-1">Admin Access:</p>
+              <p>Use your registered email: betttonny26@gmail.com</p>
+              <p className="text-xs mt-1 opacity-75">This email has been configured with admin privileges</p>
+            </div>
+            
+            <button 
+              onClick={handleDemoLogin}
+              disabled={isLoading}
+              className="text-blue-400 hover:text-blue-300"
+            >
+              Continue as Demo User
+            </button>
           </div>
         </div>
       </motion.div>
@@ -164,4 +158,4 @@ const Register = () => {
   );
 };
 
-export default Register;
+export default Login;

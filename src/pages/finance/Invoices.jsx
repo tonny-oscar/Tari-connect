@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { collection, query, orderBy, onSnapshot } from 'firebase/firestore';
-import { db } from '../services/firebase';
+import { db } from '../../services/firebase';
 import { FaFileInvoiceDollar, FaPlus, FaSearch, FaFilter } from 'react-icons/fa';
 
 const Invoices = () => {

@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { collection, query, orderBy, onSnapshot, where } from 'firebase/firestore';
-import { db } from '../services/firebase';
+import { db } from '../../services/firebase';
 import { FaTicketAlt, FaPlus, FaFilter } from 'react-icons/fa';
 
 const Tickets = () => {

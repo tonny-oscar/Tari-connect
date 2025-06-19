@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { collection, query, orderBy, onSnapshot } from 'firebase/firestore';
-import { db } from '../services/firebase';
+import { db } from '../../services/firebase';
 import { FaBoxOpen, FaPlus, FaSearch } from 'react-icons/fa';
 
 const Items = () => {

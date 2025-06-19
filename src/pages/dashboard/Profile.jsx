@@ -1,8 +1,8 @@
 import React, { useState } from 'react';
-import { useAuth } from '../store/useAuth';
+import { useAuth } from '../../store/useAuth';
 import { doc, updateDoc } from 'firebase/firestore';
 import { updateProfile } from 'firebase/auth';
-import { db, auth } from '../services/firebase';
+import { db, auth } from '../../services/firebase';
 import { FaUser, FaEdit } from 'react-icons/fa';
 
 const Profile = () => {
