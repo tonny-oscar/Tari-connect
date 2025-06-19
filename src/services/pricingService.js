@@ -3,13 +3,11 @@ import {
   doc, 
   getDoc, 
   getDocs, 
-  setDoc, 
-  updateDoc, 
-  serverTimestamp,
-  query,
+  query, 
   orderBy
 } from 'firebase/firestore';
 import { db } from './firebase';
+import { createDualDocument, updateDualDocument } from './dualDatabaseService';
 
 // Default pricing plans
 const defaultPlans = [
@@ -72,13 +70,9 @@ export const initializePricingPlans = async () => {
     const snapshot = await getDocs(plansRef);
     
     if (snapshot.empty) {
-      // Create default plans
+      // Create default plans in both databases
       for (const plan of defaultPlans) {
-        await setDoc(doc(db, 'pricing', plan.id), {
-          ...plan,
-          createdAt: serverTimestamp(),
-          updatedAt: serverTimestamp()
-        });
+        await createDualDocument('pricing', plan.id, plan);
       }
       return { success: true };
     }
@@ -86,7 +80,7 @@ export const initializePricingPlans = async () => {
     return { success: true };
   } catch (error) {
     console.error('Error initializing pricing plans:', error);
-    return { success: false, error };
+    return { success: false, error: error.message };
   }
 };
 
@@ -109,7 +103,7 @@ export const getPricingPlans = async () => {
     return { success: true, plans };
   } catch (error) {
     console.error('Error getting pricing plans:', error);
-    return { success: false, error };
+    return { success: false, error: error.message };
   }
 };
 
@@ -125,23 +119,13 @@ export const getPricingPlan = async (planId) => {
     }
   } catch (error) {
     console.error('Error getting pricing plan:', error);
-    return { success: false, error };
+    return { success: false, error: error.message };
   }
 };
 
 // Update a pricing plan
 export const updatePricingPlan = async (planId, planData) => {
-  try {
-    await updateDoc(doc(db, 'pricing', planId), {
-      ...planData,
-      updatedAt: serverTimestamp()
-    });
-    
-    return { success: true };
-  } catch (error) {
-    console.error('Error updating pricing plan:', error);
-    return { success: false, error };
-  }
+  return await updateDualDocument('pricing', planId, planData);
 };
 
 // Format price with currency

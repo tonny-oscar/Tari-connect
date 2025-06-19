@@ -28,7 +28,7 @@ const PrivateRoute = ({ requireAdmin = false }) => {
     return <Navigate to="/dashboard" />;
   }
   
-  // Render the protected content
+  // Render the protected content with Layout
   return <Layout />;
 };
 
