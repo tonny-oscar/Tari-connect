@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { collection, query, orderBy, onSnapshot, where } from 'firebase/firestore';
-import { db } from '../services/firebase';
+import { db } from '../../services/firebase';
 import { FaTasks, FaPlus, FaCalendarAlt, FaFilter } from 'react-icons/fa';
-import { useAuth } from '../store/useAuth';
+import { useAuth } from '../../store/useAuth';
 
 const Tasks = () => {
   const [tasks, setTasks] = useState([]);

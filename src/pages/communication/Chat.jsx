@@ -2,15 +2,15 @@ import React, { useEffect, useState, useRef } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { doc, getDoc } from 'firebase/firestore';
 import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
-import { db, storage } from '../services/firebase';
-import { sendMessage, listenToMessages, setTypingStatus, listenToTyping } from '../services/chatService';
-import { createMessageNotification } from '../services/notificationService';
-import { createTask } from '../services/dataService';
+import { db, storage } from '../../services/firebase';
+import { sendMessage, listenToMessages, setTypingStatus, listenToTyping } from '../../services/chatService';
+import { createMessageNotification } from '../../services/notificationService';
+import { createTask } from '../../services/dataService';
 import EmojiPicker from 'emoji-picker-react';
 import { FaSmile, FaPaperclip, FaMicrophone, FaUser, FaTasks } from 'react-icons/fa';
 import { ReactMediaRecorder } from 'react-media-recorder';
-import TaskForm from '../components/TaskForm';
-import { useAuth } from '../store/useAuth';
+import TaskForm from '../../components/TaskForm';
+import { useAuth } from '../../store/useAuth';
 
 function Chat() {
   const { conversationId } = useParams();

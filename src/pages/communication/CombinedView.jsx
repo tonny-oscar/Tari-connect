@@ -1,10 +1,10 @@
 import React, { useEffect, useState } from 'react';
 import { collection, onSnapshot, query, orderBy } from 'firebase/firestore';
-import { db } from '../services/firebase';
+import { db } from '../../services/firebase';
 import { Link, useParams, useNavigate } from 'react-router-dom';
 import Chat from './Chat';
-import ContactDetails from '../components/ContactDetails';
-import Inbox from '../components/Inbox';
+import ContactDetails from '../../components/ContactDetails';
+import Inbox from '../../components/Inbox';
 
 function CombinedView() {
   const { conversationId } = useParams();

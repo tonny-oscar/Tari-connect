@@ -1,11 +1,11 @@
 import React, { useEffect, useState } from 'react';
 import { collection, query, onSnapshot, doc, updateDoc, deleteDoc, orderBy, where } from 'firebase/firestore';
-import { db } from '../services/firebase';
+import { db } from '../../services/firebase';
 import { Link } from 'react-router-dom';
 import { FaUserEdit, FaTrash, FaUserSlash, FaUserCheck, FaChartLine, FaTasks, FaComments, FaUsers, FaDollarSign } from 'react-icons/fa';
-import { useAuth } from '../store/useAuth';
-import PricingManager from '../components/admin/PricingManager';
-import { initializePricingPlans } from '../services/pricingService';
+import { useAuth } from '../../store/useAuth';
+import PricingManager from '../../components/admin/PricingManager';
+import { initializePricingPlans } from '../../services/pricingService';
 
 const AdminDashboard = () => {
   const [users, setUsers] = useState([]);

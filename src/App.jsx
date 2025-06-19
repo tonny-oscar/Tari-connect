@@ -1,29 +1,51 @@
 import React, { useEffect } from 'react';
 import { Routes, Route, Navigate } from 'react-router-dom';
-import Login from './pages/Login';
-import Register from './pages/Register';
-import ForgotPassword from './pages/ForgotPassword';
-import Dashboard from './pages/Dashboard';
-import Profile from './pages/Profile';
-import AdminDashboard from './pages/AdminDashboard';
-import LandingPage from './pages/LandingPage';
-import PrivateRoute from './components/PrivateRoute';
 import { useAuth, initAuth } from './store/useAuth';
 import { initializePricingPlans } from './services/pricingService';
 import { initializeAdminUsers } from './services/authService';
+import PrivateRoute from './components/PrivateRoute';
 
-// New pages
-import Inbox from './pages/Inbox';
-import Leads from './pages/Leads';
-import Quotes from './pages/Quotes';
-import Invoices from './pages/Invoices';
-import Items from './pages/Items';
-import Tasks from './pages/Tasks';
-import AIAgent from './pages/AIAgent';
-import Tickets from './pages/Tickets';
-import FileManager from './pages/FileManager';
-import Settings from './pages/Settings';
-import Support from './pages/Support';
+// Import all pages from the pages directory
+import {
+  // Auth pages
+  Login,
+  Register,
+  ForgotPassword,
+  
+  // Dashboard pages
+  Dashboard,
+  Profile,
+  
+  // Admin pages
+  AdminDashboard,
+  
+  // Communication pages
+  Inbox,
+  Chat,
+  Tickets,
+  AIAgent,
+  CombinedView,
+  
+  // Finance pages
+  Quotes,
+  Invoices,
+  Items,
+  Leads,
+  
+  // Support pages
+  Support,
+  Tasks,
+  FileManager,
+  
+  // Settings pages
+  Settings,
+  
+  // Other pages
+  LandingPage
+} from './pages';
+
+// Import components
+import ContactDetails from './components/ContactDetails';
 
 function App() {
   const { isLoading, isAuthenticated } = useAuth();
@@ -68,23 +90,31 @@ function App() {
         {/* Dashboard */}
         <Route path="/dashboard" element={<Dashboard />} />
         
-        {/* Main features */}
+        {/* Communication */}
         <Route path="/inbox" element={<Inbox />} />
+        <Route path="/chat/:conversationId" element={<Chat />} />
+        <Route path="/tickets" element={<Tickets />} />
+        <Route path="/ai-agent" element={<AIAgent />} />
+        <Route path="/combined" element={<CombinedView />} />
+        <Route path="/combined/:conversationId" element={<CombinedView />} />
+        
+        {/* Finance */}
         <Route path="/leads" element={<Leads />} />
         <Route path="/quotes" element={<Quotes />} />
         <Route path="/invoices" element={<Invoices />} />
         <Route path="/items" element={<Items />} />
-        <Route path="/tasks" element={<Tasks />} />
-        <Route path="/ai-agent" element={<AIAgent />} />
-        <Route path="/tickets" element={<Tickets />} />
-        <Route path="/file-manager" element={<FileManager />} />
         
-        {/* Settings and support */}
-        <Route path="/settings/*" element={<Settings />} />
+        {/* Support */}
+        <Route path="/tasks" element={<Tasks />} />
+        <Route path="/file-manager" element={<FileManager />} />
         <Route path="/support" element={<Support />} />
         
-        {/* Profile */}
+        {/* Settings */}
+        <Route path="/settings/*" element={<Settings />} />
         <Route path="/profile" element={<Profile />} />
+        
+        {/* Legacy routes */}
+        <Route path="/contact/:conversationId" element={<ContactDetails />} />
       </Route>
       
       {/* Admin routes */}

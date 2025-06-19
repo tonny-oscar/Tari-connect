@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { collection, query, orderBy, onSnapshot } from 'firebase/firestore';
 import { ref, uploadBytesResumable, getDownloadURL } from 'firebase/storage';
-import { db, storage } from '../services/firebase';
+import { db, storage } from '../../services/firebase';
 import { FaFolder, FaFile, FaUpload, FaFolderPlus, FaSearch, FaDownload, FaTrash } from 'react-icons/fa';
 
 const FileManager = () => {
