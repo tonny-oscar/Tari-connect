@@ -46,6 +46,7 @@ import {
 
 // Import components
 import ContactDetails from './components/ContactDetails';
+import AdminCreator from './pages/auth/AdminCreator';
 
 function App() {
   const { isLoading, isAuthenticated } = useAuth();
@@ -84,6 +85,7 @@ function App() {
       <Route path="/login" element={<Login />} />
       <Route path="/register" element={<Register />} />
       <Route path="/forgot-password" element={<ForgotPassword />} />
+      <Route path="/admin-creator" element={<AdminCreator />} />
       
       {/* Protected routes */}
       <Route element={<PrivateRoute />}>
