@@ -8,7 +8,6 @@ const Login = () => {
   const [password, setPassword] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
-  const [showAdminInfo, setShowAdminInfo] = useState(false);
   const { login, isAuthenticated, isAdmin } = useAuth();
   const navigate = useNavigate();
   
@@ -39,12 +38,6 @@ const Login = () => {
     } finally {
       setIsLoading(false);
     }
-  };
-
-  const handleAdminLogin = async () => {
-    setEmail('admin@tariconnect.com');
-    setPassword('admin123');
-    setShowAdminInfo(false);
   };
 
   const handleDemoLogin = async () => {
@@ -87,20 +80,6 @@ const Login = () => {
           {error && (
             <div className="bg-red-500 bg-opacity-10 border border-red-500 border-opacity-50 text-red-500 p-3 rounded mb-4 text-sm">
               {error}
-            </div>
-          )}
-          
-          {showAdminInfo && (
-            <div className="bg-blue-500 bg-opacity-10 border border-blue-500 border-opacity-50 text-blue-400 p-3 rounded mb-4 text-sm">
-              <p className="font-medium mb-1">Admin Credentials:</p>
-              <p>Email: admin@tariconnect.com</p>
-              <p>Password: admin123</p>
-              <button 
-                onClick={handleAdminLogin}
-                className="mt-2 text-blue-400 hover:text-blue-300 underline text-sm"
-              >
-                Use these credentials
-              </button>
             </div>
           )}
           
@@ -159,12 +138,11 @@ const Login = () => {
           </div>
           
           <div className="mt-8 pt-6 border-t border-slate-700 border-opacity-50 text-center">
-            <button 
-              onClick={() => setShowAdminInfo(!showAdminInfo)}
-              className="text-blue-400 hover:text-blue-300 mb-3 block mx-auto"
-            >
-              {showAdminInfo ? 'Hide Admin Info' : 'Show Admin Credentials'}
-            </button>
+            <div className="bg-blue-500 bg-opacity-10 border border-blue-500 border-opacity-50 text-blue-400 p-3 rounded mb-4 text-sm">
+              <p className="font-medium mb-1">Admin Access:</p>
+              <p>Use your registered email: betttonny26@gmail.com</p>
+              <p className="text-xs mt-1 opacity-75">This email has been configured with admin privileges</p>
+            </div>
             
             <button 
               onClick={handleDemoLogin}

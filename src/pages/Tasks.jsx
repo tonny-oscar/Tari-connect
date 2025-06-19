@@ -1,130 +1,64 @@
-import React, { useEffect, useState } from 'react';
-import { collection, onSnapshot, query, orderBy, where } from 'firebase/firestore';
+import React, { useState, useEffect } from 'react';
+import { collection, query, orderBy, onSnapshot, where } from 'firebase/firestore';
 import { db } from '../services/firebase';
-import { FaPlus, FaTrash, FaCheck, FaClock, FaExclamationCircle } from 'react-icons/fa';
-import { 
-  createTask, 
-  updateTaskStatus, 
-  deleteTask 
-} from '../services/dataService';
-import { createMessageNotification } from '../services/notificationService';
+import { FaTasks, FaPlus, FaCalendarAlt, FaFilter } from 'react-icons/fa';
+import { useAuth } from '../store/useAuth';
 
-function Tasks() {
+const Tasks = () => {
   const [tasks, setTasks] = useState([]);
-  const [agents, setAgents] = useState([]);
-  const [showAddTask, setShowAddTask] = useState(false);
-  const [newTask, setNewTask] = useState({
-    title: '',
-    description: '',
-    assignedTo: '',
-    dueDate: '',
-    priority: 'medium',
-    status: 'pending'
-  });
+  const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState('all');
-  const [isSubmitting, setIsSubmitting] = useState(false);
+  const { user } = useAuth();
 
-  // Fetch tasks
   useEffect(() => {
-    const q = query(collection(db, 'tasks'), orderBy('createdAt', 'desc'));
-    const unsubscribe = onSnapshot(q, (snapshot) => {
-      const taskList = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-      setTasks(taskList);
-    });
-    return () => unsubscribe();
-  }, []);
-
-  // Fetch agents for assignment
-  useEffect(() => {
-    const q = query(collection(db, 'agents'), where('status', '==', 'active'));
-    const unsubscribe = onSnapshot(q, (snapshot) => {
-      const agentList = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-      setAgents(agentList);
-    });
-    return () => unsubscribe();
-  }, []);
-
-  // Handle adding a new task
-  const handleAddTask = async (e) => {
-    e.preventDefault();
-    setIsSubmitting(true);
+    let q;
     
-    try {
-      const result = await createTask(newTask);
+    if (filter === 'my-tasks') {
+      q = query(
+        collection(db, 'tasks'), 
+        where('assignedTo', '==', user?.uid),
+        orderBy('dueDate')
+      );
+    } else if (filter === 'completed') {
+      q = query(
+        collection(db, 'tasks'), 
+        where('status', '==', 'completed'),
+        orderBy('completedAt', 'desc')
+      );
+    } else if (filter === 'overdue') {
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
       
-      if (result.success) {
-        // Create notification for assigned agent
-        if (newTask.assignedTo) {
-          const assignedAgent = agents.find(a => a.id === newTask.assignedTo);
-          if (assignedAgent) {
-            await createMessageNotification(
-              assignedAgent.id,
-              'New Task Assigned',
-              `You have been assigned a new task: ${newTask.title}`,
-              'task'
-            );
-          }
-        }
-        
-        // Reset form
-        setNewTask({
-          title: '',
-          description: '',
-          assignedTo: '',
-          dueDate: '',
-          priority: 'medium',
-          status: 'pending'
-        });
-        setShowAddTask(false);
-      } else {
-        alert('Error creating task: ' + result.error);
-      }
-    } catch (error) {
-      console.error('Error in task creation:', error);
-      alert('An unexpected error occurred');
-    } finally {
-      setIsSubmitting(false);
+      q = query(
+        collection(db, 'tasks'), 
+        where('status', '!=', 'completed'),
+        where('dueDate', '<', today),
+        orderBy('dueDate')
+      );
+    } else {
+      q = query(collection(db, 'tasks'), orderBy('dueDate'));
     }
-  };
+    
+    const unsubscribe = onSnapshot(q, (snapshot) => {
+      const tasksList = snapshot.docs.map(doc => ({
+        id: doc.id,
+        ...doc.data()
+      }));
+      setTasks(tasksList);
+      setLoading(false);
+    });
+    
+    return () => unsubscribe();
+  }, [filter, user?.uid]);
 
-  // Update task status
-  const handleUpdateTaskStatus = async (taskId, newStatus) => {
-    try {
-      await updateTaskStatus(taskId, newStatus);
-    } catch (error) {
-      console.error('Error updating task status:', error);
-      alert('Failed to update task status');
-    }
-  };
+  const filterOptions = [
+    { id: 'all', name: 'All Tasks' },
+    { id: 'my-tasks', name: 'My Tasks' },
+    { id: 'overdue', name: 'Overdue' },
+    { id: 'completed', name: 'Completed' }
+  ];
 
-  // Delete task
-  const handleDeleteTask = async (taskId) => {
-    if (confirm('Are you sure you want to delete this task?')) {
-      try {
-        await deleteTask(taskId);
-      } catch (error) {
-        console.error('Error deleting task:', error);
-        alert('Failed to delete task');
-      }
-    }
-  };
-
-  // Filter tasks based on selected filter
-  const filteredTasks = tasks.filter(task => {
-    if (filter === 'all') return true;
-    if (filter === 'pending') return task.status === 'pending';
-    if (filter === 'completed') return task.status === 'completed';
-    if (filter === 'overdue') {
-      if (task.status === 'completed') return false;
-      if (!task.dueDate) return false;
-      const dueDate = new Date(task.dueDate);
-      return dueDate < new Date();
-    }
-    return true;
-  });
-
-  // Get priority badge color
-  const getPriorityBadge = (priority) => {
+  const getPriorityColor = (priority) => {
     switch (priority) {
       case 'high':
         return 'bg-red-100 text-red-800';
@@ -137,215 +71,128 @@ function Tasks() {
     }
   };
 
-  // Check if task is overdue
-  const isTaskOverdue = (dueDate) => {
-    if (!dueDate) return false;
-    return new Date(dueDate) < new Date();
+  const getStatusColor = (status) => {
+    switch (status) {
+      case 'completed':
+        return 'bg-green-100 text-green-800';
+      case 'in-progress':
+        return 'bg-blue-100 text-blue-800';
+      case 'pending':
+        return 'bg-yellow-100 text-yellow-800';
+      default:
+        return 'bg-gray-100 text-gray-800';
+    }
+  };
+
+  const formatDueDate = (dueDate) => {
+    if (!dueDate) return 'No due date';
+    
+    const date = dueDate.toDate ? dueDate.toDate() : new Date(dueDate);
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    
+    const tomorrow = new Date(today);
+    tomorrow.setDate(tomorrow.getDate() + 1);
+    
+    if (date < today) {
+      return `Overdue: ${date.toLocaleDateString()}`;
+    } else if (date.getTime() === today.getTime()) {
+      return 'Today';
+    } else if (date.getTime() === tomorrow.getTime()) {
+      return 'Tomorrow';
+    } else {
+      return date.toLocaleDateString();
+    }
   };
 
   return (
-    <div className="p-4">
+    <div className="h-full">
       <div className="flex justify-between items-center mb-6">
-        <h1 className="text-2xl font-bold">Task Management</h1>
-        <button 
-          onClick={() => setShowAddTask(!showAddTask)}
-          className="bg-blue-600 text-white px-3 py-2 rounded flex items-center gap-1 hover:bg-blue-700 transition-colors"
-          disabled={isSubmitting}
-        >
+        <div>
+          <h1 className="text-2xl font-bold mb-2">Tasks & Reminders</h1>
+          <p className="text-gray-600">Stay organized with your to-do list</p>
+        </div>
+        <button className="bg-blue-600 text-white px-4 py-2 rounded-md flex items-center gap-2 hover:bg-blue-700 transition-colors">
           <FaPlus /> Add Task
         </button>
       </div>
-
-      {/* Add Task Form */}
-      {showAddTask && (
-        <div className="bg-white p-4 rounded shadow mb-6">
-          <h2 className="text-xl font-semibold mb-4">Add New Task</h2>
-          <form onSubmit={handleAddTask}>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Title</label>
-                <input
-                  type="text"
-                  value={newTask.title}
-                  onChange={(e) => setNewTask({...newTask, title: e.target.value})}
-                  className="w-full p-2 border rounded focus:ring-blue-500 focus:border-blue-500"
-                  required
-                  disabled={isSubmitting}
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Assign To</label>
-                <select
-                  value={newTask.assignedTo}
-                  onChange={(e) => setNewTask({...newTask, assignedTo: e.target.value})}
-                  className="w-full p-2 border rounded focus:ring-blue-500 focus:border-blue-500"
-                  disabled={isSubmitting}
-                >
-                  <option value="">Select Agent</option>
-                  {agents.map(agent => (
-                    <option key={agent.id} value={agent.id}>{agent.name}</option>
-                  ))}
-                </select>
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Due Date</label>
-                <input
-                  type="datetime-local"
-                  value={newTask.dueDate}
-                  onChange={(e) => setNewTask({...newTask, dueDate: e.target.value})}
-                  className="w-full p-2 border rounded focus:ring-blue-500 focus:border-blue-500"
-                  disabled={isSubmitting}
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Priority</label>
-                <select
-                  value={newTask.priority}
-                  onChange={(e) => setNewTask({...newTask, priority: e.target.value})}
-                  className="w-full p-2 border rounded focus:ring-blue-500 focus:border-blue-500"
-                  disabled={isSubmitting}
-                >
-                  <option value="low">Low</option>
-                  <option value="medium">Medium</option>
-                  <option value="high">High</option>
-                </select>
-              </div>
-              <div className="md:col-span-2">
-                <label className="block text-sm font-medium text-gray-700 mb-1">Description</label>
-                <textarea
-                  value={newTask.description}
-                  onChange={(e) => setNewTask({...newTask, description: e.target.value})}
-                  className="w-full p-2 border rounded focus:ring-blue-500 focus:border-blue-500"
-                  rows="3"
-                  disabled={isSubmitting}
-                ></textarea>
-              </div>
-            </div>
-            <div className="mt-4 flex justify-end">
-              <button
-                type="button"
-                onClick={() => setShowAddTask(false)}
-                className="mr-2 px-4 py-2 border rounded hover:bg-gray-100 transition-colors"
-                disabled={isSubmitting}
-              >
-                Cancel
-              </button>
-              <button
-                type="submit"
-                className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 transition-colors"
-                disabled={isSubmitting}
-              >
-                {isSubmitting ? 'Saving...' : 'Save Task'}
-              </button>
-            </div>
-          </form>
+      
+      {/* Filter tabs */}
+      <div className="mb-6 flex items-center">
+        <FaFilter className="text-gray-500 mr-2" />
+        <div className="flex space-x-1 overflow-x-auto pb-2">
+          {filterOptions.map(option => (
+            <button
+              key={option.id}
+              className={`px-4 py-2 rounded-md whitespace-nowrap ${
+                filter === option.id 
+                  ? 'bg-blue-600 text-white' 
+                  : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+              }`}
+              onClick={() => setFilter(option.id)}
+            >
+              {option.name}
+            </button>
+          ))}
         </div>
-      )}
-
-      {/* Task Filters */}
-      <div className="mb-4 flex flex-wrap gap-2">
-        <button
-          onClick={() => setFilter('all')}
-          className={`px-3 py-1 rounded transition-colors ${filter === 'all' ? 'bg-blue-600 text-white' : 'bg-gray-200 hover:bg-gray-300'}`}
-        >
-          All
-        </button>
-        <button
-          onClick={() => setFilter('pending')}
-          className={`px-3 py-1 rounded transition-colors ${filter === 'pending' ? 'bg-blue-600 text-white' : 'bg-gray-200 hover:bg-gray-300'}`}
-        >
-          Pending
-        </button>
-        <button
-          onClick={() => setFilter('completed')}
-          className={`px-3 py-1 rounded transition-colors ${filter === 'completed' ? 'bg-blue-600 text-white' : 'bg-gray-200 hover:bg-gray-300'}`}
-        >
-          Completed
-        </button>
-        <button
-          onClick={() => setFilter('overdue')}
-          className={`px-3 py-1 rounded transition-colors ${filter === 'overdue' ? 'bg-blue-600 text-white' : 'bg-gray-200 hover:bg-gray-300'}`}
-        >
-          Overdue
-        </button>
       </div>
-
-      {/* Tasks List */}
-      <div className="bg-white rounded shadow">
-        <div className="p-4 border-b">
-          <h2 className="text-xl font-semibold">Tasks</h2>
-        </div>
-        <div className="p-4">
-          {filteredTasks.length === 0 ? (
-            <p className="text-center text-gray-500 py-4">No tasks found</p>
-          ) : (
-            <div className="divide-y">
-              {filteredTasks.map(task => (
-                <div key={task.id} className="py-4">
-                  <div className="flex justify-between items-start">
-                    <div className="flex-1">
-                      <div className="flex items-center gap-2 flex-wrap">
-                        <h3 className="font-medium">{task.title}</h3>
-                        <span className={`text-xs px-2 py-1 rounded ${getPriorityBadge(task.priority)}`}>
-                          {task.priority.charAt(0).toUpperCase() + task.priority.slice(1)}
+      
+      {/* Tasks list */}
+      <div className="bg-white rounded-lg shadow overflow-hidden">
+        {loading ? (
+          <div className="p-4 text-center">
+            <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-blue-500 mx-auto"></div>
+            <p className="mt-2 text-gray-600">Loading tasks...</p>
+          </div>
+        ) : tasks.length > 0 ? (
+          <div className="divide-y">
+            {tasks.map(task => (
+              <div key={task.id} className="p-4 hover:bg-gray-50 cursor-pointer">
+                <div className="flex items-start justify-between">
+                  <div className="flex-1">
+                    <h3 className="font-medium text-gray-900">{task.title}</h3>
+                    <p className="text-sm text-gray-600 mt-1">{task.description}</p>
+                    
+                    <div className="flex flex-wrap gap-2 mt-3">
+                      <span className={`px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full ${getPriorityColor(task.priority)}`}>
+                        {task.priority || 'normal'}
+                      </span>
+                      
+                      <span className={`px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full ${getStatusColor(task.status)}`}>
+                        {task.status || 'pending'}
+                      </span>
+                      
+                      {task.assignedTo && (
+                        <span className="px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full bg-purple-100 text-purple-800">
+                          {task.assignedToName || 'Assigned'}
                         </span>
-                        {isTaskOverdue(task.dueDate) && task.status !== 'completed' && (
-                          <span className="text-xs px-2 py-1 rounded bg-red-100 text-red-800 flex items-center gap-1">
-                            <FaExclamationCircle /> Overdue
-                          </span>
-                        )}
-                      </div>
-                      <p className="text-sm text-gray-600 mt-1">{task.description}</p>
-                      <div className="mt-2 flex flex-wrap gap-4 text-sm text-gray-500">
-                        {task.assignedTo && (
-                          <div>
-                            <span className="font-medium">Assigned to:</span> {
-                              agents.find(a => a.id === task.assignedTo)?.name || 'Unknown'
-                            }
-                          </div>
-                        )}
-                        {task.dueDate && (
-                          <div className="flex items-center gap-1">
-                            <FaClock /> {new Date(task.dueDate).toLocaleString()}
-                          </div>
-                        )}
-                      </div>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      {task.status !== 'completed' ? (
-                        <button
-                          onClick={() => handleUpdateTaskStatus(task.id, 'completed')}
-                          className="p-1 text-green-600 hover:bg-green-50 rounded transition-colors"
-                          title="Mark as completed"
-                        >
-                          <FaCheck />
-                        </button>
-                      ) : (
-                        <button
-                          onClick={() => handleUpdateTaskStatus(task.id, 'pending')}
-                          className="p-1 text-yellow-600 hover:bg-yellow-50 rounded transition-colors"
-                          title="Mark as pending"
-                        >
-                          <FaClock />
-                        </button>
                       )}
-                      <button
-                        onClick={() => handleDeleteTask(task.id)}
-                        className="p-1 text-red-600 hover:bg-red-50 rounded transition-colors"
-                        title="Delete task"
-                      >
-                        <FaTrash />
-                      </button>
                     </div>
                   </div>
+                  
+                  <div className="flex items-center text-sm text-gray-500">
+                    <FaCalendarAlt className="mr-1" />
+                    {formatDueDate(task.dueDate)}
+                  </div>
                 </div>
-              ))}
-            </div>
-          )}
-        </div>
+              </div>
+            ))}
+          </div>
+        ) : (
+          <div className="p-8 text-center">
+            <FaTasks className="mx-auto text-4xl text-gray-400 mb-4" />
+            <h3 className="text-lg font-medium text-gray-900">No tasks found</h3>
+            <p className="mt-1 text-gray-500">
+              {filter !== 'all' ? 'Try changing your filter' : 'Add your first task to get started'}
+            </p>
+            <button className="mt-4 bg-blue-600 text-white px-4 py-2 rounded-md flex items-center gap-2 mx-auto hover:bg-blue-700 transition-colors">
+              <FaPlus /> Add Task
+            </button>
+          </div>
+        )}
       </div>
     </div>
   );
-}
+};
 
 export default Tasks;

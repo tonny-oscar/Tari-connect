@@ -1,37 +1,25 @@
-// Chat.jsx
 import React, { useEffect, useState, useRef } from 'react';
 import { useParams, Link } from 'react-router-dom';
-import {
-  collection,
-  addDoc,
-  onSnapshot,
-  query,
-  orderBy,
-  serverTimestamp,
-  doc,
-  updateDoc,
-  getDoc,
-  setDoc,
-  where,
-  getDocs
-} from 'firebase/firestore';
+import { doc, getDoc } from 'firebase/firestore';
 import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 import { db, storage } from '../services/firebase';
+import { sendMessage, listenToMessages, setTypingStatus, listenToTyping } from '../services/chatService';
 import { createMessageNotification } from '../services/notificationService';
 import { createTask } from '../services/dataService';
 import EmojiPicker from 'emoji-picker-react';
 import { FaSmile, FaPaperclip, FaMicrophone, FaUser, FaTasks } from 'react-icons/fa';
 import { ReactMediaRecorder } from 'react-media-recorder';
 import TaskForm from '../components/TaskForm';
+import { useAuth } from '../store/useAuth';
 
 function Chat() {
   const { conversationId } = useParams();
   const scrollRef = useRef(null);
+  const { user } = useAuth();
 
   const [messages, setMessages] = useState([]);
   const [newMessage, setNewMessage] = useState('');
-  const [typing, setTyping] = useState(false);
-  const [isTyping, setIsTyping] = useState(false);
+  const [typingUsers, setTypingUsers] = useState([]);
   const [showEmojiPicker, setShowEmojiPicker] = useState(false);
   const [file, setFile] = useState(null);
   const [audioURL, setAudioURL] = useState(null);
@@ -52,43 +40,30 @@ function Chat() {
     fetchContactInfo();
   }, [conversationId]);
 
+  // Listen to real-time messages
   useEffect(() => {
-    const q = query(
-      collection(db, `conversations/${conversationId}/messages`),
-      orderBy('timestamp', 'asc')
-    );
-    const unsub = onSnapshot(q, (snapshot) => {
-      const msgs = snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
-      setMessages(msgs);
+    const unsubscribe = listenToMessages(conversationId, (messageList) => {
+      setMessages(messageList);
     });
-    return () => unsub();
+    
+    return unsubscribe;
   }, [conversationId]);
 
+  // Listen to typing indicators
+  useEffect(() => {
+    const unsubscribe = listenToTyping(conversationId, (typingList) => {
+      // Filter out current user from typing list
+      const otherUsersTyping = typingList.filter(t => t.userId !== user?.uid);
+      setTypingUsers(otherUsersTyping);
+    });
+    
+    return unsubscribe;
+  }, [conversationId, user?.uid]);
+
+  // Auto-scroll to bottom when new messages arrive
   useEffect(() => {
     scrollRef.current?.scrollTo(0, scrollRef.current.scrollHeight);
   }, [messages]);
-
-  useEffect(() => {
-    const typingDoc = doc(db, 'conversations', conversationId, 'status', 'typing');
-    const unsub = onSnapshot(typingDoc, (snap) => {
-      setIsTyping(snap.exists() && snap.data().agentTyping);
-    });
-    return () => unsub();
-  }, [conversationId]);
-
-  useEffect(() => {
-    const markSeen = async () => {
-      const q = query(
-        collection(db, `conversations/${conversationId}/messages`),
-        where("status", "in", ["sent", "delivered"])
-      );
-      const snapshot = await getDocs(q);
-      snapshot.forEach(async (docSnap) => {
-        await updateDoc(docSnap.ref, { status: "seen" });
-      });
-    };
-    markSeen();
-  }, [messages, conversationId]);
 
   const handleEmojiClick = (emoji) => {
     setNewMessage((prev) => prev + emoji.emoji);
@@ -113,51 +88,44 @@ function Chat() {
     let fileUrl = null;
     if (file) fileUrl = await uploadFile();
 
-    await addDoc(collection(db, `conversations/${conversationId}/messages`), {
+    const messageData = {
       text: newMessage,
       fileUrl: fileUrl || audioURL || null,
       sender: 'agent',
-      timestamp: serverTimestamp(),
+      senderName: user?.displayName || user?.email || 'Agent',
+      senderId: user?.uid,
       status: 'sent'
-    });
+    };
 
-    await updateDoc(doc(db, 'conversations', conversationId), {
-      lastUpdated: serverTimestamp(),
-      lastMessage: newMessage || 'Media'
-    });
+    const result = await sendMessage(conversationId, messageData);
 
-    // Create notification for the contact if they have a user account
-    if (contactId) {
-      await createMessageNotification(
-        contactId,
-        'Agent',
-        newMessage || 'Sent a file'
-      );
+    if (result.success) {
+      // Create notification for the contact if they have a user account
+      if (contactId) {
+        await createMessageNotification(
+          contactId,
+          'Agent',
+          newMessage || 'Sent a file'
+        );
+      }
+
+      setNewMessage('');
+      setFile(null);
+      setAudioURL(null);
+      setShowEmojiPicker(false);
+
+      // Stop typing indicator
+      await setTypingStatus(conversationId, user?.uid, false);
     }
-
-    setNewMessage('');
-    setFile(null);
-    setAudioURL(null);
-    setShowEmojiPicker(false);
-
-    await setDoc(doc(db, 'conversations', conversationId, 'status', 'typing'), {
-      agentTyping: false,
-    });
   };
 
-  const handleTyping = (e) => {
+  const handleTyping = async (e) => {
     setNewMessage(e.target.value);
-    setTyping(true);
-    setDoc(doc(db, 'conversations', conversationId, 'status', 'typing'), {
-      agentTyping: true,
-    });
-
-    setTimeout(() => {
-      setTyping(false);
-      setDoc(doc(db, 'conversations', conversationId, 'status', 'typing'), {
-        agentTyping: false,
-      });
-    }, 3000);
+    
+    // Set typing indicator
+    if (user?.uid) {
+      await setTypingStatus(conversationId, user.uid, true);
+    }
   };
 
   return (
@@ -195,8 +163,15 @@ function Chat() {
         {messages.map((msg) => (
           <div
             key={msg.id}
-            className={`mb-3 p-2 rounded max-w-[75%] ${msg.sender === 'agent' ? 'ml-auto bg-blue-100 text-right' : 'mr-auto bg-gray-100'}`}
+            className={`mb-3 p-2 rounded max-w-[75%] ${
+              msg.senderId === user?.uid 
+                ? 'ml-auto bg-blue-100 text-right' 
+                : 'mr-auto bg-gray-100'
+            }`}
           >
+            <div className="text-xs text-gray-500 mb-1">
+              {msg.senderName || msg.sender}
+            </div>
             {msg.text && <p>{msg.text}</p>}
             {msg.fileUrl && (
               <div className="mt-2">
@@ -211,11 +186,17 @@ function Chat() {
             )}
             <p className="text-xs text-gray-500 mt-1">
               {msg.status === 'seen' ? '✓✓ Seen' : msg.status === 'delivered' ? '✓✓ Delivered' : '✓ Sent'}
-              {msg.timestamp && ` • ${new Date(msg.timestamp.toDate()).toLocaleTimeString()}`}
+              {msg.timestamp && ` • ${new Date(msg.timestamp).toLocaleTimeString()}`}
             </p>
           </div>
         ))}
-        {isTyping && <p className="italic text-gray-500">User is typing...</p>}
+        
+        {/* Typing indicators */}
+        {typingUsers.length > 0 && (
+          <div className="text-sm text-gray-500 italic">
+            {typingUsers.map(user => user.userId).join(', ')} {typingUsers.length === 1 ? 'is' : 'are'} typing...
+          </div>
+        )}
       </div>
 
       {/* Message input */}

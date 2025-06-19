@@ -1,76 +1,47 @@
 import { 
   collection, 
   doc, 
-  setDoc, 
-  addDoc, 
-  updateDoc, 
-  deleteDoc, 
+  getDoc, 
+  getDocs, 
   query, 
   where, 
-  getDocs, 
-  getDoc,
-  serverTimestamp 
+  orderBy,
+  onSnapshot
 } from 'firebase/firestore';
-import { db } from './firebase';
+import { 
+  ref, 
+  onValue, 
+  off 
+} from 'firebase/database';
+import { db, rtdb } from './firebase';
+import { createDualDocument, updateDualDocument, deleteDualDocument } from './dualDatabaseService';
 
 // ===== AGENT SERVICES =====
 
 // Create a new agent
 export const createAgent = async (agentData) => {
-  try {
-    const agentRef = doc(collection(db, 'agents'));
-    await setDoc(agentRef, {
-      ...agentData,
-      createdAt: serverTimestamp(),
-      updatedAt: serverTimestamp()
-    });
-    return { success: true, id: agentRef.id };
-  } catch (error) {
-    console.error('Error creating agent:', error);
-    return { success: false, error };
-  }
+  return await createDualDocument('agents', null, agentData);
 };
 
 // Update an agent
 export const updateAgent = async (agentId, agentData) => {
-  try {
-    const agentRef = doc(db, 'agents', agentId);
-    await updateDoc(agentRef, {
-      ...agentData,
-      updatedAt: serverTimestamp()
-    });
-    return { success: true };
-  } catch (error) {
-    console.error('Error updating agent:', error);
-    return { success: false, error };
-  }
+  return await updateDualDocument('agents', agentId, agentData);
 };
 
 // Toggle agent status
 export const toggleAgentStatus = async (agentId, currentStatus) => {
   try {
     const newStatus = currentStatus === 'active' ? 'inactive' : 'active';
-    const agentRef = doc(db, 'agents', agentId);
-    await updateDoc(agentRef, {
-      status: newStatus,
-      updatedAt: serverTimestamp()
-    });
-    return { success: true, newStatus };
+    return await updateDualDocument('agents', agentId, { status: newStatus });
   } catch (error) {
     console.error('Error toggling agent status:', error);
-    return { success: false, error };
+    return { success: false, error: error.message };
   }
 };
 
 // Delete an agent
 export const deleteAgent = async (agentId) => {
-  try {
-    await deleteDoc(doc(db, 'agents', agentId));
-    return { success: true };
-  } catch (error) {
-    console.error('Error deleting agent:', error);
-    return { success: false, error };
-  }
+  return await deleteDualDocument('agents', agentId);
 };
 
 // Get agent by ID
@@ -84,7 +55,7 @@ export const getAgentById = async (agentId) => {
     }
   } catch (error) {
     console.error('Error getting agent:', error);
-    return { success: false, error };
+    return { success: false, error: error.message };
   }
 };
 
@@ -93,31 +64,24 @@ export const getAgentById = async (agentId) => {
 // Create a new task
 export const createTask = async (taskData) => {
   try {
-    const taskRef = doc(collection(db, 'tasks'));
-    await setDoc(taskRef, {
-      ...taskData,
-      createdAt: serverTimestamp(),
-      updatedAt: serverTimestamp()
-    });
+    const result = await createDualDocument('tasks', null, taskData);
     
-    // If task is assigned to an agent, update their current leads count
-    if (taskData.assignedTo) {
-      const agentRef = doc(db, 'agents', taskData.assignedTo);
-      const agentDoc = await getDoc(agentRef);
+    if (result.success && taskData.assignedTo) {
+      // Update agent's current leads count
+      const agentDoc = await getDoc(doc(db, 'agents', taskData.assignedTo));
       
       if (agentDoc.exists()) {
         const currentLeads = agentDoc.data().currentLeads || 0;
-        await updateDoc(agentRef, {
-          currentLeads: currentLeads + 1,
-          updatedAt: serverTimestamp()
+        await updateDualDocument('agents', taskData.assignedTo, {
+          currentLeads: currentLeads + 1
         });
       }
     }
     
-    return { success: true, id: taskRef.id };
+    return result;
   } catch (error) {
     console.error('Error creating task:', error);
-    return { success: false, error };
+    return { success: false, error: error.message };
   }
 };
 
@@ -125,108 +89,84 @@ export const createTask = async (taskData) => {
 export const updateTask = async (taskId, taskData) => {
   try {
     // Get the current task data to check if assignment changed
-    const taskRef = doc(db, 'tasks', taskId);
-    const taskDoc = await getDoc(taskRef);
+    const taskDoc = await getDoc(doc(db, 'tasks', taskId));
     
     if (taskDoc.exists()) {
       const oldAssignedTo = taskDoc.data().assignedTo;
       const newAssignedTo = taskData.assignedTo;
       
       // Update the task
-      await updateDoc(taskRef, {
-        ...taskData,
-        updatedAt: serverTimestamp()
-      });
+      const result = await updateDualDocument('tasks', taskId, taskData);
       
-      // Handle agent assignment changes
-      if (oldAssignedTo !== newAssignedTo) {
-        // Decrement old agent's lead count if there was one
+      if (result.success && oldAssignedTo !== newAssignedTo) {
+        // Handle agent assignment changes
         if (oldAssignedTo) {
-          const oldAgentRef = doc(db, 'agents', oldAssignedTo);
-          const oldAgentDoc = await getDoc(oldAgentRef);
-          
+          const oldAgentDoc = await getDoc(doc(db, 'agents', oldAssignedTo));
           if (oldAgentDoc.exists()) {
             const currentLeads = oldAgentDoc.data().currentLeads || 0;
-            await updateDoc(oldAgentRef, {
-              currentLeads: Math.max(0, currentLeads - 1),
-              updatedAt: serverTimestamp()
+            await updateDualDocument('agents', oldAssignedTo, {
+              currentLeads: Math.max(0, currentLeads - 1)
             });
           }
         }
         
-        // Increment new agent's lead count if there is one
         if (newAssignedTo) {
-          const newAgentRef = doc(db, 'agents', newAssignedTo);
-          const newAgentDoc = await getDoc(newAgentRef);
-          
+          const newAgentDoc = await getDoc(doc(db, 'agents', newAssignedTo));
           if (newAgentDoc.exists()) {
             const currentLeads = newAgentDoc.data().currentLeads || 0;
-            await updateDoc(newAgentRef, {
-              currentLeads: currentLeads + 1,
-              updatedAt: serverTimestamp()
+            await updateDualDocument('agents', newAssignedTo, {
+              currentLeads: currentLeads + 1
             });
           }
         }
       }
       
-      return { success: true };
+      return result;
     } else {
       return { success: false, error: 'Task not found' };
     }
   } catch (error) {
     console.error('Error updating task:', error);
-    return { success: false, error };
+    return { success: false, error: error.message };
   }
 };
 
 // Update task status
 export const updateTaskStatus = async (taskId, newStatus) => {
-  try {
-    await updateDoc(doc(db, 'tasks', taskId), {
-      status: newStatus,
-      updatedAt: serverTimestamp()
-    });
-    return { success: true };
-  } catch (error) {
-    console.error('Error updating task status:', error);
-    return { success: false, error };
-  }
+  return await updateDualDocument('tasks', taskId, { status: newStatus });
 };
 
 // Delete a task
 export const deleteTask = async (taskId) => {
   try {
     // Get the task to check if it's assigned
-    const taskRef = doc(db, 'tasks', taskId);
-    const taskDoc = await getDoc(taskRef);
+    const taskDoc = await getDoc(doc(db, 'tasks', taskId));
     
     if (taskDoc.exists()) {
       const assignedTo = taskDoc.data().assignedTo;
       
       // Delete the task
-      await deleteDoc(taskRef);
+      const result = await deleteDualDocument('tasks', taskId);
       
-      // Update agent's lead count if task was assigned
-      if (assignedTo) {
-        const agentRef = doc(db, 'agents', assignedTo);
-        const agentDoc = await getDoc(agentRef);
+      if (result.success && assignedTo) {
+        // Update agent's lead count
+        const agentDoc = await getDoc(doc(db, 'agents', assignedTo));
         
         if (agentDoc.exists()) {
           const currentLeads = agentDoc.data().currentLeads || 0;
-          await updateDoc(agentRef, {
-            currentLeads: Math.max(0, currentLeads - 1),
-            updatedAt: serverTimestamp()
+          await updateDualDocument('agents', assignedTo, {
+            currentLeads: Math.max(0, currentLeads - 1)
           });
         }
       }
       
-      return { success: true };
+      return result;
     } else {
       return { success: false, error: 'Task not found' };
     }
   } catch (error) {
     console.error('Error deleting task:', error);
-    return { success: false, error };
+    return { success: false, error: error.message };
   }
 };
 
@@ -239,7 +179,7 @@ export const getTasksByAssignee = async (agentId) => {
     return { success: true, data: tasks };
   } catch (error) {
     console.error('Error getting tasks by assignee:', error);
-    return { success: false, error };
+    return { success: false, error: error.message };
   }
 };
 
@@ -261,6 +201,24 @@ export const getOverdueTasks = async () => {
     return { success: true, data: overdueTasks };
   } catch (error) {
     console.error('Error getting overdue tasks:', error);
-    return { success: false, error };
+    return { success: false, error: error.message };
   }
+};
+
+// ===== REAL-TIME LISTENERS =====
+
+// Listen to real-time changes in Realtime Database
+export const listenToRealtimeData = (path, callback) => {
+  const dataRef = ref(rtdb, path);
+  onValue(dataRef, callback);
+  return () => off(dataRef, 'value', callback);
+};
+
+// Listen to Firestore changes
+export const listenToFirestoreCollection = (collectionName, callback, queryConstraints = []) => {
+  const q = queryConstraints.length > 0 
+    ? query(collection(db, collectionName), ...queryConstraints)
+    : collection(db, collectionName);
+    
+  return onSnapshot(q, callback);
 };
