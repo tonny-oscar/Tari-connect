@@ -1,0 +1,117 @@
+import React, { useState } from 'react';
+import { Link } from 'react-router-dom';
+import { motion } from 'framer-motion';
+import { useAuth } from '../store/useAuth';
+
+const ForgotPassword = () => {
+  const [email, setEmail] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState('');
+  const [success, setSuccess] = useState(false);
+  const { resetPassword } = useAuth();
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setIsLoading(true);
+    setError('');
+    setSuccess(false);
+    
+    try {
+      const { success, error } = await resetPassword(email);
+      
+      if (success) {
+        setSuccess(true);
+      } else {
+        setError(error || 'Failed to send password reset email. Please try again.');
+      }
+    } catch (err) {
+      setError('An unexpected error occurred. Please try again.');
+      console.error('Password reset error:', err);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  return (
+    <div className="min-h-screen bg-slate-900 flex flex-col justify-center items-center p-4">
+      <div className="absolute top-6 left-6">
+        <Link to="/" className="text-2xl font-bold text-white flex items-center gap-2">
+          <span className="text-blue-500">Tari</span>Connect
+        </Link>
+      </div>
+      
+      <motion.div 
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.5 }}
+        className="w-full max-w-md"
+      >
+        <div className="bg-slate-800 bg-opacity-80 backdrop-blur-sm p-8 rounded-2xl shadow-xl border border-slate-700">
+          <h2 className="text-3xl font-bold text-white mb-6 text-center">Reset Password</h2>
+          
+          {error && (
+            <div className="bg-red-500 bg-opacity-10 border border-red-500 border-opacity-50 text-red-500 p-3 rounded mb-4 text-sm">
+              {error}
+            </div>
+          )}
+          
+          {success ? (
+            <div className="text-center">
+              <div className="bg-green-500 bg-opacity-10 border border-green-500 border-opacity-50 text-green-500 p-3 rounded mb-6 text-sm">
+                Password reset email sent! Check your inbox for further instructions.
+              </div>
+              
+              <Link 
+                to="/login" 
+                className="inline-block bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-lg transition-colors"
+              >
+                Back to Login
+              </Link>
+            </div>
+          ) : (
+            <>
+              <p className="text-gray-300 mb-6">
+                Enter your email address and we'll send you a link to reset your password.
+              </p>
+              
+              <form onSubmit={handleSubmit}>
+                <div className="mb-6">
+                  <label className="block text-gray-300 mb-2" htmlFor="email">
+                    Email Address
+                  </label>
+                  <input
+                    id="email"
+                    type="email"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    className="w-full p-3 bg-slate-700 bg-opacity-50 border border-slate-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-white"
+                    placeholder="you@example.com"
+                    required
+                    disabled={isLoading}
+                  />
+                </div>
+                
+                <button
+                  type="submit"
+                  disabled={isLoading}
+                  className="w-full bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white py-3 rounded-lg font-medium transition-all duration-300 btn-hover"
+                >
+                  {isLoading ? 'Sending...' : 'Send Reset Link'}
+                </button>
+              </form>
+              
+              <div className="mt-6 text-center text-gray-400">
+                Remember your password?{' '}
+                <Link to="/login" className="text-blue-400 hover:text-blue-300">
+                  Sign in
+                </Link>
+              </div>
+            </>
+          )}
+        </div>
+      </motion.div>
+    </div>
+  );
+};
+
+export default ForgotPassword;
