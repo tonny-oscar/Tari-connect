@@ -14,14 +14,23 @@ import LandingPage from './pages/LandingPage';
 import PrivateRoute from './components/PrivateRoute';
 import { useAuth, initAuth } from './store/useAuth';
 import { initializePricingPlans } from './services/pricingService';
+import { createDefaultAdmin } from './services/authService';
 
 function App() {
   const { isLoading, isAuthenticated } = useAuth();
   
-  // Initialize authentication state and pricing plans
+  // Initialize authentication state, pricing plans, and create default admin
   useEffect(() => {
     const unsubscribe = initAuth();
-    initializePricingPlans(); // Initialize pricing plans
+    
+    // Initialize data
+    const initializeApp = async () => {
+      await createDefaultAdmin(); // Create default admin user
+      await initializePricingPlans(); // Initialize pricing plans
+    };
+    
+    initializeApp();
+    
     return () => unsubscribe();
   }, []);
   

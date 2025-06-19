@@ -4,15 +4,108 @@ import {
   signOut, 
   sendPasswordResetEmail,
   updateProfile,
-  onAuthStateChanged
+  onAuthStateChanged,
+  getAuth
 } from 'firebase/auth';
 import { 
   doc, 
   setDoc, 
   getDoc, 
-  serverTimestamp 
+  serverTimestamp,
+  getDocs,
+  query,
+  collection,
+  where
 } from 'firebase/firestore';
 import { auth, db } from './firebase';
+
+// Default admin credentials
+const DEFAULT_ADMIN = {
+  email: 'admin@tariconnect.com',
+  password: 'admin123',
+  name: 'Admin User'
+};
+
+// Create default admin user if it doesn't exist
+export const createDefaultAdmin = async () => {
+  try {
+    // Check if admin user already exists
+    const usersRef = collection(db, 'users');
+    const q = query(usersRef, where('email', '==', DEFAULT_ADMIN.email));
+    const querySnapshot = await getDocs(q);
+    
+    if (!querySnapshot.empty) {
+      console.log('Admin user already exists');
+      return;
+    }
+    
+    // Create admin user in Firebase Auth
+    const userCredential = await createUserWithEmailAndPassword(
+      auth, 
+      DEFAULT_ADMIN.email, 
+      DEFAULT_ADMIN.password
+    );
+    
+    const user = userCredential.user;
+    
+    // Update profile with display name
+    await updateProfile(user, {
+      displayName: DEFAULT_ADMIN.name
+    });
+    
+    // Create user document in Firestore with admin role
+    await setDoc(doc(db, 'users', user.uid), {
+      uid: user.uid,
+      email: DEFAULT_ADMIN.email,
+      name: DEFAULT_ADMIN.name,
+      role: 'admin',
+      status: 'active',
+      createdAt: serverTimestamp(),
+      lastLogin: serverTimestamp()
+    });
+    
+    console.log('Default admin user created successfully');
+  } catch (error) {
+    // If user already exists in Auth but not in Firestore
+    if (error.code === 'auth/email-already-in-use') {
+      try {
+        // Sign in with the default credentials
+        const userCredential = await signInWithEmailAndPassword(
+          auth, 
+          DEFAULT_ADMIN.email, 
+          DEFAULT_ADMIN.password
+        );
+        
+        const user = userCredential.user;
+        
+        // Check if user document exists in Firestore
+        const userDoc = await getDoc(doc(db, 'users', user.uid));
+        
+        if (!userDoc.exists()) {
+          // Create user document in Firestore with admin role
+          await setDoc(doc(db, 'users', user.uid), {
+            uid: user.uid,
+            email: DEFAULT_ADMIN.email,
+            name: DEFAULT_ADMIN.name,
+            role: 'admin',
+            status: 'active',
+            createdAt: serverTimestamp(),
+            lastLogin: serverTimestamp()
+          });
+          
+          console.log('Admin user document created in Firestore');
+        }
+        
+        // Sign out after creating the user
+        await signOut(auth);
+      } catch (innerError) {
+        console.error('Error creating admin user document:', innerError);
+      }
+    } else {
+      console.error('Error creating default admin:', error);
+    }
+  }
+};
 
 // Register a new user
 export const registerUser = async (email, password, name) => {
