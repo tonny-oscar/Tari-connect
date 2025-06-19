@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { useAuth } from '../store/useAuth';
-import { FaInbox, FaUserFriends, FaRobot, FaComments, FaArrowRight, FaCheck } from 'react-icons/fa';
+import { FaInbox, FaUserFriends, FaRobot, FaComments, FaArrowRight, FaCheck, FaDatabase, FaCloud, FaSync } from 'react-icons/fa';
 import HeroSection from '../components/HeroSection';
 import { getPricingPlans, formatPrice } from '../services/pricingService';
 
@@ -83,17 +83,93 @@ const LandingPage = () => {
         <div className="max-w-7xl mx-auto">
           <div className="text-center mb-12">
             <h2 className="text-3xl md:text-4xl font-bold mb-4">TariConnect Platform Showcase</h2>
+            <p className="text-xl text-gray-300 max-w-3xl mx-auto mb-6">
+              Powered by a robust dual-database architecture for real-time communication and data persistence
+            </p>
             <div className="w-20 h-1 bg-blue-500 mx-auto"></div>
           </div>
           
-          <div className="relative">
-            <div className="bg-gradient-to-br from-blue-500 to-purple-600 rounded-2xl p-1">
-              <div className="bg-slate-900 rounded-2xl p-4">
-                <img 
-                  src="/dashboard-preview.svg" 
-                  alt="TariConnect Platform Showcase" 
-                  className="rounded-lg shadow-2xl w-full"
-                />
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 items-center">
+            <div className="order-2 lg:order-1">
+              <h3 className="text-2xl font-bold mb-4 text-blue-400">Advanced Database Architecture</h3>
+              <ul className="space-y-4">
+                <li className="flex items-start gap-3">
+                  <div className="bg-blue-600 p-2 rounded-full mt-1">
+                    <FaDatabase className="text-sm" />
+                  </div>
+                  <div>
+                    <h4 className="font-semibold text-lg">Firestore Database</h4>
+                    <p className="text-gray-300">Secure document storage for structured data with powerful querying capabilities</p>
+                  </div>
+                </li>
+                <li className="flex items-start gap-3">
+                  <div className="bg-green-600 p-2 rounded-full mt-1">
+                    <FaSync className="text-sm" />
+                  </div>
+                  <div>
+                    <h4 className="font-semibold text-lg">Realtime Database</h4>
+                    <p className="text-gray-300">Instant messaging and real-time updates for seamless communication</p>
+                  </div>
+                </li>
+                <li className="flex items-start gap-3">
+                  <div className="bg-purple-600 p-2 rounded-full mt-1">
+                    <FaCloud className="text-sm" />
+                  </div>
+                  <div>
+                    <h4 className="font-semibold text-lg">Hybrid Synchronization</h4>
+                    <p className="text-gray-300">Automatic data syncing between databases for reliability and performance</p>
+                  </div>
+                </li>
+              </ul>
+            </div>
+            
+            <div className="order-1 lg:order-2">
+              <div className="relative">
+                <div className="absolute -inset-1 bg-gradient-to-r from-blue-600 to-purple-600 rounded-2xl blur-sm"></div>
+                <div className="relative bg-slate-900 rounded-2xl p-4 border border-slate-700">
+                  <div className="bg-slate-800 rounded-xl p-3">
+                    <div className="flex items-center gap-2 mb-3">
+                      <div className="w-3 h-3 rounded-full bg-red-500"></div>
+                      <div className="w-3 h-3 rounded-full bg-yellow-500"></div>
+                      <div className="w-3 h-3 rounded-full bg-green-500"></div>
+                      <div className="text-xs text-gray-400 ml-2">TariConnect Database Architecture</div>
+                    </div>
+                    <div className="bg-slate-900 rounded-lg p-4 overflow-hidden">
+                      <div className="grid grid-cols-2 gap-4">
+                        <div className="bg-blue-900 bg-opacity-30 p-4 rounded-lg border border-blue-700">
+                          <h5 className="text-blue-400 font-mono text-sm mb-2">Firestore Collections</h5>
+                          <ul className="text-xs text-blue-200 font-mono space-y-1">
+                            <li>- users</li>
+                            <li>- conversations</li>
+                            <li>- messages</li>
+                            <li>- tasks</li>
+                            <li>- leads</li>
+                            <li>- quotes</li>
+                            <li>- invoices</li>
+                          </ul>
+                        </div>
+                        <div className="bg-green-900 bg-opacity-30 p-4 rounded-lg border border-green-700">
+                          <h5 className="text-green-400 font-mono text-sm mb-2">Realtime Database</h5>
+                          <ul className="text-xs text-green-200 font-mono space-y-1">
+                            <li>- presence/</li>
+                            <li>- typing/</li>
+                            <li>- messages/</li>
+                            <li>- notifications/</li>
+                            <li>- status/</li>
+                          </ul>
+                        </div>
+                      </div>
+                      <div className="mt-4 bg-purple-900 bg-opacity-20 p-3 rounded-lg border border-purple-700">
+                        <h5 className="text-purple-400 font-mono text-sm mb-1">Sync Service</h5>
+                        <div className="text-xs text-gray-300 font-mono">
+                          <div className="animate-pulse">
+                            Syncing data between databases... <span className="text-green-400">✓</span>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
               </div>
             </div>
           </div>
