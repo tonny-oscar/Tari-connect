@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../../store/useAuth';
 import { getInvoices, createInvoice, updateInvoice, deleteInvoice, markInvoiceAsPaid } from '../../services/invoiceService';
-import { FaFileInvoiceDollar, FaPlus, FaSearch, FaEdit, FaTrash, FaCheck, FaEye } from 'react-icons/fa';
+import { FaFileInvoiceDollar, FaPlus, FaSearch, FaEdit, FaTrash, FaCheck } from 'react-icons/fa';
 import ItemSelector from '../../components/ItemSelector';
 
 const Invoices = () => {
@@ -182,6 +182,14 @@ const Invoices = () => {
     setShowForm(false);
   };
 
+  const formatDate = (date) => {
+    if (!date) return 'No due date';
+    if (typeof date === 'string') return date;
+    if (date.toDate) return date.toDate().toLocaleDateString();
+    if (date instanceof Date) return date.toLocaleDateString();
+    return 'Invalid date';
+  };
+
   const filteredInvoices = invoices.filter(invoice => 
     invoice.customerName?.toLowerCase().includes(searchTerm.toLowerCase()) ||
     invoice.customerEmail?.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -251,21 +259,21 @@ const Invoices = () => {
                 {filteredInvoices.map(invoice => (
                   <tr key={invoice.id} className="hover:bg-gray-50 dark:hover:bg-gray-700">
                     <td className="px-6 py-4 whitespace-nowrap font-medium text-primary">
-                      {invoice.invoiceNumber || `INV-${invoice.id.substring(0, 6)}`}
+                      {invoice.invoiceNumber || `INV-${invoice.id?.substring(0, 6) || 'NEW'}`}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="font-medium text-gray-900 dark:text-white">{invoice.customerName}</div>
-                      <div className="text-sm text-gray-500 dark:text-gray-400">{invoice.customerEmail}</div>
+                      <div className="font-medium text-gray-900 dark:text-white">{invoice.customerName || 'No Name'}</div>
+                      <div className="text-sm text-gray-500 dark:text-gray-400">{invoice.customerEmail || 'No Email'}</div>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white font-medium">
-                      KSh {invoice.total?.toLocaleString() || '0'}
+                      KSh {(invoice.total || 0).toLocaleString()}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
-                      {invoice.dueDate || 'No due date'}
+                      {formatDate(invoice.dueDate)}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
-                      <span className={`px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full ${getStatusColor(invoice.status)}`}>
-                        {invoice.status}
+                      <span className={`px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full ${getStatusColor(invoice.status || 'pending')}`}>
+                        {invoice.status || 'pending'}
                       </span>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
@@ -435,15 +443,15 @@ const Invoices = () => {
                     <div className="bg-gray-50 dark:bg-gray-700 p-4 rounded-md">
                       <div className="flex justify-between mb-2 text-gray-900 dark:text-white">
                         <span>Subtotal:</span>
-                        <span>KSh {formData.subtotal.toLocaleString()}</span>
+                        <span>KSh {(formData.subtotal || 0).toLocaleString()}</span>
                       </div>
                       <div className="flex justify-between mb-2 text-gray-900 dark:text-white">
                         <span>Tax ({formData.taxRate}%):</span>
-                        <span>KSh {formData.tax.toLocaleString()}</span>
+                        <span>KSh {(formData.tax || 0).toLocaleString()}</span>
                       </div>
                       <div className="flex justify-between font-bold text-lg border-t pt-2 text-gray-900 dark:text-white">
                         <span>Total:</span>
-                        <span>KSh {formData.total.toLocaleString()}</span>
+                        <span>KSh {(formData.total || 0).toLocaleString()}</span>
                       </div>
                     </div>
                   </div>
@@ -478,12 +486,12 @@ const Invoices = () => {
                           {formData.items.map((item, index) => (
                             <tr key={index}>
                               <td className="px-4 py-2">
-                                <div className="font-medium text-gray-900 dark:text-white">{item.name}</div>
-                                <div className="text-sm text-gray-500 dark:text-gray-400">{item.description}</div>
+                                <div className="font-medium text-gray-900 dark:text-white">{item.name || 'Unnamed Item'}</div>
+                                <div className="text-sm text-gray-500 dark:text-gray-400">{item.description || ''}</div>
                               </td>
-                              <td className="px-4 py-2 text-gray-900 dark:text-white">{item.quantity}</td>
-                              <td className="px-4 py-2 text-gray-900 dark:text-white">KSh {item.price.toLocaleString()}</td>
-                              <td className="px-4 py-2 font-medium text-gray-900 dark:text-white">KSh {(item.price * item.quantity).toLocaleString()}</td>
+                              <td className="px-4 py-2 text-gray-900 dark:text-white">{item.quantity || 0}</td>
+                              <td className="px-4 py-2 text-gray-900 dark:text-white">KSh {(item.price || 0).toLocaleString()}</td>
+                              <td className="px-4 py-2 font-medium text-gray-900 dark:text-white">KSh {((item.price || 0) * (item.quantity || 0)).toLocaleString()}</td>
                             </tr>
                           ))}
                         </tbody>
