@@ -1,32 +1,170 @@
 import React, { useState, useEffect } from 'react';
-import { collection, query, orderBy, onSnapshot } from 'firebase/firestore';
-import { db } from '../../services/firebase';
-import { FaFileAlt, FaPlus, FaSearch } from 'react-icons/fa';
+import { useAuth } from '../../store/useAuth';
+import { getQuotes, createQuote, updateQuote, deleteQuote, convertQuoteToInvoice } from '../../services/quoteService';
+import { FaFileAlt, FaPlus, FaSearch, FaEdit, FaTrash, FaFileInvoiceDollar, FaEye } from 'react-icons/fa';
+import ItemSelector from '../../components/ItemSelector';
 
 const Quotes = () => {
+  const { user } = useAuth();
   const [quotes, setQuotes] = useState([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
+  const [showForm, setShowForm] = useState(false);
+  const [showItemSelector, setShowItemSelector] = useState(false);
+  const [editingQuote, setEditingQuote] = useState(null);
+  const [formData, setFormData] = useState({
+    customerName: '',
+    customerEmail: '',
+    customerPhone: '',
+    customerCompany: '',
+    customerAddress: '',
+    items: [],
+    subtotal: 0,
+    taxRate: 16,
+    tax: 0,
+    total: 0,
+    notes: '',
+    validUntil: ''
+  });
 
   useEffect(() => {
-    const q = query(collection(db, 'quotes'), orderBy('createdAt', 'desc'));
-    
-    const unsubscribe = onSnapshot(q, (snapshot) => {
-      const quotesList = snapshot.docs.map(doc => ({
-        id: doc.id,
-        ...doc.data()
-      }));
-      setQuotes(quotesList);
-      setLoading(false);
-    });
-    
-    return () => unsubscribe();
+    fetchQuotes();
   }, []);
+
+  useEffect(() => {
+    calculateTotals();
+  }, [formData.items, formData.taxRate]);
+
+  const fetchQuotes = async () => {
+    if (!user) return;
+    
+    const { success, quotes: fetchedQuotes } = await getQuotes(user.uid);
+    if (success) {
+      setQuotes(fetchedQuotes);
+    }
+    setLoading(false);
+  };
+
+  const calculateTotals = () => {
+    const subtotal = formData.items.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+    const tax = (subtotal * formData.taxRate) / 100;
+    const total = subtotal + tax;
+    
+    setFormData(prev => ({
+      ...prev,
+      subtotal,
+      tax,
+      total
+    }));
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    
+    const quoteData = {
+      ...formData,
+      quoteNumber: formData.quoteNumber || `Q-${Date.now()}`
+    };
+    
+    let result;
+    if (editingQuote) {
+      result = await updateQuote(editingQuote.id, quoteData);
+    } else {
+      result = await createQuote(quoteData, user.uid);
+    }
+    
+    if (result.success) {
+      fetchQuotes();
+      resetForm();
+    }
+  };
+
+  const handleEdit = (quote) => {
+    setEditingQuote(quote);
+    setFormData({
+      customerName: quote.customerName || '',
+      customerEmail: quote.customerEmail || '',
+      customerPhone: quote.customerPhone || '',
+      customerCompany: quote.customerCompany || '',
+      customerAddress: quote.customerAddress || '',
+      items: quote.items || [],
+      subtotal: quote.subtotal || 0,
+      taxRate: quote.taxRate || 16,
+      tax: quote.tax || 0,
+      total: quote.total || 0,
+      notes: quote.notes || '',
+      validUntil: quote.validUntil || ''
+    });
+    setShowForm(true);
+  };
+
+  const handleDelete = async (quoteId) => {
+    if (window.confirm('Are you sure you want to delete this quote?')) {
+      const result = await deleteQuote(quoteId);
+      if (result.success) {
+        fetchQuotes();
+      }
+    }
+  };
+
+  const handleConvertToInvoice = async (quote) => {
+    const invoiceData = {
+      customerName: quote.customerName,
+      customerEmail: quote.customerEmail,
+      customerPhone: quote.customerPhone,
+      customerCompany: quote.customerCompany,
+      customerAddress: quote.customerAddress,
+      dueDate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000), // 30 days from now
+      notes: `Converted from quote: ${quote.quoteNumber}`
+    };
+    
+    const result = await convertQuoteToInvoice(quote.id, invoiceData, user.uid);
+    if (result.success) {
+      fetchQuotes();
+      alert('Quote converted to invoice successfully!');
+    }
+  };
+
+  const handleItemsChange = (items) => {
+    setFormData(prev => ({ ...prev, items }));
+  };
+
+  const resetForm = () => {
+    setFormData({
+      customerName: '',
+      customerEmail: '',
+      customerPhone: '',
+      customerCompany: '',
+      customerAddress: '',
+      items: [],
+      subtotal: 0,
+      taxRate: 16,
+      tax: 0,
+      total: 0,
+      notes: '',
+      validUntil: ''
+    });
+    setEditingQuote(null);
+    setShowForm(false);
+  };
 
   const filteredQuotes = quotes.filter(quote => 
     quote.customerName?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    quote.customerEmail?.toLowerCase().includes(searchTerm.toLowerCase()) ||
     quote.quoteNumber?.toLowerCase().includes(searchTerm.toLowerCase())
   );
+
+  const getStatusColor = (status) => {
+    switch (status) {
+      case 'draft': return 'bg-gray-100 text-gray-800';
+      case 'sent': return 'bg-blue-100 text-blue-800';
+      case 'accepted': return 'bg-green-100 text-green-800';
+      case 'rejected': return 'bg-red-100 text-red-800';
+      case 'converted': return 'bg-purple-100 text-purple-800';
+      case 'expired': return 'bg-yellow-100 text-yellow-800';
+      default: return 'bg-gray-100 text-gray-800';
+    }
+  };
 
   return (
     <div className="h-full">
@@ -35,7 +173,10 @@ const Quotes = () => {
           <h1 className="text-2xl font-bold mb-2">Quotes</h1>
           <p className="text-gray-600">Create and manage sales quotations</p>
         </div>
-        <button className="bg-blue-600 text-white px-4 py-2 rounded-md flex items-center gap-2 hover:bg-blue-700 transition-colors">
+        <button 
+          onClick={() => setShowForm(true)}
+          className="bg-primary text-white px-4 py-2 rounded-md flex items-center gap-2 hover:bg-primary-dark transition-colors"
+        >
           <FaPlus /> Create Quote
         </button>
       </div>
@@ -48,7 +189,7 @@ const Quotes = () => {
         <input
           type="text"
           placeholder="Search quotes..."
-          className="pl-10 pr-4 py-2 border border-gray-300 rounded-md w-full focus:ring-blue-500 focus:border-blue-500"
+          className="pl-10 pr-4 py-2 border border-gray-300 rounded-md w-full focus:ring-primary focus:border-primary"
           value={searchTerm}
           onChange={(e) => setSearchTerm(e.target.value)}
         />
@@ -58,7 +199,7 @@ const Quotes = () => {
       <div className="bg-white rounded-lg shadow overflow-hidden">
         {loading ? (
           <div className="p-4 text-center">
-            <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-blue-500 mx-auto"></div>
+            <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-primary mx-auto"></div>
             <p className="mt-2 text-gray-600">Loading quotes...</p>
           </div>
         ) : filteredQuotes.length > 0 ? (
@@ -71,12 +212,13 @@ const Quotes = () => {
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Amount</th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Date</th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
                 </tr>
               </thead>
               <tbody className="bg-white divide-y divide-gray-200">
                 {filteredQuotes.map(quote => (
-                  <tr key={quote.id} className="hover:bg-gray-50 cursor-pointer">
-                    <td className="px-6 py-4 whitespace-nowrap font-medium text-blue-600">
+                  <tr key={quote.id} className="hover:bg-gray-50">
+                    <td className="px-6 py-4 whitespace-nowrap font-medium text-primary">
                       {quote.quoteNumber || `Q-${quote.id.substring(0, 6)}`}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
@@ -84,22 +226,42 @@ const Quotes = () => {
                       <div className="text-sm text-gray-500">{quote.customerEmail || 'No email'}</div>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 font-medium">
-                      KSh {quote.totalAmount?.toLocaleString() || '0'}
+                      KSh {quote.total?.toLocaleString() || '0'}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                       {quote.createdAt ? new Date(quote.createdAt.toDate()).toLocaleDateString() : 'N/A'}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
-                      <span className={`px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full ${
-                        quote.status === 'draft' ? 'bg-gray-100 text-gray-800' :
-                        quote.status === 'sent' ? 'bg-blue-100 text-blue-800' :
-                        quote.status === 'accepted' ? 'bg-green-100 text-green-800' :
-                        quote.status === 'rejected' ? 'bg-red-100 text-red-800' :
-                        quote.status === 'expired' ? 'bg-yellow-100 text-yellow-800' :
-                        'bg-gray-100 text-gray-800'
-                      }`}>
+                      <span className={`px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full ${getStatusColor(quote.status)}`}>
                         {quote.status || 'draft'}
                       </span>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                      <div className="flex space-x-2">
+                        <button
+                          onClick={() => handleEdit(quote)}
+                          className="text-primary hover:text-primary-dark"
+                          title="Edit"
+                        >
+                          <FaEdit />
+                        </button>
+                        {quote.status !== 'converted' && (
+                          <button
+                            onClick={() => handleConvertToInvoice(quote)}
+                            className="text-green-600 hover:text-green-900"
+                            title="Convert to Invoice"
+                          >
+                            <FaFileInvoiceDollar />
+                          </button>
+                        )}
+                        <button
+                          onClick={() => handleDelete(quote.id)}
+                          className="text-red-600 hover:text-red-900"
+                          title="Delete"
+                        >
+                          <FaTrash />
+                        </button>
+                      </div>
                     </td>
                   </tr>
                 ))}
@@ -113,12 +275,224 @@ const Quotes = () => {
             <p className="mt-1 text-gray-500">
               {searchTerm ? 'Try adjusting your search term' : 'Create your first quote to get started'}
             </p>
-            <button className="mt-4 bg-blue-600 text-white px-4 py-2 rounded-md flex items-center gap-2 mx-auto hover:bg-blue-700 transition-colors">
+            <button 
+              onClick={() => setShowForm(true)}
+              className="mt-4 bg-primary text-white px-4 py-2 rounded-md flex items-center gap-2 mx-auto hover:bg-primary-dark transition-colors"
+            >
               <FaPlus /> Create Quote
             </button>
           </div>
         )}
       </div>
+
+      {/* Quote Form Modal */}
+      {showForm && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-lg max-w-4xl w-full max-h-[90vh] overflow-y-auto">
+            <div className="p-6">
+              <h2 className="text-xl font-semibold mb-4">
+                {editingQuote ? 'Edit Quote' : 'Create New Quote'}
+              </h2>
+              
+              <form onSubmit={handleSubmit}>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  {/* Customer Information */}
+                  <div>
+                    <h3 className="text-lg font-medium mb-4">Customer Information</h3>
+                    
+                    <div className="mb-4">
+                      <label className="block text-gray-700 text-sm font-bold mb-2">
+                        Customer Name *
+                      </label>
+                      <input
+                        type="text"
+                        value={formData.customerName}
+                        onChange={(e) => setFormData({...formData, customerName: e.target.value})}
+                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-primary focus:border-primary"
+                        required
+                      />
+                    </div>
+                    
+                    <div className="mb-4">
+                      <label className="block text-gray-700 text-sm font-bold mb-2">
+                        Email *
+                      </label>
+                      <input
+                        type="email"
+                        value={formData.customerEmail}
+                        onChange={(e) => setFormData({...formData, customerEmail: e.target.value})}
+                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-primary focus:border-primary"
+                        required
+                      />
+                    </div>
+                    
+                    <div className="mb-4">
+                      <label className="block text-gray-700 text-sm font-bold mb-2">
+                        Phone
+                      </label>
+                      <input
+                        type="tel"
+                        value={formData.customerPhone}
+                        onChange={(e) => setFormData({...formData, customerPhone: e.target.value})}
+                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-primary focus:border-primary"
+                      />
+                    </div>
+                    
+                    <div className="mb-4">
+                      <label className="block text-gray-700 text-sm font-bold mb-2">
+                        Company
+                      </label>
+                      <input
+                        type="text"
+                        value={formData.customerCompany}
+                        onChange={(e) => setFormData({...formData, customerCompany: e.target.value})}
+                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-primary focus:border-primary"
+                      />
+                    </div>
+                    
+                    <div className="mb-4">
+                      <label className="block text-gray-700 text-sm font-bold mb-2">
+                        Address
+                      </label>
+                      <textarea
+                        value={formData.customerAddress}
+                        onChange={(e) => setFormData({...formData, customerAddress: e.target.value})}
+                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-primary focus:border-primary"
+                        rows="3"
+                      />
+                    </div>
+                  </div>
+                  
+                  {/* Quote Details */}
+                  <div>
+                    <h3 className="text-lg font-medium mb-4">Quote Details</h3>
+                    
+                    <div className="mb-4">
+                      <label className="block text-gray-700 text-sm font-bold mb-2">
+                        Valid Until
+                      </label>
+                      <input
+                        type="date"
+                        value={formData.validUntil}
+                        onChange={(e) => setFormData({...formData, validUntil: e.target.value})}
+                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-primary focus:border-primary"
+                      />
+                    </div>
+                    
+                    <div className="mb-4">
+                      <label className="block text-gray-700 text-sm font-bold mb-2">
+                        Tax Rate (%)
+                      </label>
+                      <input
+                        type="number"
+                        step="0.01"
+                        value={formData.taxRate}
+                        onChange={(e) => setFormData({...formData, taxRate: parseFloat(e.target.value) || 0})}
+                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-primary focus:border-primary"
+                      />
+                    </div>
+                    
+                    <div className="mb-4">
+                      <label className="block text-gray-700 text-sm font-bold mb-2">
+                        Notes
+                      </label>
+                      <textarea
+                        value={formData.notes}
+                        onChange={(e) => setFormData({...formData, notes: e.target.value})}
+                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-primary focus:border-primary"
+                        rows="3"
+                      />
+                    </div>
+                    
+                    {/* Totals */}
+                    <div className="bg-gray-50 p-4 rounded-md">
+                      <div className="flex justify-between mb-2">
+                        <span>Subtotal:</span>
+                        <span>KSh {formData.subtotal.toLocaleString()}</span>
+                      </div>
+                      <div className="flex justify-between mb-2">
+                        <span>Tax ({formData.taxRate}%):</span>
+                        <span>KSh {formData.tax.toLocaleString()}</span>
+                      </div>
+                      <div className="flex justify-between font-bold text-lg border-t pt-2">
+                        <span>Total:</span>
+                        <span>KSh {formData.total.toLocaleString()}</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                
+                {/* Items Section */}
+                <div className="mt-6">
+                  <div className="flex justify-between items-center mb-4">
+                    <h3 className="text-lg font-medium">Items ({formData.items.length})</h3>
+                    <button
+                      type="button"
+                      onClick={() => setShowItemSelector(true)}
+                      className="bg-primary text-white px-4 py-2 rounded-md hover:bg-primary-dark"
+                    >
+                      Add Items
+                    </button>
+                  </div>
+                  
+                  {formData.items.length > 0 && (
+                    <div className="border border-gray-200 rounded-md overflow-hidden">
+                      <table className="min-w-full divide-y divide-gray-200">
+                        <thead className="bg-gray-50">
+                          <tr>
+                            <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Item</th>
+                            <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Qty</th>
+                            <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Price</th>
+                            <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Total</th>
+                          </tr>
+                        </thead>
+                        <tbody className="bg-white divide-y divide-gray-200">
+                          {formData.items.map((item, index) => (
+                            <tr key={index}>
+                              <td className="px-4 py-2">
+                                <div className="font-medium">{item.name}</div>
+                                <div className="text-sm text-gray-500">{item.description}</div>
+                              </td>
+                              <td className="px-4 py-2">{item.quantity}</td>
+                              <td className="px-4 py-2">KSh {item.price.toLocaleString()}</td>
+                              <td className="px-4 py-2 font-medium">KSh {(item.price * item.quantity).toLocaleString()}</td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
+                  )}
+                </div>
+                
+                <div className="flex justify-end gap-4 mt-6">
+                  <button
+                    type="button"
+                    onClick={resetForm}
+                    className="px-4 py-2 text-gray-600 hover:text-gray-800"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    type="submit"
+                    className="bg-primary text-white px-6 py-2 rounded-md hover:bg-primary-dark"
+                  >
+                    {editingQuote ? 'Update' : 'Create'} Quote
+                  </button>
+                </div>
+              </form>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Item Selector Modal */}
+      {showItemSelector && (
+        <ItemSelector
+          selectedItems={formData.items}
+          onItemsChange={handleItemsChange}
+          onClose={() => setShowItemSelector(false)}
+        />
+      )}
     </div>
   );
 };
