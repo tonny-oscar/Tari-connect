@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { collection, onSnapshot, query, orderBy, where } from 'firebase/firestore';
+import { collection, onSnapshot, query, where } from 'firebase/firestore';
 import { db } from '../../services/firebase';
 import { useNavigate, Link } from 'react-router-dom';
 import { 
@@ -38,19 +38,19 @@ function Dashboard() {
     const unsubscribes = [];
 
     // Fetch leads
-    const leadsQuery = query(collection(db, 'leads'), where('userId', '==', user.uid), orderBy('createdAt', 'desc'));
+    const leadsQuery = query(collection(db, 'leads'), where('userId', '==', user.uid));
     unsubscribes.push(onSnapshot(leadsQuery, (snapshot) => {
       setLeads(snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })));
     }));
 
     // Fetch quotes
-    const quotesQuery = query(collection(db, 'quotes'), where('userId', '==', user.uid), orderBy('createdAt', 'desc'));
+    const quotesQuery = query(collection(db, 'quotes'), where('userId', '==', user.uid));
     unsubscribes.push(onSnapshot(quotesQuery, (snapshot) => {
       setQuotes(snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })));
     }));
 
     // Fetch invoices
-    const invoicesQuery = query(collection(db, 'invoices'), where('userId', '==', user.uid), orderBy('createdAt', 'desc'));
+    const invoicesQuery = query(collection(db, 'invoices'), where('userId', '==', user.uid));
     unsubscribes.push(onSnapshot(invoicesQuery, (snapshot) => {
       setInvoices(snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })));
     }));
@@ -325,13 +325,13 @@ function Dashboard() {
                   <div key={invoice.id} className="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-700 rounded-lg">
                     <div>
                       <p className="font-medium text-gray-900 dark:text-white">
-                        {invoice.invoiceNumber || `INV-${invoice.id.substring(0, 6)}`}
+                        {invoice.invoiceNumber || `INV-${invoice.id?.substring(0, 6) || 'NEW'}`}
                       </p>
-                      <p className="text-sm text-gray-500 dark:text-gray-400">{invoice.customerName}</p>
+                      <p className="text-sm text-gray-500 dark:text-gray-400">{invoice.customerName || 'No Name'}</p>
                     </div>
                     <div className="text-right">
                       <p className="font-medium text-gray-900 dark:text-white">
-                        KSh {invoice.total?.toLocaleString() || '0'}
+                        KSh {(invoice.total || 0).toLocaleString()}
                       </p>
                       <span className={`px-2 py-1 text-xs rounded-full ${
                         invoice.status === 'paid' ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200' :

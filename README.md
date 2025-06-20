@@ -66,3 +66,47 @@ Navigate: Use the clean sidebar to access all features
 Toggle Theme: Switch between light and dark modes anytime
 
 
+✅ Tasks Page Features:
+Full CRUD Operations:
+✅ Create : Add new tasks with title, description, priority, status, due date, and assignment
+
+✅ Read : View all tasks in a clean table format with search functionality
+
+✅ Update : Edit existing tasks and change status directly from the table
+
+✅ Delete : Remove tasks with confirmation dialog
+
+Task Management:
+✅ Priority Levels : Low, Medium, High with color coding
+
+✅ Status Tracking : Pending, In Progress, Completed, Cancelled
+
+✅ Due Dates : Set and track task deadlines
+
+✅ Assignment : Assign tasks to team members
+
+✅ Quick Status Updates : Change status directly from the table
+
+✅ Invoices Page Features:
+Full CRUD Operations:
+✅ Create : Generate new invoices with customer details and items
+
+✅ Read : View all invoices with search and filtering
+
+✅ Update : Edit invoice details and customer information
+
+✅ Delete : Remove invoices with confirmation
+
+Invoice Management:
+✅ Customer Information : Name, email, phone, company, address
+
+✅ Item Selection : Use ItemSelector component to add products/services
+
+✅ Automatic Calculations : Subtotal, tax, and total calculations
+
+✅ Status Tracking : Pending, Paid, Overdue, Cancelled
+
+✅ Payment Tracking : Mark invoices as paid with one click
+
+✅ Due Date Management : Set and track payment deadlines
+
