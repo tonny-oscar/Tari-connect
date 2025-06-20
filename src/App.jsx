@@ -58,13 +58,20 @@ function App() {
   
   // Initialize theme and authentication
   useEffect(() => {
+    // Initialize theme first
     initTheme();
+    
+    // Initialize auth
     const unsubscribe = initAuth();
     
     // Initialize data
     const initializeApp = async () => {
-      await initializeAdminUsers();
-      await initializePricingPlans();
+      try {
+        await initializeAdminUsers();
+        await initializePricingPlans();
+      } catch (error) {
+        console.error('Error initializing app:', error);
+      }
     };
     
     initializeApp();

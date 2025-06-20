@@ -22,22 +22,37 @@ const Items = () => {
   });
 
   useEffect(() => {
-    if (user) {
+    console.log('Items component mounted, user:', user);
+    if (user?.uid) {
       fetchItems();
+    } else {
+      setLoading(false);
     }
   }, [user]);
 
   const fetchItems = async () => {
-    if (!user) return;
+    if (!user?.uid) {
+      console.log('No user found, skipping fetch');
+      setLoading(false);
+      return;
+    }
     
+    console.log('Fetching items for user:', user.uid);
     setLoading(true);
+    
     try {
-      const { success, items: fetchedItems } = await getItems(user.uid);
-      if (success) {
-        setItems(fetchedItems);
+      const result = await getItems(user.uid);
+      console.log('Fetch result:', result);
+      
+      if (result.success) {
+        setItems(result.items || []);
+      } else {
+        console.error('Failed to fetch items:', result.error);
+        setItems([]);
       }
     } catch (error) {
-      console.error('Error fetching items:', error);
+      console.error('Error in fetchItems:', error);
+      setItems([]);
     } finally {
       setLoading(false);
     }
@@ -45,9 +60,13 @@ const Items = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!user) return;
+    if (!user?.uid) {
+      alert('User not authenticated');
+      return;
+    }
     
     setSubmitting(true);
+    console.log('Submitting form:', formData);
     
     try {
       const itemData = {
@@ -61,6 +80,8 @@ const Items = () => {
       } else {
         result = await createItem(itemData, user.uid);
       }
+      
+      console.log('Submit result:', result);
       
       if (result.success) {
         await fetchItems();
@@ -128,12 +149,16 @@ const Items = () => {
     item.sku?.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
+  // Debug info
+  console.log('Current state:', { user: user?.uid, loading, items: items.length, filteredItems: filteredItems.length });
+
   return (
     <div className="h-full">
       <div className="flex justify-between items-center mb-6">
         <div>
           <h1 className="text-2xl font-bold mb-2 text-gray-900 dark:text-white">Items</h1>
           <p className="text-gray-600 dark:text-gray-400">Manage products and services for quotes and invoices</p>
+          {user && <p className="text-xs text-gray-500">User ID: {user.uid}</p>}
         </div>
         <button 
           onClick={() => setShowForm(true)}
@@ -163,6 +188,10 @@ const Items = () => {
           <div className="p-4 text-center">
             <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-primary mx-auto"></div>
             <p className="mt-2 text-gray-600 dark:text-gray-400">Loading items...</p>
+          </div>
+        ) : !user ? (
+          <div className="p-8 text-center">
+            <p className="text-gray-500 dark:text-gray-400">Please log in to view items</p>
           </div>
         ) : filteredItems.length > 0 ? (
           <div className="overflow-x-auto">
@@ -198,6 +227,7 @@ const Items = () => {
                       <span className={`px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full ${
                         item.type === 'product' ? 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200' :
                         item.type === 'service' ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200' :
+                        item.type === 'pos' ? 'bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-200' :
                         'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-200'
                       }`}>
                         {item.type || 'product'}
@@ -321,6 +351,7 @@ const Items = () => {
                     >
                       <option value="product">Product</option>
                       <option value="service">Service</option>
+                      <option value="pos">POS</option>
                     </select>
                   </div>
                   

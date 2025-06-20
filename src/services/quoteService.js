@@ -7,7 +7,6 @@ import {
   getDocs, 
   getDoc,
   query, 
-  orderBy, 
   where,
   serverTimestamp 
 } from 'firebase/firestore';
@@ -37,15 +36,17 @@ export const getQuotes = async (userId) => {
   try {
     const q = query(
       collection(db, 'quotes'), 
-      where('userId', '==', userId),
-      orderBy('createdAt', 'desc')
+      where('userId', '==', userId)
     );
     const querySnapshot = await getDocs(q);
     
-    const quotes = querySnapshot.docs.map(doc => ({
-      id: doc.id,
-      ...doc.data()
-    }));
+    const quotes = [];
+    querySnapshot.forEach((doc) => {
+      quotes.push({
+        id: doc.id,
+        ...doc.data()
+      });
+    });
     
     return { success: true, quotes };
   } catch (error) {
