@@ -120,12 +120,6 @@ function Dashboard() {
               Admin Panel
             </Link>
           )}
-          <button
-            onClick={handleCreateSampleData}
-            className="bg-primary hover:bg-primary-dark text-white px-4 py-2 rounded-lg flex items-center gap-2 transition-colors"
-          >
-            <FaDatabase className="text-sm" /> Sample Data
-          </button>
         </div>
       </div>
 
