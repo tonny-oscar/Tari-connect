@@ -21,3 +21,4 @@ export * from './settings';
 
 // Other pages
 export { default as LandingPage } from './LandingPage';
+export { default as FreeTrial } from './FreeTrial';
