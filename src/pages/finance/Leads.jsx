@@ -34,11 +34,14 @@ const Leads = () => {
     setLoading(true);
     try {
       const { success, leads: fetchedLeads } = await getLeads(user.uid);
-      if (success) {
+      if (success && fetchedLeads) {
         setLeads(fetchedLeads);
+      } else {
+        setLeads([]);
       }
     } catch (error) {
       console.error('Error fetching leads:', error);
+      setLeads([]);
     } finally {
       setLoading(false);
     }
@@ -373,6 +376,7 @@ const Leads = () => {
                       <option value="social_media">Social Media</option>
                       <option value="email">Email</option>
                       <option value="phone">Phone</option>
+                      <option value="pos">POS</option>
                       <option value="other">Other</option>
                     </select>
                   </div>

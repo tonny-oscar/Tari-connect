@@ -5,9 +5,7 @@ import {
   updateDoc, 
   deleteDoc, 
   getDocs, 
-  getDoc,
   query, 
-  orderBy, 
   where,
   serverTimestamp 
 } from 'firebase/firestore';
@@ -37,15 +35,17 @@ export const getInvoices = async (userId) => {
   try {
     const q = query(
       collection(db, 'invoices'), 
-      where('userId', '==', userId),
-      orderBy('createdAt', 'desc')
+      where('userId', '==', userId)
     );
     const querySnapshot = await getDocs(q);
     
-    const invoices = querySnapshot.docs.map(doc => ({
-      id: doc.id,
-      ...doc.data()
-    }));
+    const invoices = [];
+    querySnapshot.forEach((doc) => {
+      invoices.push({
+        id: doc.id,
+        ...doc.data()
+      });
+    });
     
     return { success: true, invoices };
   } catch (error) {

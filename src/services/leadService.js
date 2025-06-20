@@ -5,9 +5,7 @@ import {
   updateDoc, 
   deleteDoc, 
   getDocs, 
-  getDoc,
   query, 
-  orderBy, 
   where,
   serverTimestamp 
 } from 'firebase/firestore';
@@ -16,6 +14,7 @@ import { db } from './firebase';
 // Create a new lead
 export const createLead = async (leadData, userId) => {
   try {
+    console.log('Creating lead:', leadData, 'for user:', userId);
     const docRef = await addDoc(collection(db, 'leads'), {
       ...leadData,
       userId,
@@ -24,6 +23,7 @@ export const createLead = async (leadData, userId) => {
       updatedAt: serverTimestamp()
     });
     
+    console.log('Lead created with ID:', docRef.id);
     return { success: true, id: docRef.id };
   } catch (error) {
     console.error('Error creating lead:', error);
@@ -34,33 +34,39 @@ export const createLead = async (leadData, userId) => {
 // Get all leads for a user
 export const getLeads = async (userId) => {
   try {
+    console.log('Fetching leads for user:', userId);
     const q = query(
       collection(db, 'leads'), 
-      where('userId', '==', userId),
-      orderBy('createdAt', 'desc')
+      where('userId', '==', userId)
     );
     const querySnapshot = await getDocs(q);
     
-    const leads = querySnapshot.docs.map(doc => ({
-      id: doc.id,
-      ...doc.data()
-    }));
+    const leads = [];
+    querySnapshot.forEach((doc) => {
+      leads.push({
+        id: doc.id,
+        ...doc.data()
+      });
+    });
     
+    console.log('Fetched leads:', leads);
     return { success: true, leads };
   } catch (error) {
     console.error('Error fetching leads:', error);
-    return { success: false, error: error.message };
+    return { success: false, error: error.message, leads: [] };
   }
 };
 
 // Update a lead
 export const updateLead = async (leadId, leadData) => {
   try {
+    console.log('Updating lead:', leadId, 'with data:', leadData);
     await updateDoc(doc(db, 'leads', leadId), {
       ...leadData,
       updatedAt: serverTimestamp()
     });
     
+    console.log('Lead updated successfully');
     return { success: true };
   } catch (error) {
     console.error('Error updating lead:', error);
@@ -71,6 +77,7 @@ export const updateLead = async (leadId, leadData) => {
 // Convert lead to quote
 export const convertLeadToQuote = async (leadId, quoteData, userId) => {
   try {
+    console.log('Converting lead to quote:', leadId);
     // Create quote
     const quoteDocRef = await addDoc(collection(db, 'quotes'), {
       ...quoteData,
@@ -88,6 +95,7 @@ export const convertLeadToQuote = async (leadId, quoteData, userId) => {
       updatedAt: serverTimestamp()
     });
     
+    console.log('Lead converted to quote successfully');
     return { success: true, quoteId: quoteDocRef.id };
   } catch (error) {
     console.error('Error converting lead to quote:', error);
@@ -98,7 +106,9 @@ export const convertLeadToQuote = async (leadId, quoteData, userId) => {
 // Delete a lead
 export const deleteLead = async (leadId) => {
   try {
+    console.log('Deleting lead:', leadId);
     await deleteDoc(doc(db, 'leads', leadId));
+    console.log('Lead deleted successfully');
     return { success: true };
   } catch (error) {
     console.error('Error deleting lead:', error);
