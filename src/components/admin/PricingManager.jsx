@@ -107,7 +107,7 @@ const PricingManager = () => {
       
       if (success) {
         // Update local state
-        setPlans(plans.map(plan => 
+        setPlans(plans.map(plan =>
           plan.id === editingPlan.id ? editingPlan : plan
         ));
         
@@ -289,7 +289,7 @@ const PricingManager = () => {
                     onClick={handleAddFeature}
                     className="text-blue-600 hover:text-blue-800 flex items-center gap-1 text-sm"
                   >
-                    <FaPlus /> Add Feature
+                    <FaPlus />
                   </button>
                 </div>
                 
@@ -329,7 +329,8 @@ const PricingManager = () => {
                 >
                   {isLoading ? 'Saving...' : (
                     <>
-                      <FaSave /> Save Changes
+                      <FaSave />
+                      Save
                     </>
                   )}
                 </button>

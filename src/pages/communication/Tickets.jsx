@@ -19,7 +19,7 @@ const Tickets = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [filterStatus, setFilterStatus] = useState('all');
   const [filterPriority, setFilterPriority] = useState('all');
-  const [viewMode, setViewMode] = useState('kanban'); // kanban, list, timeline
+  const [viewMode, setViewMode] = useState('kanban');
   const [sortBy, setSortBy] = useState('created');
   const [showAI, setShowAI] = useState(false);
   const [aiSuggestion, setAiSuggestion] = useState('');
@@ -237,11 +237,11 @@ const Tickets = () => {
     
     return (
       <div 
-        className="bg-white dark:bg-gray-800 rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105 border-l-4 overflow-hidden"
+        className="bg-white rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105 border-l-4 overflow-hidden"
         style={{ borderLeftColor: ticket.color || '#3B82F6' }}
       >
         {/* Header */}
-        <div className="p-4 border-b border-gray-200 dark:border-gray-700">
+        <div className="p-4">
           <div className="flex items-center justify-between mb-2">
             <div className="flex items-center gap-2">
               <span className="text-2xl">{ticket.mood || '😐'}</span>
@@ -253,11 +253,11 @@ const Tickets = () => {
             </div>
           </div>
           
-          <h3 className="font-semibold text-gray-900 dark:text-white mb-1 line-clamp-2">
+          <h3 className="font-semibold text-gray-900 mb-1 line-clamp-2">
             {ticket.title}
           </h3>
           
-          <p className="text-sm text-gray-600 dark:text-gray-400 line-clamp-2">
+          <p className="text-sm text-gray-600 line-clamp-2">
             {ticket.description}
           </p>
         </div>
@@ -266,7 +266,7 @@ const Tickets = () => {
         {ticket.tags && ticket.tags.length > 0 && (
           <div className="px-4 py-2 flex flex-wrap gap-1">
             {ticket.tags.slice(0, 3).map((tag, index) => (
-              <span key={index} className="px-2 py-1 bg-gray-100 dark:bg-gray-700 text-xs rounded-full">
+              <span key={index} className="px-2 py-1 bg-gray-100 text-xs rounded-full">
                 #{tag}
               </span>
             ))}
@@ -277,7 +277,7 @@ const Tickets = () => {
         )}
 
         {/* Status & Time */}
-        <div className="px-4 py-2 bg-gray-50 dark:bg-gray-700/50">
+        <div className="px-4 py-2 bg-gray-50">
           <div className="flex items-center justify-between text-xs">
             <span className={`px-2 py-1 rounded-full text-white ${statuses.find(s => s.value === ticket.status)?.color}`}>
               {statuses.find(s => s.value === ticket.status)?.label}
@@ -290,7 +290,7 @@ const Tickets = () => {
         </div>
 
         {/* Reactions */}
-        <div className="px-4 py-2 border-t border-gray-200 dark:border-gray-700">
+        <div className="px-4 py-2 border-t">
           <div className="flex items-center justify-between">
             <div className="flex gap-1">
               {['👍', '❤️', '🎉', '🚀'].map(reaction => (
@@ -339,7 +339,7 @@ const Tickets = () => {
       {/* Header */}
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
         <div>
-          <h1 className="text-3xl font-bold text-gray-900 dark:text-white flex items-center gap-3">
+          <h1 className="text-3xl font-bold text-gray-900 flex items-center gap-3">
             <div className="p-2 bg-gradient-to-r from-purple-500 to-pink-500 rounded-lg">
               <FaTicketAlt className="text-white" />
             </div>
@@ -348,7 +348,7 @@ const Tickets = () => {
               AI Powered
             </span>
           </h1>
-          <p className="text-gray-600 dark:text-gray-400 mt-1">
+          <p className="text-gray-600 mt-1">
             Next-gen ticket management with AI insights
           </p>
         </div>
@@ -365,14 +365,14 @@ const Tickets = () => {
       </div>
 
       {/* Controls */}
-      <div className="flex flex-wrap gap-4 mb-6 p-4 bg-white dark:bg-gray-800 rounded-xl shadow-sm">
+      <div className="flex flex-wrap gap-4 mb-6 p-4 bg-white rounded-xl shadow-sm">
         {/* Search */}
         <div className="relative flex-1 min-w-64">
           <FaSearch className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
           <input
             type="text"
             placeholder="Search tickets with AI..."
-            className="pl-10 pr-4 py-2 w-full border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-purple-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+            className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-md focus:ring-primary focus:border-primary"
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
           />
@@ -382,7 +382,7 @@ const Tickets = () => {
         <select
           value={filterStatus}
           onChange={(e) => setFilterStatus(e.target.value)}
-          className="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+          className="px-3 py-2 border border-gray-300 rounded-md focus:ring-primary focus:border-primary"
         >
           <option value="all">All Status</option>
           {statuses.map(status => (
@@ -393,7 +393,7 @@ const Tickets = () => {
         <select
           value={filterPriority}
           onChange={(e) => setFilterPriority(e.target.value)}
-          className="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+          className="px-3 py-2 border border-gray-300 rounded-md focus:ring-primary focus:border-primary"
         >
           <option value="all">All Priority</option>
           {priorities.map(priority => (
@@ -402,7 +402,7 @@ const Tickets = () => {
         </select>
 
         {/* View Mode */}
-        <div className="flex bg-gray-100 dark:bg-gray-700 rounded-lg p-1">
+        <div className="flex bg-gray-100 rounded-lg p-1">
           {['kanban', 'list', 'timeline'].map(mode => (
             <button
               key={mode}
@@ -410,7 +410,7 @@ const Tickets = () => {
               className={`px-3 py-1 rounded-md text-sm font-medium transition-colors ${
                 viewMode === mode
                   ? 'bg-purple-500 text-white'
-                  : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white'
+                  : 'text-gray-600 hover:text-gray-900'
               }`}
             >
               {mode.charAt(0).toUpperCase() + mode.slice(1)}
@@ -424,11 +424,11 @@ const Tickets = () => {
         {statuses.map(status => {
           const count = getTicketsByStatus(status.value).length;
           return (
-            <div key={status.value} className="bg-white dark:bg-gray-800 p-4 rounded-lg shadow-sm">
+            <div key={status.value} className="bg-white p-4 rounded-lg shadow-sm">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-2xl font-bold text-gray-900 dark:text-white">{count}</p>
-                  <p className="text-sm text-gray-600 dark:text-gray-400">{status.label}</p>
+                  <p className="text-2xl font-bold">{count}</p>
+                  <p className="text-sm text-gray-600">{status.label}</p>
                 </div>
                 <div className={`w-3 h-3 rounded-full ${status.color}`}></div>
               </div>
@@ -450,7 +450,7 @@ const Tickets = () => {
                 <div className={`p-3 rounded-t-lg text-white font-semibold ${status.color}`}>
                   {status.label} ({getTicketsByStatus(status.value).length})
                 </div>
-                <div className="flex-1 bg-gray-50 dark:bg-gray-900 p-4 rounded-b-lg space-y-4 min-h-96">
+                <div className="flex-1 bg-gray-50 p-4 rounded-b-lg space-y-4 min-h-96">
                   {getTicketsByStatus(status.value).map(ticket => (
                     <TicketCard key={ticket.id} ticket={ticket} />
                   ))}
@@ -470,16 +470,16 @@ const Tickets = () => {
       {/* Create/Edit Form Modal */}
       {showForm && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white dark:bg-gray-800 rounded-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+          <div className="bg-white rounded-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
             <div className="p-6">
               <div className="flex items-center justify-between mb-6">
-                <h2 className="text-2xl font-bold text-gray-900 dark:text-white flex items-center gap-2">
+                <h2 className="text-2xl font-bold text-gray-900 flex items-center gap-2">
                   <FaMagic className="text-purple-500" />
                   {selectedTicket ? 'Edit Ticket' : 'Create Magic Ticket'}
                 </h2>
                 <button
                   onClick={resetForm}
-                  className="text-gray-500 hover:text-gray-700 dark:hover:text-gray-300"
+                  className="text-gray-400 hover:text-gray-600"
                 >
                   <FaTimes className="w-6 h-6" />
                 </button>
@@ -488,14 +488,14 @@ const Tickets = () => {
               <form onSubmit={handleSubmit} className="space-y-6">
                 {/* Title */}
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
                     ✨ Ticket Title
                   </label>
                   <input
                     type="text"
                     value={formData.title}
                     onChange={(e) => setFormData({...formData, title: e.target.value})}
-                    className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-purple-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-primary focus:border-primary"
                     placeholder="What's the magic about?"
                     required
                   />
@@ -503,13 +503,13 @@ const Tickets = () => {
 
                 {/* Description */}
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
                     📝 Description
                   </label>
                   <textarea
                     value={formData.description}
                     onChange={(e) => setFormData({...formData, description: e.target.value})}
-                    className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-purple-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-primary focus:border-primary"
                     rows="4"
                     placeholder="Tell us more about this magical request..."
                     required
@@ -519,13 +519,13 @@ const Tickets = () => {
                 {/* Priority & Category */}
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
                       🔥 Priority
                     </label>
                     <select
                       value={formData.priority}
                       onChange={(e) => setFormData({...formData, priority: e.target.value})}
-                      className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-primary focus:border-primary"
                     >
                       {priorities.map(priority => (
                         <option key={priority.value} value={priority.value}>
@@ -536,13 +536,13 @@ const Tickets = () => {
                   </div>
 
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
                       📂 Category
                     </label>
                     <select
                       value={formData.category}
                       onChange={(e) => setFormData({...formData, category: e.target.value})}
-                      className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-primary focus:border-primary"
                     >
                       {categories.map(category => (
                         <option key={category.value} value={category.value}>
@@ -556,7 +556,7 @@ const Tickets = () => {
                 {/* Mood & Color */}
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
                       😊 Mood
                     </label>
                     <div className="flex gap-2">
@@ -566,7 +566,7 @@ const Tickets = () => {
                           type="button"
                           onClick={() => setFormData({...formData, mood})}
                           className={`text-2xl p-2 rounded-lg transition-all ${
-                            formData.mood === mood ? 'bg-purple-100 dark:bg-purple-900 scale-125' : 'hover:scale-110'
+                            formData.mood === mood ? 'bg-purple-100 scale-125' : 'hover:scale-110'
                           }`}
                         >
                           {mood}
@@ -576,7 +576,7 @@ const Tickets = () => {
                   </div>
 
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
                       🎨 Color
                     </label>
                     <div className="flex gap-2">
@@ -600,7 +600,7 @@ const Tickets = () => {
                   <button
                     type="button"
                     onClick={resetForm}
-                    className="px-6 py-3 text-gray-600 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-200"
+                    className="px-4 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50"
                   >
                     Cancel
                   </button>

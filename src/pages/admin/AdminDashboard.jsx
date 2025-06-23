@@ -49,7 +49,7 @@ const AdminDashboard = () => {
         setStats(prev => ({
           ...prev,
           totalUsers: usersList.length,
-          activeUsers: usersList.filter(u => u.status !== 'inactive').length
+          activeUsers: usersList.filter(u => u.status === 'active').length
         }));
         
         setIsLoading(false);

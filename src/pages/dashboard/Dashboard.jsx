@@ -2,93 +2,70 @@ import React, { useEffect, useState } from 'react';
 import { collection, onSnapshot, query, where } from 'firebase/firestore';
 import { db } from '../../services/firebase';
 import { useNavigate, Link } from 'react-router-dom';
-import { 
-  FaUserPlus, 
-  FaBell, 
-  FaChartLine, 
-  FaUserCheck, 
-  FaComments, 
-  FaTasks, 
-  FaDatabase,
-  FaFileInvoiceDollar,
-  FaFileAlt,
-  FaBoxOpen,
-  FaArrowUp,
-  FaArrowDown,
-  FaEye
+import {
+  FaUserPlus, FaArrowUp, FaChartLine, FaFileAlt, FaFileInvoiceDollar,
+  FaBoxOpen, FaUserCheck, FaComments, FaTasks, FaDatabase, FaEye
 } from 'react-icons/fa';
 import { useAuth } from '../../store/useAuth';
 import { createSampleItems, createSampleLeads } from '../../utils/sampleData';
 
 function Dashboard() {
-  const [conversations, setConversations] = useState([]);
   const [leads, setLeads] = useState([]);
   const [quotes, setQuotes] = useState([]);
   const [invoices, setInvoices] = useState([]);
   const [items, setItems] = useState([]);
   const [loading, setLoading] = useState(true);
-  
+
   const { userData, isAdmin, user } = useAuth();
   const navigate = useNavigate();
 
-  // Fetch all data
   useEffect(() => {
     if (!user) return;
-
     const unsubscribes = [];
 
-    // Fetch leads
-    const leadsQuery = query(collection(db, 'leads'), where('userId', '==', user.uid));
-    unsubscribes.push(onSnapshot(leadsQuery, (snapshot) => {
-      setLeads(snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })));
-    }));
+    const setupSnapshot = (col, setter) => {
+      const q = query(collection(db, col), where('userId', '==', user.uid));
+      const unsub = onSnapshot(q, (snapshot) => {
+        setter(snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })));
+      });
+      unsubscribes.push(unsub);
+    };
 
-    // Fetch quotes
-    const quotesQuery = query(collection(db, 'quotes'), where('userId', '==', user.uid));
-    unsubscribes.push(onSnapshot(quotesQuery, (snapshot) => {
-      setQuotes(snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })));
-    }));
-
-    // Fetch invoices
-    const invoicesQuery = query(collection(db, 'invoices'), where('userId', '==', user.uid));
-    unsubscribes.push(onSnapshot(invoicesQuery, (snapshot) => {
-      setInvoices(snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })));
-    }));
-
-    // Fetch items
-    const itemsQuery = query(collection(db, 'items'), where('userId', '==', user.uid));
-    unsubscribes.push(onSnapshot(itemsQuery, (snapshot) => {
-      setItems(snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })));
-    }));
+    setupSnapshot('leads', setLeads);
+    setupSnapshot('quotes', setQuotes);
+    setupSnapshot('invoices', setInvoices);
+    setupSnapshot('items', setItems);
 
     setLoading(false);
 
-    return () => unsubscribes.forEach(unsubscribe => unsubscribe());
+    return () => unsubscribes.forEach(unsub => unsub());
   }, [user]);
 
   const handleCreateSampleData = async () => {
     if (!user) return;
-    
     try {
       await createSampleItems(user.uid);
       await createSampleLeads(user.uid);
-      alert('Sample data created successfully! Check Items and Leads pages.');
+      alert('Sample data created successfully!');
     } catch (error) {
       console.error('Error creating sample data:', error);
-      alert('Error creating sample data. Please try again.');
+      alert('Failed to create sample data.');
     }
   };
 
-  // Calculate stats
   const stats = {
     totalLeads: leads.length,
     newLeads: leads.filter(l => l.status === 'new').length,
     totalQuotes: quotes.length,
-    pendingQuotes: quotes.filter(q => q.status === 'sent').length,
+    pendingQuotes: quotes.filter(q => q.status === 'pending').length,
     totalInvoices: invoices.length,
     paidInvoices: invoices.filter(i => i.status === 'paid').length,
-    totalRevenue: invoices.filter(i => i.status === 'paid').reduce((sum, i) => sum + (i.total || 0), 0),
-    pendingRevenue: invoices.filter(i => i.status === 'pending').reduce((sum, i) => sum + (i.total || 0), 0)
+    totalRevenue: invoices
+      .filter(i => i.status === 'paid')
+      .reduce((sum, i) => sum + (i.total || 0), 0),
+    pendingRevenue: invoices
+      .filter(i => i.status !== 'paid')
+      .reduce((sum, i) => sum + (i.total || 0), 0)
   };
 
   if (loading) {
@@ -101,249 +78,95 @@ function Dashboard() {
 
   return (
     <div className="space-y-6">
-      {/* Header */}
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
-          <h1 className="text-3xl font-bold text-gray-900 dark:text-white">
-            Welcome back, {userData?.name || 'User'}!
-          </h1>
-          <p className="text-gray-600 dark:text-gray-400 mt-1">
-            Here's what's happening with your business today.
-          </p>
+          <h1 className="text-2xl font-bold">Welcome back, {userData?.name || 'User'}!</h1>
+          <p className="text-gray-600 mt-1">Here's what's happening with your business today.</p>
         </div>
-        <div className="flex gap-3">
-          {isAdmin() && (
-            <Link 
-              to="/admin" 
-              className="bg-primary hover:bg-primary-dark text-white px-4 py-2 rounded-lg flex items-center gap-2 transition-colors"
-            >
-              Admin Panel
-            </Link>
-          )}
-        </div>
+        {isAdmin() && (
+          <Link
+            to="/admin"
+            className="bg-primary hover:bg-primary-dark text-white px-4 py-2 rounded-lg"
+          >
+            Admin Panel
+          </Link>
+        )}
       </div>
 
-      {/* Stats Grid */}
+      {/* Stats */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-        <div className="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-sm font-medium text-gray-600 dark:text-gray-400">Total Leads</p>
-              <p className="text-3xl font-bold text-gray-900 dark:text-white">{stats.totalLeads}</p>
-              <p className="text-sm text-green-600 flex items-center gap-1 mt-1">
-                <FaArrowUp className="text-xs" />
-                {stats.newLeads} new this month
-              </p>
-            </div>
-            <div className="bg-primary/10 p-3 rounded-lg">
-              <FaUserPlus className="text-primary text-xl" />
-            </div>
-          </div>
-        </div>
-
-        <div className="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-sm font-medium text-gray-600 dark:text-gray-400">Active Quotes</p>
-              <p className="text-3xl font-bold text-gray-900 dark:text-white">{stats.totalQuotes}</p>
-              <p className="text-sm text-yellow-600 flex items-center gap-1 mt-1">
-                <FaChartLine className="text-xs" />
-                {stats.pendingQuotes} pending
-              </p>
-            </div>
-            <div className="bg-primary/10 p-3 rounded-lg">
-              <FaFileAlt className="text-primary text-xl" />
-            </div>
-          </div>
-        </div>
-
-        <div className="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-sm font-medium text-gray-600 dark:text-gray-400">Total Revenue</p>
-              <p className="text-3xl font-bold text-gray-900 dark:text-white">
-                KSh {stats.totalRevenue.toLocaleString()}
-              </p>
-              <p className="text-sm text-green-600 flex items-center gap-1 mt-1">
-                <FaArrowUp className="text-xs" />
-                {stats.paidInvoices} paid invoices
-              </p>
-            </div>
-            <div className="bg-primary/10 p-3 rounded-lg">
-              <FaChartLine className="text-primary text-xl" />
-            </div>
-          </div>
-        </div>
-
-        <div className="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-sm font-medium text-gray-600 dark:text-gray-400">Pending Revenue</p>
-              <p className="text-3xl font-bold text-gray-900 dark:text-white">
-                KSh {stats.pendingRevenue.toLocaleString()}
-              </p>
-              <p className="text-sm text-orange-600 flex items-center gap-1 mt-1">
-                <FaChartLine className="text-xs" />
-                {stats.totalInvoices - stats.paidInvoices} unpaid
-              </p>
-            </div>
-            <div className="bg-primary/10 p-3 rounded-lg">
-              <FaFileInvoiceDollar className="text-primary text-xl" />
-            </div>
-          </div>
-        </div>
+        <StatCard
+          title="Leads"
+          value={stats.totalLeads}
+          subtitle={`${stats.newLeads} new this month`}
+          icon={<FaUserPlus />}
+          color="green"
+        />
+        <StatCard
+          title="Quotes"
+          value={stats.totalQuotes}
+          subtitle={`${stats.pendingQuotes} pending`}
+          icon={<FaFileAlt />}
+          color="yellow"
+        />
+        <StatCard
+          title="Revenue"
+          value={`KSh ${stats.totalRevenue.toLocaleString()}`}
+          subtitle={`${stats.paidInvoices} paid invoices`}
+          icon={<FaChartLine />}
+          color="green"
+        />
+        <StatCard
+          title="Pending Revenue"
+          value={`KSh ${stats.pendingRevenue.toLocaleString()}`}
+          subtitle={`${stats.totalInvoices - stats.paidInvoices} unpaid`}
+          icon={<FaFileInvoiceDollar />}
+          color="orange"
+        />
       </div>
 
-      {/* Quick Actions */}
+      {/* Actions */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-        <Link 
-          to="/leads"
-          className="group bg-gradient-to-r from-primary to-primary-dark hover:from-primary-dark hover:to-primary text-white p-6 rounded-xl shadow-lg transition-all duration-300 transform hover:scale-105"
-        >
-          <div className="flex items-center justify-between">
-            <div>
-              <h3 className="text-lg font-semibold">Manage Leads</h3>
-              <p className="text-green-100 text-sm mt-1">Track prospects & opportunities</p>
-            </div>
-            <FaUserPlus className="text-2xl opacity-80 group-hover:opacity-100" />
-          </div>
-        </Link>
-        
-        <Link 
-          to="/quotes"
-          className="group bg-gradient-to-r from-primary-light to-primary hover:from-primary hover:to-primary-dark text-white p-6 rounded-xl shadow-lg transition-all duration-300 transform hover:scale-105"
-        >
-          <div className="flex items-center justify-between">
-            <div>
-              <h3 className="text-lg font-semibold">Create Quotes</h3>
-              <p className="text-green-100 text-sm mt-1">Generate professional quotes</p>
-            </div>
-            <FaFileAlt className="text-2xl opacity-80 group-hover:opacity-100" />
-          </div>
-        </Link>
-        
-        <Link 
-          to="/invoices"
-          className="group bg-gradient-to-r from-primary to-accent hover:from-accent hover:to-primary-dark text-white p-6 rounded-xl shadow-lg transition-all duration-300 transform hover:scale-105"
-        >
-          <div className="flex items-center justify-between">
-            <div>
-              <h3 className="text-lg font-semibold">Manage Invoices</h3>
-              <p className="text-green-100 text-sm mt-1">Track payments & billing</p>
-            </div>
-            <FaFileInvoiceDollar className="text-2xl opacity-80 group-hover:opacity-100" />
-          </div>
-        </Link>
-        
-        <Link 
-          to="/items"
-          className="group bg-gradient-to-r from-accent to-primary-dark hover:from-primary-dark hover:to-accent text-white p-6 rounded-xl shadow-lg transition-all duration-300 transform hover:scale-105"
-        >
-          <div className="flex items-center justify-between">
-            <div>
-              <h3 className="text-lg font-semibold">Product Catalog</h3>
-              <p className="text-green-100 text-sm mt-1">Manage items & services</p>
-            </div>
-            <FaBoxOpen className="text-2xl opacity-80 group-hover:opacity-100" />
-          </div>
-        </Link>
-      </div>
-
-      {/* Recent Activity */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {/* Recent Leads */}
-        <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700">
-          <div className="p-6 border-b border-gray-200 dark:border-gray-700">
-            <div className="flex items-center justify-between">
-              <h3 className="text-lg font-semibold text-gray-900 dark:text-white">Recent Leads</h3>
-              <Link to="/leads" className="text-primary hover:text-primary-dark text-sm font-medium">
-                View All
-              </Link>
-            </div>
-          </div>
-          <div className="p-6">
-            {leads.length === 0 ? (
-              <div className="text-center py-8">
-                <FaUserPlus className="mx-auto text-4xl text-gray-400 mb-4" />
-                <p className="text-gray-500 dark:text-gray-400">No leads yet</p>
-                <Link to="/leads" className="text-primary hover:text-primary-dark text-sm">
-                  Add your first lead
-                </Link>
-              </div>
-            ) : (
-              <div className="space-y-4">
-                {leads.slice(0, 5).map(lead => (
-                  <div key={lead.id} className="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-700 rounded-lg">
-                    <div>
-                      <p className="font-medium text-gray-900 dark:text-white">{lead.name}</p>
-                      <p className="text-sm text-gray-500 dark:text-gray-400">{lead.company}</p>
-                    </div>
-                    <div className="text-right">
-                      <span className={`px-2 py-1 text-xs rounded-full ${
-                        lead.status === 'new' ? 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200' :
-                        lead.status === 'contacted' ? 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200' :
-                        'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200'
-                      }`}>
-                        {lead.status}
-                      </span>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            )}
-          </div>
-        </div>
-
-        {/* Recent Invoices */}
-        <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700">
-          <div className="p-6 border-b border-gray-200 dark:border-gray-700">
-            <div className="flex items-center justify-between">
-              <h3 className="text-lg font-semibold text-gray-900 dark:text-white">Recent Invoices</h3>
-              <Link to="/invoices" className="text-primary hover:text-primary-dark text-sm font-medium">
-                View All
-              </Link>
-            </div>
-          </div>
-          <div className="p-6">
-            {invoices.length === 0 ? (
-              <div className="text-center py-8">
-                <FaFileInvoiceDollar className="mx-auto text-4xl text-gray-400 mb-4" />
-                <p className="text-gray-500 dark:text-gray-400">No invoices yet</p>
-                <Link to="/invoices" className="text-primary hover:text-primary-dark text-sm">
-                  Create your first invoice
-                </Link>
-              </div>
-            ) : (
-              <div className="space-y-4">
-                {invoices.slice(0, 5).map(invoice => (
-                  <div key={invoice.id} className="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-700 rounded-lg">
-                    <div>
-                      <p className="font-medium text-gray-900 dark:text-white">
-                        {invoice.invoiceNumber || `INV-${invoice.id?.substring(0, 6) || 'NEW'}`}
-                      </p>
-                      <p className="text-sm text-gray-500 dark:text-gray-400">{invoice.customerName || 'No Name'}</p>
-                    </div>
-                    <div className="text-right">
-                      <p className="font-medium text-gray-900 dark:text-white">
-                        KSh {(invoice.total || 0).toLocaleString()}
-                      </p>
-                      <span className={`px-2 py-1 text-xs rounded-full ${
-                        invoice.status === 'paid' ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200' :
-                        invoice.status === 'pending' ? 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200' :
-                        'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200'
-                      }`}>
-                        {invoice.status || 'pending'}
-                      </span>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            )}
-          </div>
-        </div>
+        <QuickAction to="/leads" title="Manage Leads" subtitle="Track prospects & opportunities" icon={<FaUserPlus />} />
+        <QuickAction to="/quotes" title="Create Quotes" subtitle="Generate professional quotes" icon={<FaFileAlt />} />
+        <QuickAction to="/invoices" title="Manage Invoices" subtitle="Track payments & billing" icon={<FaFileInvoiceDollar />} />
+        <QuickAction to="/items" title="Product Catalog" subtitle="Manage items & services" icon={<FaBoxOpen />} />
       </div>
     </div>
   );
 }
+
+const StatCard = ({ title, value, subtitle, icon, color }) => (
+  <div className="bg-white p-6 rounded-lg shadow">
+    <div className="flex justify-between items-center">
+      <div>
+        <h4 className="text-gray-500 text-sm">{title}</h4>
+        <p className="text-xl font-bold">{value}</p>
+        <p className={`text-sm text-${color}-600 mt-1 flex items-center gap-1`}>
+          <FaArrowUp className="text-xs" />
+          {subtitle}
+        </p>
+      </div>
+      <div className={`bg-${color}-100 p-3 rounded-full text-${color}-600`}>
+        {icon}
+      </div>
+    </div>
+  </div>
+);
+
+const QuickAction = ({ to, title, subtitle, icon }) => (
+  <Link
+    to={to}
+    className="group bg-gradient-to-r from-primary to-primary-dark text-white p-6 rounded-xl shadow-lg hover:scale-105 transition transform duration-300"
+  >
+    <div className="flex justify-between items-center">
+      <div>
+        <h3 className="text-lg font-semibold">{title}</h3>
+        <p className="text-sm mt-1 text-white/70">{subtitle}</p>
+      </div>
+      <div className="text-2xl group-hover:opacity-100 opacity-80">{icon}</div>
+    </div>
+  </Link>
+);
 
 export default Dashboard;

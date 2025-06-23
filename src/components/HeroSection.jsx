@@ -1,3 +1,4 @@
+// src/components/HeroSection.jsx
 import React, { useEffect, useRef } from 'react';
 import { motion } from 'framer-motion';
 import * as THREE from 'three';
@@ -11,13 +12,18 @@ const HeroSection = ({ onGetStarted }) => {
 
     // Three.js background animation
     const scene = new THREE.Scene();
-    const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
-    const renderer = new THREE.WebGLRenderer({ 
-      canvas: canvasRef.current, 
+    const camera = new THREE.PerspectiveCamera(
+      75,
+      window.innerWidth / window.innerHeight,
+      0.1,
+      1000
+    );
+    const renderer = new THREE.WebGLRenderer({
+      canvas: canvasRef.current,
       alpha: true,
-      antialias: true 
+      antialias: true,
     });
-    
+
     renderer.setSize(window.innerWidth, window.innerHeight);
     renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
 
@@ -46,7 +52,7 @@ const HeroSection = ({ onGetStarted }) => {
       vertexColors: true,
       transparent: true,
       opacity: 0.8,
-      blending: THREE.AdditiveBlending
+      blending: THREE.AdditiveBlending,
     });
 
     const particles = new THREE.Points(geometry, material);
@@ -57,14 +63,11 @@ const HeroSection = ({ onGetStarted }) => {
     // Animation loop
     const animate = () => {
       requestAnimationFrame(animate);
-      
       particles.rotation.x += 0.001;
       particles.rotation.y += 0.002;
-      
       renderer.render(scene, camera);
     };
 
-    // Handle resize
     const handleResize = () => {
       camera.aspect = window.innerWidth / window.innerHeight;
       camera.updateProjectionMatrix();
@@ -86,9 +89,9 @@ const HeroSection = ({ onGetStarted }) => {
       opacity: 1,
       transition: {
         staggerChildren: 0.2,
-        delayChildren: 0.1
-      }
-    }
+        delayChildren: 0.1,
+      },
+    },
   };
 
   const itemVariants = {
@@ -98,9 +101,9 @@ const HeroSection = ({ onGetStarted }) => {
       opacity: 1,
       transition: {
         duration: 0.8,
-        ease: "easeOut"
-      }
-    }
+        ease: 'easeOut',
+      },
+    },
   };
 
   return (
@@ -130,7 +133,7 @@ const HeroSection = ({ onGetStarted }) => {
             transition={{
               duration: 6 + i,
               repeat: Infinity,
-              ease: "easeInOut",
+              ease: 'easeInOut',
               delay: i * 0.5,
             }}
           />
@@ -147,7 +150,10 @@ const HeroSection = ({ onGetStarted }) => {
         >
           <motion.div variants={itemVariants}>
             <h1 className="text-5xl md:text-7xl font-bold text-white mb-6 leading-tight">
-              Connect . Collaborate . <span className="bg-clip-text text-transparent bg-gradient-to-r from-blue-400 to-purple-600">Close</span>
+              Connect . Collaborate .{' '}
+              <span className="bg-clip-text text-transparent bg-gradient-to-r from-blue-400 to-purple-600">
+                Close
+              </span>
             </h1>
           </motion.div>
 
@@ -159,14 +165,13 @@ const HeroSection = ({ onGetStarted }) => {
 
           <motion.div variants={itemVariants}>
             <p className="text-lg text-gray-400 max-w-3xl mx-auto">
-              TariConnect is your all-in-one solution for managing social media conversations, nurturing leads, and streamlining team collaboration. Engage smarter, not harder.
+              TariConnect is your all-in-one solution for managing social media
+              conversations, nurturing leads, and streamlining team
+              collaboration. Engage smarter, not harder.
             </p>
           </motion.div>
 
-          <motion.div 
-            variants={itemVariants}
-            className="pt-8"
-          >
+          <motion.div variants={itemVariants} className="pt-8">
             <button
               onClick={onGetStarted}
               className="group bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white px-8 py-4 rounded-full font-semibold text-lg transition-all duration-300 transform hover:scale-105 hover:shadow-2xl flex items-center gap-2 mx-auto"

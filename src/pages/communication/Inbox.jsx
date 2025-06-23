@@ -10,31 +10,32 @@ const Inbox = () => {
 
   useEffect(() => {
     const q = query(collection(db, 'conversations'), orderBy('lastUpdated', 'desc'));
-    
+
     const unsubscribe = onSnapshot(q, (snapshot) => {
-      const conversationList = snapshot.docs.map(doc => ({
+      const conversationList = snapshot.docs.map((doc) => ({
         id: doc.id,
-        ...doc.data()
+        ...doc.data(),
       }));
       setConversations(conversationList);
       setLoading(false);
     });
-    
+
     return () => unsubscribe();
   }, []);
 
-  const filteredConversations = conversations.filter(convo => 
+  const filteredConversations = conversations.filter((convo) =>
     convo.contactName?.toLowerCase().includes(searchTerm.toLowerCase()) ||
     convo.lastMessage?.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
   return (
     <div className="h-full">
+      {/* Header */}
       <div className="mb-6">
         <h1 className="text-2xl font-bold mb-2">Unified Inbox</h1>
         <p className="text-gray-600">Manage all your customer conversations in one place</p>
       </div>
-      
+
       {/* Search */}
       <div className="mb-6 relative">
         <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
@@ -48,7 +49,7 @@ const Inbox = () => {
           onChange={(e) => setSearchTerm(e.target.value)}
         />
       </div>
-      
+
       {/* Conversations list */}
       <div className="bg-white rounded-lg shadow overflow-hidden">
         {loading ? (
@@ -58,28 +59,37 @@ const Inbox = () => {
           </div>
         ) : filteredConversations.length > 0 ? (
           <div className="divide-y">
-            {filteredConversations.map(convo => (
-              <div 
-                key={convo.id} 
+            {filteredConversations.map((convo) => (
+              <div
+                key={convo.id}
                 className="p-4 hover:bg-gray-50 cursor-pointer transition-colors"
-                onClick={() => window.location.href = `/chat/${convo.id}`}
+                onClick={() => console.log('Open conversation:', convo.id)}
               >
                 <div className="flex justify-between items-start">
                   <div>
                     <h3 className="font-medium">{convo.contactName || 'Unknown Contact'}</h3>
-                    <p className="text-sm text-gray-600 mt-1 line-clamp-1">{convo.lastMessage || 'No messages'}</p>
+                    <p className="text-sm text-gray-600 mt-1 line-clamp-1">
+                      {convo.lastMessage || 'No messages'}
+                    </p>
                   </div>
                   <div className="text-xs text-gray-500">
-                    {convo.lastUpdated ? new Date(convo.lastUpdated.toDate()).toLocaleString() : ''}
+                    {convo.lastUpdated?.toDate
+                      ? new Date(convo.lastUpdated.toDate()).toLocaleString()
+                      : ''}
                   </div>
                 </div>
                 <div className="flex items-center mt-2 text-xs">
-                  <span className={`px-2 py-1 rounded-full ${
-                    convo.platform === 'whatsapp' ? 'bg-green-100 text-green-800' :
-                    convo.platform === 'facebook' ? 'bg-blue-100 text-blue-800' :
-                    convo.platform === 'instagram' ? 'bg-purple-100 text-purple-800' :
-                    'bg-gray-100 text-gray-800'
-                  }`}>
+                  <span
+                    className={`px-2 py-1 rounded-full ${
+                      convo.platform === 'whatsapp'
+                        ? 'bg-green-100 text-green-800'
+                        : convo.platform === 'facebook'
+                        ? 'bg-blue-100 text-blue-800'
+                        : convo.platform === 'instagram'
+                        ? 'bg-purple-100 text-purple-800'
+                        : 'bg-gray-100 text-gray-800'
+                    }`}
+                  >
                     {convo.platform || 'web'}
                   </span>
                 </div>
@@ -91,7 +101,9 @@ const Inbox = () => {
             <FaInbox className="mx-auto text-4xl text-gray-400 mb-4" />
             <h3 className="text-lg font-medium text-gray-900">No conversations found</h3>
             <p className="mt-1 text-gray-500">
-              {searchTerm ? 'Try adjusting your search term' : 'Start connecting your channels to receive messages'}
+              {searchTerm
+                ? 'Try adjusting your search term'
+                : 'Start connecting your channels to receive messages'}
             </p>
           </div>
         )}

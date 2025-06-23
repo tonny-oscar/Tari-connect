@@ -14,7 +14,7 @@ const Support = () => {
   const faqs = [
     {
       question: 'How do I connect my social media accounts?',
-      answer: 'You can connect your social media accounts by going to Settings > Integrations and clicking on the "Connect" button next to the platform you want to integrate with. Follow the authentication steps to complete the connection.'
+      answer: 'You can connect your social media accounts by going to Settings > Integrations and clicking on the platform you want to connect.'
     },
     {
       question: 'How do I create a new invoice?',
@@ -22,11 +22,11 @@ const Support = () => {
     },
     {
       question: 'Can I customize the appearance of my quotes and invoices?',
-      answer: 'Yes, you can customize the appearance of your quotes and invoices by going to Settings > Company Profile. Upload your company logo, set your company details, and choose a color scheme that matches your brand.'
+      answer: 'Yes, you can customize the appearance of your quotes and invoices by going to Settings > Appearance and selecting your preferred theme and colors.'
     },
     {
       question: 'How do I add team members to my account?',
-      answer: 'To add team members, go to Settings > User Management and click on the "Invite User" button. Enter their email address, select their role (Admin or Agent), and they will receive an invitation to join your team.'
+      answer: 'To add team members, go to Settings > User Management and click "Add User". Enter their email address and select their role permissions.'
     },
     {
       question: 'What payment methods do you accept?',
@@ -38,7 +38,7 @@ const Support = () => {
     }
   ];
 
-  const filteredFaqs = faqs.filter(faq => 
+  const filteredFaqs = faqs.filter(faq =>
     faq.question.toLowerCase().includes(searchTerm.toLowerCase()) ||
     faq.answer.toLowerCase().includes(searchTerm.toLowerCase())
   );

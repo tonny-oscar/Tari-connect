@@ -135,16 +135,16 @@ function Chat() {
         <div className="font-medium">{contactName}</div>
         <div className="flex gap-2">
           <button
-            onClick={() => setShowCreateTask(!showCreateTask)}
-            className="text-blue-600 flex items-center gap-1 hover:text-blue-800 transition-colors"
+            onClick={() => setShowCreateTask(true)}
+            className="text-primary flex items-center gap-1 hover:text-primary-dark transition-colors"
           >
-            <FaTasks /> Create Task
+            <FaTasks />
           </button>
           <Link 
             to={`/contact/${conversationId}`}
-            className="text-blue-600 flex items-center gap-1 hover:text-blue-800 transition-colors"
+            className="text-primary flex items-center gap-1 hover:text-primary-dark transition-colors"
           >
-            <FaUser /> Contact Info
+            <FaUser />
           </Link>
         </div>
       </div>
@@ -154,7 +154,7 @@ function Chat() {
         <TaskForm 
           conversationId={conversationId} 
           contactName={contactName} 
-          onClose={() => setShowCreateTask(false)} 
+          onClose={() => setShowCreateTask(false)}
         />
       )}
 
@@ -165,7 +165,7 @@ function Chat() {
             key={msg.id}
             className={`mb-3 p-2 rounded max-w-[75%] ${
               msg.senderId === user?.uid 
-                ? 'ml-auto bg-blue-100 text-right' 
+                ? 'ml-auto bg-primary/10 text-right' 
                 : 'mr-auto bg-gray-100'
             }`}
           >
@@ -178,7 +178,7 @@ function Chat() {
                 {msg.fileUrl.endsWith('.mp3') ? (
                   <audio controls src={msg.fileUrl} className="max-w-full" />
                 ) : (
-                  <a href={msg.fileUrl} target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline">
+                  <a href={msg.fileUrl} target="_blank" rel="noopener noreferrer" className="text-primary hover:underline">
                     View File
                   </a>
                 )}
@@ -194,7 +194,7 @@ function Chat() {
         {/* Typing indicators */}
         {typingUsers.length > 0 && (
           <div className="text-sm text-gray-500 italic">
-            {typingUsers.map(user => user.userId).join(', ')} {typingUsers.length === 1 ? 'is' : 'are'} typing...
+            {typingUsers.map(user => user.name).join(', ')} is typing...
           </div>
         )}
       </div>
@@ -220,7 +220,7 @@ function Chat() {
           value={newMessage}
           onChange={handleTyping}
           placeholder="Type a message"
-          className="flex-1 border p-2 rounded focus:ring-blue-500 focus:border-blue-500"
+          className="flex-1 border p-2 rounded focus:ring-primary focus:border-primary"
         />
 
         <input type="file" id="fileInput" onChange={handleFileChange} className="hidden" />
@@ -247,7 +247,7 @@ function Chat() {
 
         <button 
           type="submit" 
-          className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 transition-colors"
+          className="bg-primary text-white px-4 py-2 rounded hover:bg-primary-dark transition-colors"
         >
           Send
         </button>
