@@ -1,7 +1,5 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../../store/useAuth';
-import { collection, addDoc, onSnapshot, query, where, deleteDoc, doc, serverTimestamp } from 'firebase/firestore';
-import { db } from '../../services/firebase';
 import { 
   FaFolder, FaFile, FaUpload, FaSearch, FaFilter, FaSortAmountDown, 
   FaSortAmountUp, FaDownload, FaTrash, FaEye, FaEdit, FaShare, 
@@ -36,42 +34,6 @@ const mockFiles = [
     tags: ['finance', 'budget'],
     starred: false,
     shared: true
-  },
-  {
-    id: '3',
-    name: 'Team Photo.jpg',
-    type: 'image',
-    size: 5242880,
-    createdAt: new Date('2024-01-05'),
-    modifiedAt: new Date('2024-01-05'),
-    owner: 'Mike Johnson',
-    tags: ['team', 'photo'],
-    starred: false,
-    shared: false
-  },
-  {
-    id: '4',
-    name: 'Presentation.pptx',
-    type: 'powerpoint',
-    size: 15728640,
-    createdAt: new Date('2024-01-12'),
-    modifiedAt: new Date('2024-01-22'),
-    owner: 'Sarah Wilson',
-    tags: ['presentation', 'client'],
-    starred: true,
-    shared: true
-  },
-  {
-    id: '5',
-    name: 'Meeting Recording.mp4',
-    type: 'video',
-    size: 104857600,
-    createdAt: new Date('2024-01-08'),
-    modifiedAt: new Date('2024-01-08'),
-    owner: 'David Brown',
-    tags: ['meeting', 'recording'],
-    starred: false,
-    shared: false
   }
 ];
 
@@ -89,13 +51,6 @@ const mockFolders = [
     itemCount: 8,
     createdAt: new Date('2024-01-02'),
     color: '#10B981'
-  },
-  {
-    id: 'f3',
-    name: 'Media',
-    itemCount: 25,
-    createdAt: new Date('2024-01-03'),
-    color: '#F59E0B'
   }
 ];
 
@@ -115,14 +70,11 @@ const FileManager = () => {
   const [showShareModal, setShowShareModal] = useState(false);
   const [editingFile, setEditingFile] = useState(null);
   const [sharingFile, setSharingFile] = useState(null);
-  const [currentFolder, setCurrentFolder] = useState(null);
-  const [breadcrumb, setBreadcrumb] = useState([]);
   const [uploadFiles, setUploadFiles] = useState([]);
   const [shareEmail, setShareEmail] = useState('');
   const [shareMessage, setShareMessage] = useState('');
 
   useEffect(() => {
-    // Use mock data for now
     setFiles(mockFiles);
     setFolders(mockFolders);
     setLoading(false);
@@ -217,7 +169,7 @@ const FileManager = () => {
   };
 
   const toggleItemSelection = (id) => {
-    setSelectedItems(prev => 
+    setSelectedItems(prev =>
       prev.includes(id) 
         ? prev.filter(item => item !== id)
         : [...prev, id]
@@ -259,7 +211,7 @@ const FileManager = () => {
   const handleSaveEdit = () => {
     if (!editingFile) return;
     
-    setFiles(prev => prev.map(file => 
+    setFiles(prev => prev.map(file =>
       file.id === editingFile.id 
         ? { ...editingFile, modifiedAt: new Date() }
         : file
@@ -285,8 +237,7 @@ const FileManager = () => {
   const handleSendShare = () => {
     if (!sharingFile || !shareEmail) return;
     
-    // Update file as shared
-    setFiles(prev => prev.map(file => 
+    setFiles(prev => prev.map(file =>
       file.id === sharingFile.id 
         ? { ...file, shared: true }
         : file
@@ -300,7 +251,6 @@ const FileManager = () => {
   };
 
   const handleDownload = (file) => {
-    // Simulate download
     const link = document.createElement('a');
     link.href = '#';
     link.download = file.name;
@@ -314,7 +264,7 @@ const FileManager = () => {
   };
 
   const handleToggleStar = (fileId) => {
-    setFiles(prev => prev.map(file => 
+    setFiles(prev => prev.map(file =>
       file.id === fileId 
         ? { ...file, starred: !file.starred }
         : file
@@ -343,52 +293,57 @@ const FileManager = () => {
     
     return (
       <div 
-        className={`group relative bg-white dark:bg-gray-800 rounded-2xl shadow-lg hover:shadow-2xl transition-all duration-500 transform hover:scale-105 hover:-translate-y-2 border-2 cursor-pointer overflow-hidden backdrop-blur-sm ${
-          isSelected ? 'border-blue-500 bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-blue-900/30 dark:to-indigo-900/30 shadow-blue-200 dark:shadow-blue-900/50' : 'border-gray-200 dark:border-gray-700 hover:border-blue-300 dark:hover:border-blue-600'
+        className={`group relative bg-white rounded-2xl shadow-lg hover:shadow-2xl transition-all duration-500 transform hover:scale-105 hover:-translate-y-2 border-2 cursor-pointer overflow-hidden backdrop-blur-sm ${
+          isSelected ? 'border-blue-500 bg-gradient-to-br from-blue-50 to-indigo-50 shadow-blue-200' : 'border-gray-200 hover:border-blue-300'
         }`}
         onClick={() => toggleItemSelection(file.id)}
       >
-        <div className="absolute inset-0 bg-gradient-to-br from-transparent via-transparent to-blue-50/20 dark:to-blue-900/10 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
         <div className="relative p-6">
-          {/* File Icon & Actions */}
           <div className="flex items-center justify-between mb-4">
             <div className="flex items-center gap-3">
               <FileIcon className={`w-8 h-8 ${getFileColor(file.type)}`} />
               {file.starred && <FaStar className="w-4 h-4 text-yellow-500" />}
               {file.shared && <FaShare className="w-4 h-4 text-blue-500" />}
             </div>
-            <div className="flex gap-2 opacity-0 group-hover:opacity-100 transition-all duration-300 transform translate-x-2 group-hover:translate-x-0">
+            <div className="flex gap-2 opacity-0 group-hover:opacity-100 transition-all duration-300">
               <button 
-                onClick={(e) => { e.stopPropagation(); handleToggleStar(file.id); }}
-                className="p-2 hover:bg-yellow-100 dark:hover:bg-yellow-900/30 rounded-lg transition-all duration-200 hover:scale-110"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  handleToggleStar(file.id);
+                }}
+                className="p-2 hover:bg-yellow-100 rounded-lg transition-all duration-200 hover:scale-110"
               >
                 <FaStar className={`w-3 h-3 ${file.starred ? 'text-yellow-500' : 'text-gray-400'}`} />
               </button>
               <button 
-                onClick={(e) => { e.stopPropagation(); handleDownload(file); }}
-                className="p-2 hover:bg-green-100 dark:hover:bg-green-900/30 rounded-lg transition-all duration-200 hover:scale-110"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  handleDownload(file);
+                }}
+                className="p-2 hover:bg-green-100 rounded-lg transition-all duration-200 hover:scale-110"
               >
                 <FaDownload className="w-3 h-3 text-gray-500" />
               </button>
               <button 
-                onClick={(e) => { e.stopPropagation(); handleEdit(file); }}
-                className="p-2 hover:bg-blue-100 dark:hover:bg-blue-900/30 rounded-lg transition-all duration-200 hover:scale-110"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  handleEdit(file);
+                }}
+                className="p-2 hover:bg-blue-100 rounded-lg transition-all duration-200 hover:scale-110"
               >
                 <FaEdit className="w-3 h-3 text-gray-500" />
               </button>
             </div>
           </div>
           
-          {/* File Name */}
-          <h3 className="font-semibold text-gray-900 dark:text-white mb-3 truncate text-lg group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors duration-300" title={file.name}>
+          <h3 className="font-semibold text-gray-900 mb-3 truncate text-lg group-hover:text-blue-600 transition-colors duration-300" title={file.name}>
             {file.name}
           </h3>
           
-          {/* File Info */}
-          <div className="space-y-2 text-sm text-gray-600 dark:text-gray-400">
+          <div className="space-y-2 text-sm text-gray-600">
             <div className="flex justify-between items-center py-1">
               <span className="font-medium">Size:</span>
-              <span className="bg-gray-100 dark:bg-gray-700 px-2 py-1 rounded-full text-xs">{formatFileSize(file.size)}</span>
+              <span className="bg-gray-100 px-2 py-1 rounded-full text-xs">{formatFileSize(file.size)}</span>
             </div>
             <div className="flex justify-between items-center py-1">
               <span className="font-medium">Modified:</span>
@@ -400,16 +355,15 @@ const FileManager = () => {
             </div>
           </div>
           
-          {/* Tags */}
           {file.tags.length > 0 && (
             <div className="mt-4 flex flex-wrap gap-2">
               {file.tags.slice(0, 2).map(tag => (
-                <span key={tag} className="px-3 py-1 bg-gradient-to-r from-blue-100 to-indigo-100 dark:from-blue-900/30 dark:to-indigo-900/30 text-blue-700 dark:text-blue-300 text-xs rounded-full font-medium border border-blue-200 dark:border-blue-700">
+                <span key={tag} className="text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded-full">
                   #{tag}
                 </span>
               ))}
               {file.tags.length > 2 && (
-                <span className="text-xs text-gray-500 bg-gray-100 dark:bg-gray-700 px-2 py-1 rounded-full">+{file.tags.length - 2}</span>
+                <span className="text-xs text-gray-500 bg-gray-100 px-2 py-1 rounded-full">+{file.tags.length - 2}</span>
               )}
             </div>
           )}
@@ -420,23 +374,21 @@ const FileManager = () => {
 
   const FolderCard = ({ folder }) => (
     <div 
-      className="group bg-white dark:bg-gray-800 rounded-2xl shadow-lg hover:shadow-2xl transition-all duration-500 transform hover:scale-105 hover:-translate-y-1 border border-gray-200 dark:border-gray-700 hover:border-blue-300 dark:hover:border-blue-600 cursor-pointer overflow-hidden backdrop-blur-sm"
-      onClick={() => setCurrentFolder(folder.id)}
+      className="group bg-white rounded-2xl shadow-lg hover:shadow-2xl transition-all duration-500 transform hover:scale-105 hover:-translate-y-1 border border-gray-200 hover:border-blue-300 cursor-pointer overflow-hidden backdrop-blur-sm"
+      onClick={() => setCurrentFolder(folder)}
     >
       <div className="relative p-6">
-        <div className="absolute inset-0 bg-gradient-to-br from-transparent via-transparent to-blue-50/10 dark:to-blue-900/5 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
         <div className="relative flex items-center gap-4 mb-4">
           <div className="relative">
             <FaFolder className="w-10 h-10 drop-shadow-lg" style={{ color: folder.color }} />
-            <div className="absolute inset-0 bg-gradient-to-br from-white/20 to-transparent rounded opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
           </div>
           <div className="flex-1">
-            <h3 className="font-semibold text-lg text-gray-900 dark:text-white group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors duration-300">{folder.name}</h3>
-            <p className="text-sm text-gray-600 dark:text-gray-400 bg-gray-100 dark:bg-gray-700 px-2 py-1 rounded-full inline-block">{folder.itemCount} items</p>
+            <h3 className="font-semibold text-lg text-gray-900 group-hover:text-blue-600 transition-colors duration-300">{folder.name}</h3>
+            <p className="text-sm text-gray-600 bg-gray-100 px-2 py-1 rounded-full inline-block">{folder.itemCount} items</p>
           </div>
         </div>
-        <div className="relative text-sm text-gray-600 dark:text-gray-400 mt-2">
-          <span className="font-medium">Created:</span> {formatDate(folder.createdAt)}
+        <div className="relative text-sm text-gray-600 mt-2">
+          <span className="font-medium">Created: {formatDate(folder.createdAt)}</span>
         </div>
       </div>
     </div>
@@ -447,13 +399,13 @@ const FileManager = () => {
       {/* Header */}
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
         <div>
-          <h1 className="text-3xl font-bold text-gray-900 dark:text-white flex items-center gap-3">
+          <h1 className="text-3xl font-bold text-gray-900 flex items-center gap-3">
             <div className="p-2 bg-gradient-to-r from-blue-500 to-purple-500 rounded-lg">
               <FaFolder className="text-white" />
             </div>
             Smart Files
           </h1>
-          <p className="text-gray-600 dark:text-gray-400 mt-1">
+          <p className="text-gray-600 mt-1">
             Intelligent file management with AI-powered organization
           </p>
         </div>
@@ -470,24 +422,22 @@ const FileManager = () => {
       </div>
 
       {/* Controls */}
-      <div className="flex flex-wrap gap-4 mb-6 p-4 bg-white dark:bg-gray-800 rounded-xl shadow-sm">
-        {/* Search */}
+      <div className="flex flex-wrap gap-4 mb-6 p-4 bg-white rounded-xl shadow-sm">
         <div className="relative flex-1 min-w-64">
           <FaSearch className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
           <input
             type="text"
             placeholder="Search files and folders..."
-            className="pl-10 pr-4 py-2 w-full border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+            className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-md focus:ring-primary focus:border-primary"
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
           />
         </div>
 
-        {/* Filter */}
         <select
           value={filterType}
           onChange={(e) => setFilterType(e.target.value)}
-          className="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+          className="px-3 py-2 border border-gray-300 rounded-md focus:ring-primary focus:border-primary"
         >
           <option value="all">All Files</option>
           <option value="pdf">PDF</option>
@@ -497,8 +447,7 @@ const FileManager = () => {
           <option value="word">Documents</option>
         </select>
 
-        {/* Sort */}
-        <div className="flex bg-gradient-to-r from-gray-100 to-gray-200 dark:from-gray-700 dark:to-gray-600 rounded-xl p-1 shadow-inner">
+        <div className="flex bg-gradient-to-r from-gray-100 to-gray-200 rounded-xl p-1 shadow-inner">
           {[
             { key: 'name', label: 'Name', icon: FaSortAmountDown },
             { key: 'size', label: 'Size', icon: FaCompress },
@@ -510,7 +459,7 @@ const FileManager = () => {
               className={`px-3 py-1 rounded-md text-sm font-medium transition-colors flex items-center gap-1 ${
                 sortBy === key
                   ? 'bg-blue-500 text-white'
-                  : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white'
+                  : 'text-gray-600 hover:text-gray-900'
               }`}
             >
               <Icon className="w-3 h-3" />
@@ -522,8 +471,7 @@ const FileManager = () => {
           ))}
         </div>
 
-        {/* View Mode */}
-        <div className="flex bg-gradient-to-r from-gray-100 to-gray-200 dark:from-gray-700 dark:to-gray-600 rounded-xl p-1 shadow-inner">
+        <div className="flex bg-gradient-to-r from-gray-100 to-gray-200 rounded-xl p-1 shadow-inner">
           {[
             { mode: 'grid', icon: FaTh },
             { mode: 'list', icon: FaList }
@@ -534,7 +482,7 @@ const FileManager = () => {
               className={`p-2 rounded-md transition-colors ${
                 viewMode === mode
                   ? 'bg-blue-500 text-white'
-                  : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white'
+                  : 'text-gray-600 hover:text-gray-900'
               }`}
             >
               <Icon className="w-4 h-4" />
@@ -545,9 +493,9 @@ const FileManager = () => {
 
       {/* Selected Items Actions */}
       {selectedItems.length > 0 && (
-        <div className="mb-6 p-6 bg-gradient-to-r from-blue-50 via-indigo-50 to-blue-50 dark:from-blue-900/30 dark:via-indigo-900/30 dark:to-blue-900/30 rounded-2xl border-2 border-blue-200 dark:border-blue-700 shadow-lg backdrop-blur-sm">
+        <div className="mb-6 p-6 bg-gradient-to-r from-blue-50 via-indigo-50 to-blue-50 rounded-2xl border-2 border-blue-200 shadow-lg backdrop-blur-sm">
           <div className="flex items-center justify-between">
-            <span className="text-blue-800 dark:text-blue-200 font-semibold text-lg">
+            <span className="text-blue-800 font-semibold text-lg">
               ✨ {selectedItems.length} item(s) selected
             </span>
             <div className="flex gap-3">
@@ -591,7 +539,7 @@ const FileManager = () => {
             {/* Folders */}
             {folders.length > 0 && (
               <div>
-                <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-4 flex items-center gap-2">
+                <h2 className="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
                   <FaFolder className="text-blue-500" />
                   Folders
                 </h2>
@@ -605,7 +553,7 @@ const FileManager = () => {
 
             {/* Files */}
             <div>
-              <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-4 flex items-center gap-2">
+              <h2 className="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
                 <FaFile className="text-gray-500" />
                 Files ({filteredAndSortedFiles.length})
               </h2>
@@ -617,29 +565,29 @@ const FileManager = () => {
                   ))}
                 </div>
               ) : (
-                <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm overflow-hidden">
+                <div className="bg-white rounded-xl shadow-sm overflow-hidden">
                   <div className="overflow-x-auto">
-                    <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
-                      <thead className="bg-gray-50 dark:bg-gray-700">
+                    <table className="min-w-full divide-y divide-gray-200">
+                      <thead className="bg-gray-50">
                         <tr>
-                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                             Name
                           </th>
-                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                             Size
                           </th>
-                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                             Modified
                           </th>
-                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                             Owner
                           </th>
-                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                             Actions
                           </th>
                         </tr>
                       </thead>
-                      <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
+                      <tbody className="bg-white divide-y divide-gray-200">
                         {filteredAndSortedFiles.map(file => {
                           const FileIcon = getFileIcon(file.type);
                           const isSelected = selectedItems.includes(file.id);
@@ -647,8 +595,8 @@ const FileManager = () => {
                           return (
                             <tr 
                               key={file.id} 
-                              className={`hover:bg-gray-50 dark:hover:bg-gray-700 cursor-pointer ${
-                                isSelected ? 'bg-blue-50 dark:bg-blue-900/20' : ''
+                              className={`hover:bg-gray-50 cursor-pointer ${
+                                isSelected ? 'bg-blue-50' : ''
                               }`}
                               onClick={() => toggleItemSelection(file.id)}
                             >
@@ -656,7 +604,7 @@ const FileManager = () => {
                                 <div className="flex items-center">
                                   <FileIcon className={`w-5 h-5 mr-3 ${getFileColor(file.type)}`} />
                                   <div>
-                                    <div className="text-sm font-medium text-gray-900 dark:text-white">
+                                    <div className="text-sm font-medium text-gray-900">
                                       {file.name}
                                     </div>
                                     <div className="flex gap-1 mt-1">
@@ -666,37 +614,49 @@ const FileManager = () => {
                                   </div>
                                 </div>
                               </td>
-                              <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
+                              <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                                 {formatFileSize(file.size)}
                               </td>
-                              <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
+                              <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                                 {formatDate(file.modifiedAt)}
                               </td>
-                              <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
+                              <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                                 {file.owner}
                               </td>
                               <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
                                 <div className="flex gap-2">
                                   <button 
-                                    onClick={(e) => { e.stopPropagation(); handleDownload(file); }}
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      handleDownload(file);
+                                    }}
                                     className="text-green-600 hover:text-green-900"
                                   >
                                     <FaDownload className="w-4 h-4" />
                                   </button>
                                   <button 
-                                    onClick={(e) => { e.stopPropagation(); handleShare(file); }}
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      handleShare(file);
+                                    }}
                                     className="text-blue-600 hover:text-blue-900"
                                   >
                                     <FaShare className="w-4 h-4" />
                                   </button>
                                   <button 
-                                    onClick={(e) => { e.stopPropagation(); handleEdit(file); }}
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      handleEdit(file);
+                                    }}
                                     className="text-yellow-600 hover:text-yellow-900"
                                   >
                                     <FaEdit className="w-4 h-4" />
                                   </button>
                                   <button 
-                                    onClick={(e) => { e.stopPropagation(); handleDelete([file.id]); }}
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      handleDelete([file.id]);
+                                    }}
                                     className="text-red-600 hover:text-red-900"
                                   >
                                     <FaTrash className="w-4 h-4" />
@@ -719,24 +679,21 @@ const FileManager = () => {
       {/* Upload Modal */}
       {showUpload && (
         <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-          <div className="bg-white dark:bg-gray-800 rounded-3xl max-w-lg w-full p-8 shadow-2xl border border-gray-200 dark:border-gray-700 transform animate-in slide-in-from-bottom-4 duration-300">
+          <div className="bg-white rounded-3xl max-w-lg w-full p-8 shadow-2xl border border-gray-200">
             <div className="flex items-center justify-between mb-6">
-              <h2 className="text-xl font-bold text-gray-900 dark:text-white flex items-center gap-2">
+              <h2 className="text-xl font-bold text-gray-900 flex items-center gap-2">
                 <FaUpload className="text-blue-500" />
                 Upload Files
               </h2>
-              <button onClick={() => setShowUpload(false)} className="text-gray-500 hover:text-gray-700">
+              <button onClick={() => setShowUpload(false)} className="text-gray-400 hover:text-gray-600">
                 <FaTimes className="w-5 h-5" />
               </button>
             </div>
             
             <div className="space-y-4">
-              <div className="border-3 border-dashed border-blue-300 dark:border-blue-600 rounded-2xl p-12 text-center bg-gradient-to-br from-blue-50/50 to-indigo-50/50 dark:from-blue-900/20 dark:to-indigo-900/20 hover:from-blue-100/50 hover:to-indigo-100/50 transition-all duration-300">
-                <div className="relative mb-6">
-                  <FaUpload className="mx-auto text-6xl text-blue-500 animate-bounce" />
-                  <div className="absolute inset-0 bg-blue-500/20 rounded-full blur-xl animate-pulse"></div>
-                </div>
-                <p className="text-gray-700 dark:text-gray-300 mb-6 text-lg font-medium">Drag & drop files here or click to browse</p>
+              <div className="border-3 border-dashed border-blue-300 rounded-2xl p-12 text-center bg-gradient-to-br from-blue-50/50 to-indigo-50/50">
+                <FaUpload className="mx-auto text-6xl text-blue-500 animate-bounce mb-6" />
+                <p className="text-gray-700 mb-6 text-lg font-medium">Drag & drop files here or click to browse</p>
                 <input
                   type="file"
                   multiple
@@ -754,10 +711,10 @@ const FileManager = () => {
               
               {uploadFiles.length > 0 && (
                 <div className="space-y-2">
-                  <h3 className="font-medium text-gray-900 dark:text-white">Selected Files:</h3>
+                  <h3 className="font-medium">Selected Files:</h3>
                   {uploadFiles.map((file, index) => (
-                    <div key={index} className="flex items-center justify-between p-2 bg-gray-50 dark:bg-gray-700 rounded">
-                      <span className="text-sm text-gray-700 dark:text-gray-300">{file.name}</span>
+                    <div key={index} className="flex items-center justify-between p-2 bg-gray-50 rounded">
+                      <span className="text-sm">{file.name}</span>
                       <span className="text-xs text-gray-500">{formatFileSize(file.size)}</span>
                     </div>
                   ))}
@@ -767,7 +724,7 @@ const FileManager = () => {
               <div className="flex justify-end gap-3">
                 <button
                   onClick={() => setShowUpload(false)}
-                  className="px-4 py-2 text-gray-600 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-200"
+                  className="px-4 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50"
                 >
                   Cancel
                 </button>
@@ -787,39 +744,39 @@ const FileManager = () => {
       {/* Edit Modal */}
       {showEditModal && editingFile && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white dark:bg-gray-800 rounded-2xl max-w-md w-full p-6">
+          <div className="bg-white rounded-2xl max-w-md w-full p-6">
             <div className="flex items-center justify-between mb-6">
-              <h2 className="text-xl font-bold text-gray-900 dark:text-white flex items-center gap-2">
+              <h2 className="text-xl font-bold text-gray-900 flex items-center gap-2">
                 <FaEdit className="text-yellow-500" />
                 Edit File
               </h2>
-              <button onClick={() => setShowEditModal(false)} className="text-gray-500 hover:text-gray-700">
+              <button onClick={() => setShowEditModal(false)} className="text-gray-400 hover:text-gray-600">
                 <FaTimes className="w-5 h-5" />
               </button>
             </div>
             
             <div className="space-y-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                <label className="block text-sm font-medium text-gray-700 mb-2">
                   File Name
                 </label>
                 <input
                   type="text"
                   value={editingFile.name}
                   onChange={(e) => setEditingFile({...editingFile, name: e.target.value})}
-                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-primary focus:border-primary"
                 />
               </div>
               
               <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                <label className="block text-sm font-medium text-gray-700 mb-2">
                   Tags (comma separated)
                 </label>
                 <input
                   type="text"
                   value={editingFile.tags?.join(', ') || ''}
-                  onChange={(e) => setEditingFile({...editingFile, tags: e.target.value.split(',').map(t => t.trim()).filter(t => t)})}
-                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                  onChange={(e) => setEditingFile({...editingFile, tags: e.target.value.split(',').map(tag => tag.trim())})}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-primary focus:border-primary"
                   placeholder="important, work, project"
                 />
               </div>
@@ -832,7 +789,7 @@ const FileManager = () => {
                   onChange={(e) => setEditingFile({...editingFile, starred: e.target.checked})}
                   className="rounded"
                 />
-                <label htmlFor="starred" className="text-sm text-gray-700 dark:text-gray-300">
+                <label htmlFor="starred" className="text-sm font-medium text-gray-700">
                   Mark as starred
                 </label>
               </div>
@@ -840,7 +797,7 @@ const FileManager = () => {
               <div className="flex justify-end gap-3">
                 <button
                   onClick={() => setShowEditModal(false)}
-                  className="px-4 py-2 text-gray-600 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-200"
+                  className="px-4 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50"
                 >
                   Cancel
                 </button>
@@ -859,44 +816,44 @@ const FileManager = () => {
       {/* Share Modal */}
       {showShareModal && sharingFile && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white dark:bg-gray-800 rounded-2xl max-w-md w-full p-6">
+          <div className="bg-white rounded-2xl max-w-md w-full p-6">
             <div className="flex items-center justify-between mb-6">
-              <h2 className="text-xl font-bold text-gray-900 dark:text-white flex items-center gap-2">
+              <h2 className="text-xl font-bold text-gray-900 flex items-center gap-2">
                 <FaShare className="text-green-500" />
                 Share File
               </h2>
-              <button onClick={() => setShowShareModal(false)} className="text-gray-500 hover:text-gray-700">
+              <button onClick={() => setShowShareModal(false)} className="text-gray-400 hover:text-gray-600">
                 <FaTimes className="w-5 h-5" />
               </button>
             </div>
             
             <div className="space-y-4">
-              <div className="p-3 bg-gray-50 dark:bg-gray-700 rounded-lg">
-                <p className="font-medium text-gray-900 dark:text-white">{sharingFile.name}</p>
-                <p className="text-sm text-gray-500 dark:text-gray-400">{formatFileSize(sharingFile.size)}</p>
+              <div className="p-3 bg-gray-50 rounded-lg">
+                <p className="font-medium">{sharingFile.name}</p>
+                <p className="text-sm text-gray-600">{formatFileSize(sharingFile.size)}</p>
               </div>
               
               <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                <label className="block text-sm font-medium text-gray-700 mb-2">
                   Share with (Email)
                 </label>
                 <input
                   type="email"
                   value={shareEmail}
                   onChange={(e) => setShareEmail(e.target.value)}
-                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-primary focus:border-primary"
                   placeholder="user@example.com"
                 />
               </div>
               
               <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                <label className="block text-sm font-medium text-gray-700 mb-2">
                   Message (Optional)
                 </label>
                 <textarea
                   value={shareMessage}
                   onChange={(e) => setShareMessage(e.target.value)}
-                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-primary focus:border-primary"
                   rows="3"
                   placeholder="Optional message..."
                 />
@@ -905,7 +862,7 @@ const FileManager = () => {
               <div className="flex justify-end gap-3">
                 <button
                   onClick={() => setShowShareModal(false)}
-                  className="px-4 py-2 text-gray-600 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-200"
+                  className="px-4 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50"
                 >
                   Cancel
                 </button>

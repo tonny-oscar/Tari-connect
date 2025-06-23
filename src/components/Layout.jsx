@@ -33,7 +33,6 @@ function Layout() {
     navigate('/login');
   };
   
-  // Check if a path is active
   const isActive = (path) => {
     return location.pathname.startsWith(path);
   };
@@ -54,19 +53,19 @@ function Layout() {
   ];
 
   return (
-    <div className="flex h-screen bg-gray-50 dark:bg-gray-900">
+    <div className="flex h-screen bg-gray-50">
       {/* Sidebar */}
-      <div className={`${sidebarOpen ? 'w-64' : 'w-20'} bg-white dark:bg-gray-800 border-r border-gray-200 dark:border-gray-700 transition-all duration-300 flex flex-col`}>
+      <div className={`${sidebarOpen ? 'w-64' : 'w-20'} bg-white border-r border-gray-200 transition-all duration-300 flex flex-col`}>
         {/* Logo */}
-        <div className="p-4 flex items-center justify-between border-b border-gray-200 dark:border-gray-700">
+        <div className="p-4 border-b border-gray-200 flex items-center justify-between">
           {sidebarOpen && (
-            <Link to="/dashboard" className="text-xl font-bold text-gray-900 dark:text-white">
+            <Link to="/dashboard" className="text-xl font-bold">
               <span className="text-primary">Tari</span>Connect
             </Link>
           )}
           <button 
-            onClick={() => setSidebarOpen(!sidebarOpen)} 
-            className="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-600 dark:text-gray-400"
+            onClick={() => setSidebarOpen(!sidebarOpen)}
+            className="p-2 rounded-lg hover:bg-gray-100"
           >
             <FaBars />
           </button>
@@ -82,7 +81,7 @@ function Layout() {
                 className={`flex items-center px-3 py-2.5 rounded-lg transition-colors ${
                   isActive(item.path)
                     ? 'bg-primary text-white'
-                    : 'text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700'
+                    : 'text-gray-700 hover:bg-gray-100'
                 }`}
               >
                 <span className="text-lg">{item.icon}</span>
@@ -93,7 +92,7 @@ function Layout() {
         </div>
         
         {/* User section */}
-        <div className="p-4 border-t border-gray-200 dark:border-gray-700">
+        <div className="p-4 border-t border-gray-200">
           <div className="flex items-center">
             <div className="w-10 h-10 rounded-full bg-primary flex items-center justify-center text-white font-semibold">
               {userData?.name ? userData.name.charAt(0).toUpperCase() : <FaUser />}
@@ -101,13 +100,14 @@ function Layout() {
             
             {sidebarOpen && (
               <div className="ml-3 flex-1">
-                <p className="text-sm font-medium text-gray-900 dark:text-white">
+                <p className="text-sm font-medium text-gray-900">
                   {userData?.name || user?.email}
                 </p>
-                <div className="flex items-center text-xs text-gray-500 dark:text-gray-400">
+                <div className="text-xs text-gray-500">
                   {userData?.role === 'admin' ? (
                     <Link to="/admin" className="flex items-center hover:text-primary">
-                      <FaUserShield className="mr-1" /> Admin
+                      <FaUserShield className="mr-1" />
+                      Admin
                     </Link>
                   ) : (
                     <span>User</span>
@@ -119,7 +119,7 @@ function Layout() {
             {sidebarOpen && (
               <button
                 onClick={handleLogout}
-                className="p-2 text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300"
+                className="p-2 text-gray-400 hover:text-gray-600"
                 title="Logout"
               >
                 <FaSignOutAlt />
@@ -132,26 +132,26 @@ function Layout() {
       {/* Main content */}
       <div className="flex-1 flex flex-col overflow-hidden">
         {/* Header */}
-        <header className="bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700">
+        <header className="bg-white border-b border-gray-200">
           <div className="px-6 py-4 flex items-center justify-between">
-            <h1 className="text-xl font-semibold text-gray-900 dark:text-white">
+            <h1 className="text-2xl font-semibold text-gray-900">
               {navItems.find(item => isActive(item.path))?.label || 'Dashboard'}
             </h1>
             
             <div className="flex items-center space-x-4">
               <ThemeToggle />
-              <button className="p-2 text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300">
+              <button className="p-2 text-gray-400 hover:text-gray-600">
                 <FaBell />
               </button>
               <Link 
                 to="/profile" 
-                className="p-2 text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300"
+                className="p-2 text-gray-400 hover:text-gray-600"
               >
                 <FaUser />
               </Link>
               <button
                 onClick={handleLogout}
-                className="p-2 text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300"
+                className="p-2 text-gray-400 hover:text-gray-600"
                 title="Logout"
               >
                 <FaSignOutAlt />

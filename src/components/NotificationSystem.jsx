@@ -1,8 +1,23 @@
 import React, { useEffect, useState } from 'react';
-import { collection, onSnapshot, query, orderBy, where, updateDoc, doc, serverTimestamp } from 'firebase/firestore';
+import {
+  collection,
+  onSnapshot,
+  query,
+  orderBy,
+  where,
+  updateDoc,
+  doc,
+  serverTimestamp
+} from 'firebase/firestore';
 import { db } from '../services/firebase';
 import { useAuth } from '../store/useAuth';
-import { FaBell, FaTimes, FaEnvelope, FaExclamationTriangle, FaCheck } from 'react-icons/fa';
+import {
+  FaBell,
+  FaTimes,
+  FaEnvelope,
+  FaExclamationTriangle,
+  FaCheck
+} from 'react-icons/fa';
 
 function NotificationSystem() {
   const { user } = useAuth();
@@ -10,7 +25,6 @@ function NotificationSystem() {
   const [showNotifications, setShowNotifications] = useState(false);
   const [unreadCount, setUnreadCount] = useState(0);
 
-  // Fetch notifications
   useEffect(() => {
     if (!user) return;
 
@@ -20,27 +34,38 @@ function NotificationSystem() {
       orderBy('createdAt', 'desc')
     );
 
-    const unsubscribe = onSnapshot(q, (snapshot) => {
-      const notifs = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+    const unsubscribe = onSnapshot(q, async (snapshot) => {
+      const notifs = snapshot.docs.map(doc => ({
+        id: doc.id,
+        ...doc.data()
+      }));
+
       setNotifications(notifs);
-      setUnreadCount(notifs.filter(n => !n.read).length);
-      
-      // Check for browser notification permission
-      if (Notification.permission !== 'granted' && Notification.permission !== 'denied') {
-        Notification.requestPermission();
+      const unread = notifs.filter(n => !n.read);
+      setUnreadCount(unread.length);
+
+      // Request permission for browser notifications
+      if (
+        Notification.permission !== 'granted' &&
+        Notification.permission !== 'denied'
+      ) {
+        await Notification.requestPermission();
       }
-      
-      // Show browser notifications for new unread notifications
-      const newNotifs = notifs.filter(n => !n.read && !n.browserNotified);
-      newNotifs.forEach(notification => {
-        if (Notification.permission === 'granted') {
+
+      // Show browser notifications for new unread ones
+      notifs.forEach(async (notification) => {
+        if (
+          Notification.permission === 'granted' &&
+          !notification.browserNotified &&
+          !notification.read
+        ) {
           new Notification(notification.title, {
             body: notification.message,
             icon: '/notification-icon.png'
           });
-          
+
           // Mark as browser notified
-          updateDoc(doc(db, 'notifications', notification.id), {
+          await updateDoc(doc(db, 'notifications', notification.id), {
             browserNotified: true
           });
         }
@@ -50,7 +75,6 @@ function NotificationSystem() {
     return () => unsubscribe();
   }, [user]);
 
-  // Mark notification as read
   const markAsRead = async (notificationId) => {
     await updateDoc(doc(db, 'notifications', notificationId), {
       read: true,
@@ -58,10 +82,8 @@ function NotificationSystem() {
     });
   };
 
-  // Mark all as read
   const markAllAsRead = async () => {
     const unreadNotifications = notifications.filter(n => !n.read);
-    
     for (const notification of unreadNotifications) {
       await updateDoc(doc(db, 'notifications', notification.id), {
         read: true,
@@ -70,7 +92,6 @@ function NotificationSystem() {
     }
   };
 
-  // Get icon based on notification type
   const getNotificationIcon = (type) => {
     switch (type) {
       case 'message':
@@ -104,14 +125,15 @@ function NotificationSystem() {
             <h3 className="font-semibold">Notifications</h3>
             <div className="flex gap-2">
               {unreadCount > 0 && (
-                <button 
+                <button
                   onClick={markAllAsRead}
                   className="text-xs text-blue-600 hover:underline flex items-center gap-1"
                 >
-                  <FaCheck /> Mark all as read
+                  <FaCheck />
+                  Mark All Read
                 </button>
               )}
-              <button 
+              <button
                 onClick={() => setShowNotifications(false)}
                 className="text-gray-500 hover:text-gray-700"
               >
@@ -119,17 +141,19 @@ function NotificationSystem() {
               </button>
             </div>
           </div>
-          
+
           <div className="max-h-96 overflow-y-auto">
             {notifications.length === 0 ? (
               <div className="p-4 text-center text-gray-500">
                 No notifications
               </div>
             ) : (
-              notifications.map(notification => (
-                <div 
+              notifications.map((notification) => (
+                <div
                   key={notification.id}
-                  className={`p-3 border-b hover:bg-gray-50 cursor-pointer ${!notification.read ? 'bg-blue-50' : ''}`}
+                  className={`p-3 border-b hover:bg-gray-50 cursor-pointer ${
+                    !notification.read ? 'bg-blue-50' : ''
+                  }`}
                   onClick={() => markAsRead(notification.id)}
                 >
                   <div className="flex gap-3">
@@ -137,12 +161,22 @@ function NotificationSystem() {
                       {getNotificationIcon(notification.type)}
                     </div>
                     <div className="flex-1">
-                      <p className={`font-medium ${!notification.read ? 'text-blue-800' : ''}`}>
+                      <p
+                        className={`font-medium ${
+                          !notification.read ? 'text-blue-800' : ''
+                        }`}
+                      >
                         {notification.title}
                       </p>
-                      <p className="text-sm text-gray-600">{notification.message}</p>
+                      <p className="text-sm text-gray-600">
+                        {notification.message}
+                      </p>
                       <p className="text-xs text-gray-500 mt-1">
-                        {notification.createdAt ? new Date(notification.createdAt.toDate()).toLocaleString() : ''}
+                        {notification.createdAt
+                          ? new Date(
+                              notification.createdAt.toDate()
+                            ).toLocaleString()
+                          : ''}
                       </p>
                     </div>
                   </div>

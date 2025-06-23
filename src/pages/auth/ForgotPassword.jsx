@@ -1,8 +1,9 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { sendPasswordResetEmail } from 'firebase/auth';
 import { auth } from '../../services/firebase';
 import { FaEnvelope, FaArrowLeft, FaCheck } from 'react-icons/fa';
+
 const ForgotPassword = () => {
   const [email, setEmail] = useState('');
   const [loading, setLoading] = useState(false);
@@ -16,16 +17,18 @@ const ForgotPassword = () => {
     return false;
   });
 
+  useEffect(() => {
+    if (isDark) {
+      document.documentElement.classList.add('dark');
+    } else {
+      document.documentElement.classList.remove('dark');
+    }
+  }, [isDark]);
+
   const toggleTheme = () => {
     const newTheme = !isDark;
     setIsDark(newTheme);
-    if (newTheme) {
-      document.documentElement.classList.add('dark');
-      localStorage.setItem('theme', 'dark');
-    } else {
-      document.documentElement.classList.remove('dark');
-      localStorage.setItem('theme', 'light');
-    }
+    localStorage.setItem('theme', newTheme ? 'dark' : 'light');
   };
 
   const handleSubmit = async (e) => {
@@ -44,20 +47,20 @@ const ForgotPassword = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-primary-50 to-blue-50 dark:from-gray-900 dark:to-gray-800 flex items-center justify-center p-4">
+    <div className="min-h-screen bg-gradient-to-br from-primary-50 to-blue-50 flex items-center justify-center p-4">
       <div className="max-w-md w-full">
         {/* Theme Toggle */}
         <div className="flex justify-end mb-4">
           <button
             onClick={toggleTheme}
-            className="p-2 rounded-lg bg-white dark:bg-gray-800 shadow-md hover:shadow-lg transition-all duration-200"
+            className="p-2 rounded-lg bg-white shadow-md hover:shadow-lg transition-all duration-200"
           >
             {isDark ? '☀️' : '🌙'}
           </button>
         </div>
 
         {/* Forgot Password Card */}
-        <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-xl p-8 border border-gray-100 dark:border-gray-700">
+        <div className="bg-white dark:bg-gray-800 rounded-xl shadow-md p-8">
           {/* Header */}
           <div className="text-center mb-8">
             <div className="w-16 h-16 bg-gradient-to-r from-primary to-primary-600 rounded-2xl flex items-center justify-center mx-auto mb-4">
@@ -70,17 +73,16 @@ const ForgotPassword = () => {
           </div>
 
           {success ? (
-            /* Success State */
             <div className="text-center">
-              <div className="w-16 h-16 bg-green-100 dark:bg-green-900/20 rounded-full flex items-center justify-center mx-auto mb-4">
-                <FaCheck className="w-8 h-8 text-green-600 dark:text-green-400" />
+              <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                <FaCheck className="text-green-600 text-2xl" />
               </div>
               <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">Check your email</h3>
               <p className="text-gray-600 dark:text-gray-400 mb-6">
                 We've sent a password reset link to <strong>{email}</strong>
               </p>
               <div className="space-y-4">
-                <p className="text-sm text-gray-500 dark:text-gray-400">
+                <p className="text-sm text-gray-500 dark:text-gray-300">
                   Didn't receive the email? Check your spam folder or try again.
                 </p>
                 <button
@@ -98,14 +100,13 @@ const ForgotPassword = () => {
             <>
               {/* Error Message */}
               {error && (
-                <div className="mb-6 p-4 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg">
-                  <p className="text-red-600 dark:text-red-400 text-sm">{error}</p>
+                <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-lg">
+                  <p className="text-red-600 text-sm">{error}</p>
                 </div>
               )}
 
               {/* Form */}
               <form onSubmit={handleSubmit} className="space-y-6">
-                {/* Email Field */}
                 <div>
                   <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                     Email Address
@@ -118,7 +119,7 @@ const ForgotPassword = () => {
                       type="email"
                       value={email}
                       onChange={(e) => setEmail(e.target.value)}
-                      className="block w-full pl-10 pr-3 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400"
+                      className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent disabled:opacity-50 dark:bg-gray-700 dark:text-white"
                       placeholder="Enter your email address"
                       required
                       disabled={loading}
@@ -126,7 +127,6 @@ const ForgotPassword = () => {
                   </div>
                 </div>
 
-                {/* Submit Button */}
                 <button
                   type="submit"
                   disabled={loading}
@@ -156,7 +156,7 @@ const ForgotPassword = () => {
 
         {/* Footer */}
         <div className="text-center mt-8">
-          <p className="text-sm text-gray-500 dark:text-gray-400">
+          <p className="text-gray-500 dark:text-gray-400 text-sm">
             © 2024 TariConnect. All rights reserved.
           </p>
         </div>

@@ -1,7 +1,14 @@
 // src/components/ChatBox.jsx
 import React, { useEffect, useRef, useState } from 'react';
 import { db } from '../services/firebase';
-import { collection, addDoc, query, orderBy, onSnapshot, serverTimestamp } from 'firebase/firestore';
+import {
+  collection,
+  addDoc,
+  query,
+  orderBy,
+  onSnapshot,
+  serverTimestamp
+} from 'firebase/firestore';
 import useAuth from '../store/useAuth';
 
 const ChatBox = ({ conversationId }) => {
@@ -17,7 +24,10 @@ const ChatBox = ({ conversationId }) => {
     );
 
     const unsubscribe = onSnapshot(q, (snapshot) => {
-      const msgs = snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
+      const msgs = snapshot.docs.map((doc) => ({
+        id: doc.id,
+        ...doc.data(),
+      }));
       setMessages(msgs);
     });
 
@@ -57,7 +67,10 @@ const ChatBox = ({ conversationId }) => {
           onChange={(e) => setMessage(e.target.value)}
           placeholder="Type a message..."
         />
-        <button className="bg-blue-500 text-white p-2 rounded-r" onClick={sendMessage}>
+        <button
+          className="bg-primary text-white p-2 rounded-r hover:bg-primary-dark transition-colors"
+          onClick={sendMessage}
+        >
           Send
         </button>
       </div>

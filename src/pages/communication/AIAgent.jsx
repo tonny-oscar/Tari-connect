@@ -12,6 +12,12 @@ const AIAgent = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [aiLanguage, setAiLanguage] = useState('en');
   const [aiStyle, setAiStyle] = useState('professional');
+  const [autoReplies, setAutoReplies] = useState([]);
+  const [templates, setTemplates] = useState([]);
+  const [showAutoReplyModal, setShowAutoReplyModal] = useState(false);
+  const [showTemplateModal, setShowTemplateModal] = useState(false);
+  const [newAutoReply, setNewAutoReply] = useState({ keyword: '', response: '', active: true });
+  const [newTemplate, setNewTemplate] = useState({ name: '', content: '', category: 'general' });
 
   useEffect(() => {
     // Load saved AI settings
@@ -57,13 +63,6 @@ const AIAgent = () => {
     setTemplates(updated);
     localStorage.setItem('templates', JSON.stringify(updated));
   };
-
-  const [autoReplies, setAutoReplies] = useState([]);
-  const [templates, setTemplates] = useState([]);
-  const [showAutoReplyModal, setShowAutoReplyModal] = useState(false);
-  const [showTemplateModal, setShowTemplateModal] = useState(false);
-  const [newAutoReply, setNewAutoReply] = useState({ keyword: '', response: '', active: true });
-  const [newTemplate, setNewTemplate] = useState({ name: '', content: '', category: 'general' });
 
   const tabs = [
     { id: 'chatbot', name: '🤖 AI Chat', icon: FaBrain },
@@ -140,40 +139,6 @@ const AIAgent = () => {
             `So you're asking about "${currentInput}"? No problem, here's my take...`,
             `Got it! About "${currentInput}" - here's what I'd do...`
           ]
-        },
-        es: {
-          professional: [
-            `Gracias por su consulta sobre "${currentInput}". Recomiendo enfocarse en objetivos estratégicos.`,
-            `Basado en su pregunta sobre "${currentInput}", aquí está mi evaluación profesional...`,
-            `He analizado su solicitud sobre "${currentInput}". El enfoque óptimo sería...`
-          ],
-          friendly: [
-            `¡Excelente pregunta sobre "${currentInput}"! Me encantaría ayudarte con eso.`,
-            `¡Gracias por preguntar sobre "${currentInput}"! Esto es lo que pienso...`,
-            `¡Qué interesante! Sobre "${currentInput}", sugiero...`
-          ],
-          casual: [
-            `¡Buena pregunta sobre "${currentInput}"! Te explico...`,
-            `¿Preguntas sobre "${currentInput}"? No hay problema, aquí va...`,
-            `¡Entendido! Sobre "${currentInput}" - esto es lo que haría...`
-          ]
-        },
-        fr: {
-          professional: [
-            `Merci pour votre question concernant "${currentInput}". Je recommande de se concentrer sur les objectifs stratégiques.`,
-            `Basé sur votre question sur "${currentInput}", voici mon évaluation professionnelle...`,
-            `J'ai analysé votre demande sur "${currentInput}". L'approche optimale serait...`
-          ],
-          friendly: [
-            `Excellente question sur "${currentInput}"! J'aimerais vous aider avec ça.`,
-            `Merci de demander sur "${currentInput}"! Voici ce que je pense...`,
-            `C'est intéressant! Concernant "${currentInput}", je suggère...`
-          ],
-          casual: [
-            `Cool question sur "${currentInput}"! Voici le truc...`,
-            `Alors tu demandes sur "${currentInput}"? Pas de problème, voici mon avis...`,
-            `Compris! À propos de "${currentInput}" - voici ce que je ferais...`
-          ]
         }
       };
       
@@ -206,7 +171,7 @@ const AIAgent = () => {
             <div className="p-3 bg-gradient-to-r from-purple-500 to-pink-500 rounded-2xl">
               <FaStar className="text-white" />
             </div>
-            {t('aiAgent')}
+            AI Agent
           </h1>
           <p className="text-gray-600 dark:text-gray-400 mt-2 text-lg">
             ✨ Intelligent automation for your business communications
@@ -233,7 +198,7 @@ const AIAgent = () => {
                 onClick={() => setActiveTab(tab.id)}
               >
                 <Icon className="w-4 h-4" />
-                {t(tab.id === 'chatbot' ? 'aiChat' : tab.id === 'auto-replies' ? 'autoReplies' : tab.id === 'templates' ? 'templates' : 'aiSettings')}
+                {tab.name}
               </button>
             );
           })}
@@ -242,6 +207,74 @@ const AIAgent = () => {
 
       {/* Content */}
       <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-xl border border-gray-200 dark:border-gray-700 overflow-hidden">
+        {activeTab === 'chatbot' && (
+          <div className="h-96 flex flex-col">
+            <div className="flex-1 p-6 overflow-y-auto bg-gradient-to-br from-gray-50 to-blue-50 dark:from-gray-900 dark:to-blue-900/20">
+              <div className="space-y-4">
+                {messages.map((msg, i) => (
+                  <div key={i} className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}>
+                    <div className={`max-w-xs lg:max-w-md px-4 py-3 rounded-2xl shadow-lg ${
+                      msg.role === 'user' 
+                        ? 'bg-gradient-to-r from-blue-500 to-purple-500 text-white' 
+                        : msg.isAutoReply
+                        ? 'bg-gradient-to-r from-yellow-400 to-orange-500 text-white border-2 border-yellow-300'
+                        : 'bg-white dark:bg-gray-700 text-gray-900 dark:text-white border border-gray-200 dark:border-gray-600'
+                    }`}>
+                      <p className="text-sm">{msg.content}</p>
+                      {msg.timestamp && (
+                        <div className="flex items-center justify-between mt-1">
+                          <p className={`text-xs opacity-70 ${
+                            msg.role === 'user' ? 'text-blue-100' : 
+                            msg.isAutoReply ? 'text-yellow-100' : 'text-gray-500 dark:text-gray-400'
+                          }`}>
+                            {msg.timestamp.toLocaleTimeString()}
+                          </p>
+                          {msg.isAutoReply && (
+                            <span className="text-xs bg-yellow-200 text-yellow-800 px-2 py-1 rounded-full ml-2">
+                              Auto Reply
+                            </span>
+                          )}
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                ))}
+                {isLoading && (
+                  <div className="flex justify-start">
+                    <div className="bg-white dark:bg-gray-700 px-4 py-3 rounded-2xl shadow-lg border border-gray-200 dark:border-gray-600">
+                      <div className="flex items-center gap-2">
+                        <div className="animate-spin rounded-full h-4 w-4 border-2 border-purple-500 border-t-transparent"></div>
+                        <span className="text-gray-600 dark:text-gray-400 text-sm">AI is thinking...</span>
+                      </div>
+                    </div>
+                  </div>
+                )}
+              </div>
+            </div>
+            <div className="p-6 bg-white dark:bg-gray-800 border-t border-gray-200 dark:border-gray-700">
+              <div className="flex gap-3">
+                <input
+                  type="text"
+                  value={input}
+                  onChange={(e) => setInput(e.target.value)}
+                  onKeyPress={(e) => e.key === 'Enter' && sendMessage()}
+                  className="flex-1 px-4 py-3 border-2 border-gray-200 dark:border-gray-600 rounded-xl focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-purple-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400"
+                  placeholder="💬 Try: hello, pricing, support, or ask anything..."
+                  disabled={isLoading}
+                />
+                <button
+                  onClick={sendMessage}
+                  disabled={!input.trim() || isLoading}
+                  className="bg-gradient-to-r from-purple-500 to-pink-500 text-white px-6 py-3 rounded-xl hover:from-purple-600 hover:to-pink-600 transition-all duration-300 transform hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none shadow-lg flex items-center gap-2"
+                >
+                  <FaPaperPlane className={isLoading ? 'animate-pulse' : ''} />
+                  {isLoading ? 'Sending...' : 'Send'}
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+
         {activeTab === 'auto-replies' && (
           <div className="p-8">
             <div className="flex justify-between items-center mb-8">
@@ -294,84 +327,6 @@ const AIAgent = () => {
                 ))}
               </div>
             )}
-          </div>
-        )}
-
-        {activeTab === 'chatbot' && (
-          <div className="h-96 flex flex-col">
-            <div className="flex-1 p-6 overflow-y-auto bg-gradient-to-br from-gray-50 to-blue-50 dark:from-gray-900 dark:to-blue-900/20">
-              <div className="space-y-4">
-                {messages.map((msg, i) => (
-                  <div key={i} className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}>
-                    <div className={`max-w-xs lg:max-w-md px-4 py-3 rounded-2xl shadow-lg ${
-                      msg.role === 'user' 
-                        ? 'bg-gradient-to-r from-blue-500 to-purple-500 text-white' 
-                        : msg.isAutoReply
-                        ? 'bg-gradient-to-r from-yellow-400 to-orange-500 text-white border-2 border-yellow-300'
-                        : 'bg-white dark:bg-gray-700 text-gray-900 dark:text-white border border-gray-200 dark:border-gray-600'
-                    }`}>
-                      <p className="text-sm">{msg.content}</p>
-                      {msg.timestamp && (
-                        <div className="flex items-center justify-between mt-1">
-                          <p className={`text-xs opacity-70 ${
-                            msg.role === 'user' ? 'text-blue-100' : 
-                            msg.isAutoReply ? 'text-yellow-100' : 'text-gray-500 dark:text-gray-400'
-                          }`}>
-                            {msg.timestamp.toLocaleTimeString()}
-                          </p>
-                          {msg.isAutoReply && (
-                            <span className="text-xs bg-yellow-200 text-yellow-800 px-2 py-1 rounded-full ml-2">
-                              Auto Reply
-                            </span>
-                          )}
-                        </div>
-                      )}
-                    </div>
-                  </div>
-                ))}
-                {isLoading && (
-                  <div className="flex justify-start">
-                    <div className="bg-white dark:bg-gray-700 px-4 py-3 rounded-2xl shadow-lg border border-gray-200 dark:border-gray-600">
-                      <div className="flex items-center gap-2">
-                        <div className="animate-spin rounded-full h-4 w-4 border-2 border-purple-500 border-t-transparent"></div>
-                        <span className="text-gray-600 dark:text-gray-400 text-sm">AI is thinking...</span>
-                      </div>
-                    </div>
-                  </div>
-                )}
-              </div>
-            </div>
-            <div className="p-6 bg-white dark:bg-gray-800 border-t border-gray-200 dark:border-gray-700">
-              <div className="bg-gradient-to-r from-yellow-50 to-orange-50 dark:from-yellow-900/20 dark:to-orange-900/20 p-4 rounded-xl border border-yellow-200 dark:border-yellow-700 mb-4">
-                <div className="flex items-center gap-2 mb-2">
-                  <span className="text-yellow-600 dark:text-yellow-400">⚡</span>
-                  <h4 className="font-semibold text-yellow-800 dark:text-yellow-200">Smart Auto Reply System</h4>
-                </div>
-                <p className="text-sm text-yellow-700 dark:text-yellow-300">
-                  The AI will automatically detect keywords in your messages and respond instantly with your configured auto replies. 
-                  Try typing words like "hello", "pricing", or "support" to see it in action!
-                </p>
-              </div>
-              <div className="flex gap-3">
-                <input
-                  type="text"
-                  value={input}
-                  onChange={(e) => setInput(e.target.value)}
-                  onKeyPress={(e) => e.key === 'Enter' && sendMessage()}
-                  className="flex-1 px-4 py-3 border-2 border-gray-200 dark:border-gray-600 rounded-xl focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-purple-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400"
-                  placeholder="💬 Try: hello, pricing, support, or ask anything..."
-                  disabled={isLoading}
-                />
-                <button
-                  onClick={sendMessage}
-                  disabled={!input.trim() || isLoading}
-                  className="bg-gradient-to-r from-purple-500 to-pink-500 text-white px-6 py-3 rounded-xl hover:from-purple-600 hover:to-pink-600 transition-all duration-300 transform hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none shadow-lg flex items-center gap-2"
-                >
-                  <FaPaperPlane className={isLoading ? 'animate-pulse' : ''} />
-                  {isLoading ? 'Sending...' : 'Send'}
-                </button>
-              </div>
-            </div>
           </div>
         )}
 
@@ -430,10 +385,6 @@ const AIAgent = () => {
           <div className="p-8">
             <div className="max-w-4xl mx-auto">
               <div className="text-center mb-12">
-                <div className="relative mb-8">
-                  <FaCog className="mx-auto text-8xl text-blue-400 animate-spin" style={{ animationDuration: '3s' }} />
-                  <div className="absolute inset-0 bg-blue-400/20 rounded-full blur-2xl animate-pulse"></div>
-                </div>
                 <h3 className="text-3xl font-bold text-gray-900 dark:text-white mb-4">⚙️ AI Configuration</h3>
                 <p className="text-gray-600 dark:text-gray-400 text-lg">
                   Fine-tune your AI assistant's behavior and capabilities
@@ -441,26 +392,6 @@ const AIAgent = () => {
               </div>
               
               <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                <div className="bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20 p-8 rounded-2xl border border-blue-200 dark:border-blue-700">
-                  <h4 className="text-xl font-semibold text-blue-700 dark:text-blue-300 mb-4 flex items-center gap-2">
-                    🧠 Intelligence Level
-                  </h4>
-                  <div className="space-y-4">
-                    <div className="flex justify-between items-center">
-                      <span className="text-gray-700 dark:text-gray-300">Response Speed</span>
-                      <div className="w-32 bg-gray-200 dark:bg-gray-600 rounded-full h-2">
-                        <div className="bg-blue-500 h-2 rounded-full" style={{ width: '75%' }}></div>
-                      </div>
-                    </div>
-                    <div className="flex justify-between items-center">
-                      <span className="text-gray-700 dark:text-gray-300">Creativity</span>
-                      <div className="w-32 bg-gray-200 dark:bg-gray-600 rounded-full h-2">
-                        <div className="bg-purple-500 h-2 rounded-full" style={{ width: '60%' }}></div>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-                
                 <div className="bg-gradient-to-br from-green-50 to-emerald-50 dark:from-green-900/20 dark:to-emerald-900/20 p-8 rounded-2xl border border-green-200 dark:border-green-700">
                   <h4 className="text-xl font-semibold text-green-700 dark:text-green-300 mb-4 flex items-center gap-2">
                     🌍 Language & Tone
@@ -490,18 +421,6 @@ const AIAgent = () => {
                         <option value="casual">😎 Casual</option>
                       </select>
                     </div>
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Website Language</label>
-                      <select 
-                        value={language}
-                        onChange={(e) => setLanguage(e.target.value)}
-                        className="w-full p-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
-                      >
-                        <option value="en">🇺🇸 English</option>
-                        <option value="es">🇪🇸 Español</option>
-                        <option value="fr">🇫🇷 Français</option>
-                      </select>
-                    </div>
                   </div>
                 </div>
               </div>
@@ -509,14 +428,13 @@ const AIAgent = () => {
               <div className="text-center mt-12">
                 <button 
                   onClick={() => {
-                    // Save settings
                     localStorage.setItem('aiLanguage', aiLanguage);
                     localStorage.setItem('aiStyle', aiStyle);
                     alert('✅ Configuration saved successfully!');
                   }}
                   className="bg-gradient-to-r from-blue-500 to-purple-500 text-white px-8 py-4 rounded-xl flex items-center gap-3 mx-auto hover:from-blue-600 hover:to-purple-600 transition-all duration-300 transform hover:scale-105 shadow-xl"
                 >
-                  <FaCog className="animate-spin" /> Save Configuration
+                  <FaCog /> Save Configuration
                 </button>
               </div>
             </div>

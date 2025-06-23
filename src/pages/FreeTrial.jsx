@@ -8,7 +8,6 @@ const FreeTrial = () => {
   const navigate = useNavigate();
   const [isLoading, setIsLoading] = useState(false);
 
-  // Redirect to signup if not authenticated
   useEffect(() => {
     if (!isAuthenticated()) {
       navigate('/register?trial=true');
@@ -64,7 +63,8 @@ const FreeTrial = () => {
               disabled={isLoading}
               className="w-full bg-primary hover:bg-primary-dark text-white py-4 rounded-lg font-semibold text-lg transition-colors flex items-center justify-center gap-2"
             >
-              <FaRocket /> Sign Up & Start Free Trial
+              <FaRocket />
+              Start Free Trial
             </button>
             
             <div className="mt-6 text-center">
