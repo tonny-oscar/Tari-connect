@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../../store/useAuth';
 import { getInvoices, createInvoice, updateInvoice, deleteInvoice, markInvoiceAsPaid } from '../../services/invoiceService';
-import { FaFileInvoiceDollar, FaPlus, FaSearch, FaEdit, FaTrash, FaCheck } from 'react-icons/fa';
+import { FaFileInvoiceDollar, FaPlus, FaSearch, FaEdit, FaTrash, FaCheck, FaPrint } from 'react-icons/fa';
 import ItemSelector from '../../components/ItemSelector';
 
 const Invoices = () => {
@@ -158,6 +158,102 @@ const Invoices = () => {
     }
   };
 
+  const handlePrint = (invoice) => {
+    const printWindow = window.open('', '_blank');
+    const printContent = `
+      <!DOCTYPE html>
+      <html>
+        <head>
+          <title>Invoice ${invoice.invoiceNumber || invoice.id}</title>
+          <style>
+            body { font-family: Arial, sans-serif; margin: 20px; }
+            .header { text-align: center; margin-bottom: 30px; }
+            .company-info { margin-bottom: 20px; }
+            .customer-info { margin-bottom: 20px; }
+            .items-table { width: 100%; border-collapse: collapse; margin: 20px 0; }
+            .items-table th, .items-table td { border: 1px solid #ddd; padding: 8px; text-align: left; }
+            .items-table th { background-color: #f2f2f2; }
+            .totals { margin-top: 20px; text-align: right; }
+            .total-row { font-weight: bold; font-size: 1.2em; }
+            .status { margin: 20px 0; padding: 10px; border-radius: 5px; }
+            .status.paid { background-color: #d4edda; color: #155724; }
+            .status.pending { background-color: #fff3cd; color: #856404; }
+            .status.overdue { background-color: #f8d7da; color: #721c24; }
+            @media print { body { margin: 0; } }
+          </style>
+        </head>
+        <body>
+          <div class="header">
+            <h1>INVOICE</h1>
+            <h2>Invoice #: ${invoice.invoiceNumber || invoice.id}</h2>
+            <p>Date: ${invoice.createdAt ? new Date(invoice.createdAt.toDate()).toLocaleDateString() : new Date().toLocaleDateString()}</p>
+            ${invoice.dueDate ? `<p>Due Date: ${formatDate(invoice.dueDate)}</p>` : ''}
+          </div>
+          
+          <div class="customer-info">
+            <h3>Bill To:</h3>
+            <p><strong>${invoice.customerName || 'N/A'}</strong></p>
+            ${invoice.customerCompany ? `<p>${invoice.customerCompany}</p>` : ''}
+            <p>${invoice.customerEmail || 'N/A'}</p>
+            ${invoice.customerPhone ? `<p>${invoice.customerPhone}</p>` : ''}
+            ${invoice.customerAddress ? `<p>${invoice.customerAddress}</p>` : ''}
+          </div>
+          
+          <div class="status ${invoice.status || 'pending'}">
+            <strong>Status: ${(invoice.status || 'pending').toUpperCase()}</strong>
+          </div>
+          
+          <table class="items-table">
+            <thead>
+              <tr>
+                <th>Description</th>
+                <th>Quantity</th>
+                <th>Unit Price</th>
+                <th>Total</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${invoice.items?.map(item => `
+                <tr>
+                  <td>
+                    <strong>${item.name || 'Unnamed Item'}</strong>
+                    ${item.description ? `<br><small>${item.description}</small>` : ''}
+                  </td>
+                  <td>${item.quantity || 0}</td>
+                  <td>KSh ${(item.price || 0).toLocaleString()}</td>
+                  <td>KSh ${((item.price || 0) * (item.quantity || 0)).toLocaleString()}</td>
+                </tr>
+              `).join('') || '<tr><td colspan="4">No items</td></tr>'}
+            </tbody>
+          </table>
+          
+          <div class="totals">
+            <p>Subtotal: KSh ${(invoice.subtotal || 0).toLocaleString()}</p>
+            <p>Tax (${invoice.taxRate || 0}%): KSh ${(invoice.tax || 0).toLocaleString()}</p>
+            <p class="total-row">Total: KSh ${(invoice.total || 0).toLocaleString()}</p>
+          </div>
+          
+          ${invoice.notes ? `<div><h3>Notes:</h3><p>${invoice.notes}</p></div>` : ''}
+          
+          <div style="margin-top: 40px; text-align: center; color: #666;">
+            <p>Thank you for your business!</p>
+          </div>
+          
+          <script>
+            window.onload = function() {
+              window.print();
+              window.onafterprint = function() {
+                window.close();
+              }
+            }
+          </script>
+        </body>
+      </html>
+    `;
+    printWindow.document.write(printContent);
+    printWindow.document.close();
+  };
+
   const handleItemsChange = (items) => {
     setFormData(prev => ({ ...prev, items }));
   };
@@ -278,6 +374,13 @@ const Invoices = () => {
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
                       <div className="flex space-x-2">
+                        <button
+                          onClick={() => handlePrint(invoice)}
+                          className="text-blue-600 hover:text-blue-900"
+                          title="Print Invoice"
+                        >
+                          <FaPrint />
+                        </button>
                         <button
                           onClick={() => handleEdit(invoice)}
                           className="text-primary hover:text-primary-dark"

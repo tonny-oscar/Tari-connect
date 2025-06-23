@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../../store/useAuth';
 import { getQuotes, createQuote, updateQuote, deleteQuote, convertQuoteToInvoice } from '../../services/quoteService';
-import { FaFileAlt, FaPlus, FaSearch, FaEdit, FaTrash, FaFileInvoiceDollar } from 'react-icons/fa';
+import { FaFileAlt, FaPlus, FaSearch, FaEdit, FaTrash, FaFileInvoiceDollar, FaPrint } from 'react-icons/fa';
 import ItemSelector from '../../components/ItemSelector';
 
 const Quotes = () => {
@@ -165,6 +165,90 @@ const Quotes = () => {
     }
   };
 
+  const handlePrint = (quote) => {
+    const printWindow = window.open('', '_blank');
+    const printContent = `
+      <!DOCTYPE html>
+      <html>
+        <head>
+          <title>Quote ${quote.quoteNumber || quote.id}</title>
+          <style>
+            body { font-family: Arial, sans-serif; margin: 20px; }
+            .header { text-align: center; margin-bottom: 30px; }
+            .company-info { margin-bottom: 20px; }
+            .customer-info { margin-bottom: 20px; }
+            .items-table { width: 100%; border-collapse: collapse; margin: 20px 0; }
+            .items-table th, .items-table td { border: 1px solid #ddd; padding: 8px; text-align: left; }
+            .items-table th { background-color: #f2f2f2; }
+            .totals { margin-top: 20px; text-align: right; }
+            .total-row { font-weight: bold; font-size: 1.2em; }
+            @media print { body { margin: 0; } }
+          </style>
+        </head>
+        <body>
+          <div class="header">
+            <h1>QUOTATION</h1>
+            <h2>Quote #: ${quote.quoteNumber || quote.id}</h2>
+            <p>Date: ${quote.createdAt ? new Date(quote.createdAt.toDate()).toLocaleDateString() : new Date().toLocaleDateString()}</p>
+          </div>
+          
+          <div class="customer-info">
+            <h3>Bill To:</h3>
+            <p><strong>${quote.customerName || 'N/A'}</strong></p>
+            ${quote.customerCompany ? `<p>${quote.customerCompany}</p>` : ''}
+            <p>${quote.customerEmail || 'N/A'}</p>
+            ${quote.customerPhone ? `<p>${quote.customerPhone}</p>` : ''}
+            ${quote.customerAddress ? `<p>${quote.customerAddress}</p>` : ''}
+          </div>
+          
+          <table class="items-table">
+            <thead>
+              <tr>
+                <th>Description</th>
+                <th>Quantity</th>
+                <th>Unit Price</th>
+                <th>Total</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${quote.items?.map(item => `
+                <tr>
+                  <td>
+                    <strong>${item.name}</strong>
+                    ${item.description ? `<br><small>${item.description}</small>` : ''}
+                  </td>
+                  <td>${item.quantity}</td>
+                  <td>KSh ${item.price.toLocaleString()}</td>
+                  <td>KSh ${(item.price * item.quantity).toLocaleString()}</td>
+                </tr>
+              `).join('') || '<tr><td colspan="4">No items</td></tr>'}
+            </tbody>
+          </table>
+          
+          <div class="totals">
+            <p>Subtotal: KSh ${(quote.subtotal || 0).toLocaleString()}</p>
+            <p>Tax (${quote.taxRate || 0}%): KSh ${(quote.tax || 0).toLocaleString()}</p>
+            <p class="total-row">Total: KSh ${(quote.total || 0).toLocaleString()}</p>
+          </div>
+          
+          ${quote.validUntil ? `<p><strong>Valid Until:</strong> ${quote.validUntil}</p>` : ''}
+          ${quote.notes ? `<div><h3>Notes:</h3><p>${quote.notes}</p></div>` : ''}
+          
+          <script>
+            window.onload = function() {
+              window.print();
+              window.onafterprint = function() {
+                window.close();
+              }
+            }
+          </script>
+        </body>
+      </html>
+    `;
+    printWindow.document.write(printContent);
+    printWindow.document.close();
+  };
+
   const handleItemsChange = (items) => {
     setFormData(prev => ({ ...prev, items }));
   };
@@ -278,6 +362,13 @@ const Quotes = () => {
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
                       <div className="flex space-x-2">
+                        <button
+                          onClick={() => handlePrint(quote)}
+                          className="text-blue-600 hover:text-blue-900"
+                          title="Print Quote"
+                        >
+                          <FaPrint />
+                        </button>
                         <button
                           onClick={() => handleEdit(quote)}
                           className="text-primary hover:text-primary-dark"
