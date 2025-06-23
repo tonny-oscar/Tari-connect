@@ -58,7 +58,7 @@ const Profile = () => {
         )}
         
         <div className="flex items-center mb-6">
-          <div className="w-20 h-20 rounded-full bg-blue-600 flex items-center justify-center text-white text-2xl mr-4">
+          <div className="w-20 h-20 rounded-full bg-primary flex items-center justify-center text-white text-2xl mr-4">
             {userData?.name ? (
               userData.name.charAt(0).toUpperCase()
             ) : (
@@ -76,7 +76,7 @@ const Profile = () => {
           
           <button 
             onClick={() => setIsEditing(!isEditing)}
-            className="ml-auto bg-blue-100 text-blue-600 p-2 rounded-full hover:bg-blue-200"
+            className="ml-auto bg-primary/10 text-primary p-2 rounded-full hover:bg-primary/20"
           >
             <FaEdit />
           </button>
@@ -111,7 +111,7 @@ const Profile = () => {
               </button>
               <button
                 type="submit"
-                className="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
+                className="bg-primary hover:bg-primary-dark text-white font-bold py-2 px-4 rounded"
                 disabled={isLoading}
               >
                 {isLoading ? 'Saving...' : 'Save Changes'}

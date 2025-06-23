@@ -115,7 +115,7 @@ function Dashboard() {
           {isAdmin() && (
             <Link 
               to="/admin" 
-              className="bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded-lg flex items-center gap-2 transition-colors"
+              className="bg-primary hover:bg-primary-dark text-white px-4 py-2 rounded-lg flex items-center gap-2 transition-colors"
             >
               Admin Panel
             </Link>
@@ -135,8 +135,8 @@ function Dashboard() {
                 {stats.newLeads} new this month
               </p>
             </div>
-            <div className="bg-blue-100 dark:bg-blue-900 p-3 rounded-lg">
-              <FaUserPlus className="text-blue-600 dark:text-blue-400 text-xl" />
+            <div className="bg-primary/10 p-3 rounded-lg">
+              <FaUserPlus className="text-primary text-xl" />
             </div>
           </div>
         </div>
@@ -151,8 +151,8 @@ function Dashboard() {
                 {stats.pendingQuotes} pending
               </p>
             </div>
-            <div className="bg-yellow-100 dark:bg-yellow-900 p-3 rounded-lg">
-              <FaFileAlt className="text-yellow-600 dark:text-yellow-400 text-xl" />
+            <div className="bg-primary/10 p-3 rounded-lg">
+              <FaFileAlt className="text-primary text-xl" />
             </div>
           </div>
         </div>
@@ -169,8 +169,8 @@ function Dashboard() {
                 {stats.paidInvoices} paid invoices
               </p>
             </div>
-            <div className="bg-green-100 dark:bg-green-900 p-3 rounded-lg">
-              <FaChartLine className="text-green-600 dark:text-green-400 text-xl" />
+            <div className="bg-primary/10 p-3 rounded-lg">
+              <FaChartLine className="text-primary text-xl" />
             </div>
           </div>
         </div>
@@ -187,8 +187,8 @@ function Dashboard() {
                 {stats.totalInvoices - stats.paidInvoices} unpaid
               </p>
             </div>
-            <div className="bg-orange-100 dark:bg-orange-900 p-3 rounded-lg">
-              <FaFileInvoiceDollar className="text-orange-600 dark:text-orange-400 text-xl" />
+            <div className="bg-primary/10 p-3 rounded-lg">
+              <FaFileInvoiceDollar className="text-primary text-xl" />
             </div>
           </div>
         </div>
@@ -198,12 +198,12 @@ function Dashboard() {
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
         <Link 
           to="/leads"
-          className="group bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white p-6 rounded-xl shadow-lg transition-all duration-300 transform hover:scale-105"
+          className="group bg-gradient-to-r from-primary to-primary-dark hover:from-primary-dark hover:to-primary text-white p-6 rounded-xl shadow-lg transition-all duration-300 transform hover:scale-105"
         >
           <div className="flex items-center justify-between">
             <div>
               <h3 className="text-lg font-semibold">Manage Leads</h3>
-              <p className="text-blue-100 text-sm mt-1">Track prospects & opportunities</p>
+              <p className="text-green-100 text-sm mt-1">Track prospects & opportunities</p>
             </div>
             <FaUserPlus className="text-2xl opacity-80 group-hover:opacity-100" />
           </div>
@@ -211,12 +211,12 @@ function Dashboard() {
         
         <Link 
           to="/quotes"
-          className="group bg-gradient-to-r from-yellow-500 to-yellow-600 hover:from-yellow-600 hover:to-yellow-700 text-white p-6 rounded-xl shadow-lg transition-all duration-300 transform hover:scale-105"
+          className="group bg-gradient-to-r from-primary-light to-primary hover:from-primary hover:to-primary-dark text-white p-6 rounded-xl shadow-lg transition-all duration-300 transform hover:scale-105"
         >
           <div className="flex items-center justify-between">
             <div>
               <h3 className="text-lg font-semibold">Create Quotes</h3>
-              <p className="text-yellow-100 text-sm mt-1">Generate professional quotes</p>
+              <p className="text-green-100 text-sm mt-1">Generate professional quotes</p>
             </div>
             <FaFileAlt className="text-2xl opacity-80 group-hover:opacity-100" />
           </div>
@@ -224,7 +224,7 @@ function Dashboard() {
         
         <Link 
           to="/invoices"
-          className="group bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white p-6 rounded-xl shadow-lg transition-all duration-300 transform hover:scale-105"
+          className="group bg-gradient-to-r from-primary to-accent hover:from-accent hover:to-primary-dark text-white p-6 rounded-xl shadow-lg transition-all duration-300 transform hover:scale-105"
         >
           <div className="flex items-center justify-between">
             <div>
@@ -237,12 +237,12 @@ function Dashboard() {
         
         <Link 
           to="/items"
-          className="group bg-gradient-to-r from-purple-500 to-purple-600 hover:from-purple-600 hover:to-purple-700 text-white p-6 rounded-xl shadow-lg transition-all duration-300 transform hover:scale-105"
+          className="group bg-gradient-to-r from-accent to-primary-dark hover:from-primary-dark hover:to-accent text-white p-6 rounded-xl shadow-lg transition-all duration-300 transform hover:scale-105"
         >
           <div className="flex items-center justify-between">
             <div>
               <h3 className="text-lg font-semibold">Product Catalog</h3>
-              <p className="text-purple-100 text-sm mt-1">Manage items & services</p>
+              <p className="text-green-100 text-sm mt-1">Manage items & services</p>
             </div>
             <FaBoxOpen className="text-2xl opacity-80 group-hover:opacity-100" />
           </div>
