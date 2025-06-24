@@ -96,7 +96,7 @@ function Dashboard() {
 
       <section aria-labelledby="stats-title">
         <h2 id="stats-title" className="sr-only">Business Statistics</h2>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6" role="group" aria-label="Business statistics overview">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6" role="group" aria-label="Business statistics overview">
           <StatCard
             title="Leads"
             value={stats.totalLeads}
@@ -130,7 +130,7 @@ function Dashboard() {
 
       <section aria-labelledby="actions-title">
         <h2 id="actions-title" className="sr-only">Quick Actions</h2>
-        <nav className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4" role="navigation" aria-label="Quick action navigation">
+        <nav className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4" role="navigation" aria-label="Quick action navigation">
           <QuickAction to="/leads" title="Manage Leads" subtitle="Track prospects & opportunities" icon={<FaUserPlus aria-hidden="true" />} />
           <QuickAction to="/quotes" title="Create Quotes" subtitle="Generate professional quotes" icon={<FaFileAlt aria-hidden="true" />} />
           <QuickAction to="/invoices" title="Manage Invoices" subtitle="Track payments & billing" icon={<FaFileInvoiceDollar aria-hidden="true" />} />
@@ -142,17 +142,17 @@ function Dashboard() {
 }
 
 const StatCard = ({ title, value, subtitle, icon, color }) => (
-  <article className="bg-white p-6 rounded-lg shadow" role="article" aria-labelledby={`stat-${title.toLowerCase()}`}>
+  <article className="bg-white p-4 sm:p-6 rounded-lg shadow" role="article" aria-labelledby={`stat-${title.toLowerCase()}`}>
     <div className="flex justify-between items-center">
-      <div>
-        <h3 id={`stat-${title.toLowerCase()}`} className="text-gray-500 text-sm">{title}</h3>
-        <p className="text-xl font-bold" aria-label={`${title}: ${value}`}>{value}</p>
-        <p className={`text-sm text-${color}-600 mt-1 flex items-center gap-1`} aria-label={subtitle}>
-          <FaArrowUp className="text-xs" aria-hidden="true" />
-          {subtitle}
+      <div className="flex-1 min-w-0">
+        <h3 id={`stat-${title.toLowerCase()}`} className="text-gray-500 text-sm font-medium">{title}</h3>
+        <p className="text-lg sm:text-xl font-bold text-gray-900 truncate" aria-label={`${title}: ${value}`}>{value}</p>
+        <p className={`text-xs sm:text-sm text-${color}-600 mt-1 flex items-center gap-1`} aria-label={subtitle}>
+          <FaArrowUp className="text-xs flex-shrink-0" aria-hidden="true" />
+          <span className="truncate">{subtitle}</span>
         </p>
       </div>
-      <div className={`bg-${color}-100 p-3 rounded-full text-${color}-600`} aria-hidden="true">
+      <div className={`bg-${color}-100 p-2 sm:p-3 rounded-full text-${color}-600 flex-shrink-0 ml-3`} aria-hidden="true">
         {icon}
       </div>
     </div>
@@ -162,16 +162,16 @@ const StatCard = ({ title, value, subtitle, icon, color }) => (
 const QuickAction = ({ to, title, subtitle, icon }) => (
   <Link
     to={to}
-    className="group bg-gradient-to-r from-primary to-primary-dark text-white p-6 rounded-xl shadow-lg hover:scale-105 transition transform duration-300 focus:outline-none focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-primary"
+    className="group bg-gradient-to-r from-primary to-primary-dark text-white p-4 sm:p-6 rounded-xl shadow-lg hover:scale-105 transition transform duration-300 focus:outline-none focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-primary"
     aria-label={`${title}: ${subtitle}`}
     role="button"
   >
     <div className="flex justify-between items-center">
-      <div>
-        <h3 className="text-lg font-semibold">{title}</h3>
-        <p className="text-sm mt-1 text-white/70">{subtitle}</p>
+      <div className="flex-1 min-w-0">
+        <h3 className="text-base sm:text-lg font-semibold truncate">{title}</h3>
+        <p className="text-xs sm:text-sm mt-1 text-white/70 truncate">{subtitle}</p>
       </div>
-      <div className="text-2xl group-hover:opacity-100 opacity-80" aria-hidden="true">{icon}</div>
+      <div className="text-xl sm:text-2xl group-hover:opacity-100 opacity-80 flex-shrink-0 ml-3" aria-hidden="true">{icon}</div>
     </div>
   </Link>
 );
