@@ -54,8 +54,16 @@ function Layout() {
 
   return (
     <div className="flex h-screen bg-gray-50">
+      {/* Mobile overlay */}
+      {sidebarOpen && (
+        <div 
+          className="fixed inset-0 bg-black bg-opacity-50 z-40 md:hidden"
+          onClick={() => setSidebarOpen(false)}
+        />
+      )}
+      
       {/* Sidebar */}
-      <div className={`${sidebarOpen ? 'w-64' : 'w-20'} bg-white border-r border-gray-200 transition-all duration-300 flex flex-col`}>
+      <div className={`${sidebarOpen ? 'w-64' : 'w-20'} ${sidebarOpen ? 'fixed md:relative' : 'hidden md:flex'} bg-white border-r border-gray-200 transition-all duration-300 flex flex-col z-50 h-full`}>
         {/* Logo */}
         <div className="p-4 border-b border-gray-200 flex items-center justify-between">
           {sidebarOpen && (
@@ -65,7 +73,7 @@ function Layout() {
           )}
           <button 
             onClick={() => setSidebarOpen(!sidebarOpen)}
-            className="p-2 rounded-lg hover:bg-gray-100"
+            className="p-2 rounded-lg hover:bg-gray-100 min-h-[44px] min-w-[44px] flex items-center justify-center"
           >
             <FaBars />
           </button>
@@ -133,25 +141,33 @@ function Layout() {
       <div className="flex-1 flex flex-col overflow-hidden">
         {/* Header */}
         <header className="bg-white border-b border-gray-200">
-          <div className="px-6 py-4 flex items-center justify-between">
-            <h1 className="text-2xl font-semibold text-gray-900">
-              {navItems.find(item => isActive(item.path))?.label || 'Dashboard'}
-            </h1>
+          <div className="px-4 md:px-6 py-4 flex items-center justify-between">
+            <div className="flex items-center">
+              <button 
+                onClick={() => setSidebarOpen(true)}
+                className="p-2 rounded-lg hover:bg-gray-100 md:hidden mr-3 min-h-[44px] min-w-[44px] flex items-center justify-center"
+              >
+                <FaBars />
+              </button>
+              <h1 className="text-xl md:text-2xl font-semibold text-gray-900">
+                {navItems.find(item => isActive(item.path))?.label || 'Dashboard'}
+              </h1>
+            </div>
             
-            <div className="flex items-center space-x-4">
+            <div className="flex items-center space-x-2 md:space-x-4">
               <ThemeToggle />
-              <button className="p-2 text-gray-400 hover:text-gray-600">
+              <button className="p-2 text-gray-400 hover:text-gray-600 min-h-[44px] min-w-[44px] flex items-center justify-center">
                 <FaBell />
               </button>
               <Link 
                 to="/profile" 
-                className="p-2 text-gray-400 hover:text-gray-600"
+                className="p-2 text-gray-400 hover:text-gray-600 min-h-[44px] min-w-[44px] flex items-center justify-center"
               >
                 <FaUser />
               </Link>
               <button
                 onClick={handleLogout}
-                className="p-2 text-gray-400 hover:text-gray-600"
+                className="p-2 text-gray-400 hover:text-gray-600 min-h-[44px] min-w-[44px] flex items-center justify-center"
                 title="Logout"
               >
                 <FaSignOutAlt />
@@ -161,7 +177,7 @@ function Layout() {
         </header>
 
         {/* Page content */}
-        <main className="flex-1 overflow-auto p-6">
+        <main className="flex-1 overflow-auto p-4 md:p-6">
           <Outlet />
         </main>
       </div>

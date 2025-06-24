@@ -175,6 +175,7 @@ const Quotes = () => {
           <style>
             body { font-family: Arial, sans-serif; margin: 20px; }
             .header { text-align: center; margin-bottom: 30px; }
+            .logo { max-width: 150px; height: auto; margin-bottom: 20px; }
             .customer-info { margin-bottom: 20px; }
             .items-table { width: 100%; border-collapse: collapse; margin: 20px 0; }
             .items-table th, .items-table td { border: 1px solid #ddd; padding: 8px; text-align: left; }
@@ -186,8 +187,9 @@ const Quotes = () => {
         </head>
         <body>
           <div class="header">
+            <img src="/logo.png" alt="TariConnect Logo" class="logo" />
             <h1>QUOTATION</h1>
-            <h2>Quote #: ${quote.quoteNumber || quote.id}</h2>
+            <h2>${quote.quoteNumber || quote.id}</h2>
             <p>Date: ${quote.createdAt ? new Date(quote.createdAt.toDate()).toLocaleDateString() : new Date().toLocaleDateString()}</p>
           </div>
           

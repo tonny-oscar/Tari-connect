@@ -77,94 +77,101 @@ function Dashboard() {
   }
 
   return (
-    <div className="space-y-6">
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+    <main className="space-y-6" role="main" aria-labelledby="dashboard-title">
+      <header className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
-          <h1 className="text-2xl font-bold">Welcome back, {userData?.name || 'User'}!</h1>
+          <h1 id="dashboard-title" className="text-2xl font-bold">Welcome back, {userData?.name || 'User'}!</h1>
           <p className="text-gray-600 mt-1">Here's what's happening with your business today.</p>
         </div>
         {isAdmin() && (
           <Link
             to="/admin"
-            className="bg-primary hover:bg-primary-dark text-white px-4 py-2 rounded-lg"
+            className="bg-primary hover:bg-primary-dark text-white px-4 py-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2"
+            aria-label="Go to Admin Panel"
           >
             Admin Panel
           </Link>
         )}
-      </div>
+      </header>
 
-      {/* Stats */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-        <StatCard
-          title="Leads"
-          value={stats.totalLeads}
-          subtitle={`${stats.newLeads} new this month`}
-          icon={<FaUserPlus />}
-          color="green"
-        />
-        <StatCard
-          title="Quotes"
-          value={stats.totalQuotes}
-          subtitle={`${stats.pendingQuotes} pending`}
-          icon={<FaFileAlt />}
-          color="yellow"
-        />
-        <StatCard
-          title="Revenue"
-          value={`KSh ${stats.totalRevenue.toLocaleString()}`}
-          subtitle={`${stats.paidInvoices} paid invoices`}
-          icon={<FaChartLine />}
-          color="green"
-        />
-        <StatCard
-          title="Pending Revenue"
-          value={`KSh ${stats.pendingRevenue.toLocaleString()}`}
-          subtitle={`${stats.totalInvoices - stats.paidInvoices} unpaid`}
-          icon={<FaFileInvoiceDollar />}
-          color="orange"
-        />
-      </div>
+      <section aria-labelledby="stats-title">
+        <h2 id="stats-title" className="sr-only">Business Statistics</h2>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6" role="group" aria-label="Business statistics overview">
+          <StatCard
+            title="Leads"
+            value={stats.totalLeads}
+            subtitle={`${stats.newLeads} new this month`}
+            icon={<FaUserPlus aria-hidden="true" />}
+            color="green"
+          />
+          <StatCard
+            title="Quotes"
+            value={stats.totalQuotes}
+            subtitle={`${stats.pendingQuotes} pending`}
+            icon={<FaFileAlt aria-hidden="true" />}
+            color="yellow"
+          />
+          <StatCard
+            title="Revenue"
+            value={`KSh ${stats.totalRevenue.toLocaleString()}`}
+            subtitle={`${stats.paidInvoices} paid invoices`}
+            icon={<FaChartLine aria-hidden="true" />}
+            color="green"
+          />
+          <StatCard
+            title="Pending Revenue"
+            value={`KSh ${stats.pendingRevenue.toLocaleString()}`}
+            subtitle={`${stats.totalInvoices - stats.paidInvoices} unpaid`}
+            icon={<FaFileInvoiceDollar aria-hidden="true" />}
+            color="orange"
+          />
+        </div>
+      </section>
 
-      {/* Actions */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-        <QuickAction to="/leads" title="Manage Leads" subtitle="Track prospects & opportunities" icon={<FaUserPlus />} />
-        <QuickAction to="/quotes" title="Create Quotes" subtitle="Generate professional quotes" icon={<FaFileAlt />} />
-        <QuickAction to="/invoices" title="Manage Invoices" subtitle="Track payments & billing" icon={<FaFileInvoiceDollar />} />
-        <QuickAction to="/items" title="Product Catalog" subtitle="Manage items & services" icon={<FaBoxOpen />} />
-      </div>
-    </div>
+      <section aria-labelledby="actions-title">
+        <h2 id="actions-title" className="sr-only">Quick Actions</h2>
+        <nav className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4" role="navigation" aria-label="Quick action navigation">
+          <QuickAction to="/leads" title="Manage Leads" subtitle="Track prospects & opportunities" icon={<FaUserPlus aria-hidden="true" />} />
+          <QuickAction to="/quotes" title="Create Quotes" subtitle="Generate professional quotes" icon={<FaFileAlt aria-hidden="true" />} />
+          <QuickAction to="/invoices" title="Manage Invoices" subtitle="Track payments & billing" icon={<FaFileInvoiceDollar aria-hidden="true" />} />
+          <QuickAction to="/items" title="Product Catalog" subtitle="Manage items & services" icon={<FaBoxOpen aria-hidden="true" />} />
+        </nav>
+      </section>
+    </main>
   );
 }
 
 const StatCard = ({ title, value, subtitle, icon, color }) => (
-  <div className="bg-white p-6 rounded-lg shadow">
+  <article className="bg-white p-6 rounded-lg shadow" role="article" aria-labelledby={`stat-${title.toLowerCase()}`}>
     <div className="flex justify-between items-center">
       <div>
-        <h4 className="text-gray-500 text-sm">{title}</h4>
-        <p className="text-xl font-bold">{value}</p>
-        <p className={`text-sm text-${color}-600 mt-1 flex items-center gap-1`}>
-          <FaArrowUp className="text-xs" />
+        <h3 id={`stat-${title.toLowerCase()}`} className="text-gray-500 text-sm">{title}</h3>
+        <p className="text-xl font-bold" aria-label={`${title}: ${value}`}>{value}</p>
+        <p className={`text-sm text-${color}-600 mt-1 flex items-center gap-1`} aria-label={subtitle}>
+          <FaArrowUp className="text-xs" aria-hidden="true" />
           {subtitle}
         </p>
       </div>
-      <div className={`bg-${color}-100 p-3 rounded-full text-${color}-600`}>
+      <div className={`bg-${color}-100 p-3 rounded-full text-${color}-600`} aria-hidden="true">
         {icon}
       </div>
     </div>
-  </div>
+  </article>
 );
 
 const QuickAction = ({ to, title, subtitle, icon }) => (
   <Link
     to={to}
-    className="group bg-gradient-to-r from-primary to-primary-dark text-white p-6 rounded-xl shadow-lg hover:scale-105 transition transform duration-300"
+    className="group bg-gradient-to-r from-primary to-primary-dark text-white p-6 rounded-xl shadow-lg hover:scale-105 transition transform duration-300 focus:outline-none focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-primary"
+    aria-label={`${title}: ${subtitle}`}
+    role="button"
   >
     <div className="flex justify-between items-center">
       <div>
         <h3 className="text-lg font-semibold">{title}</h3>
         <p className="text-sm mt-1 text-white/70">{subtitle}</p>
       </div>
-      <div className="text-2xl group-hover:opacity-100 opacity-80">{icon}</div>
+      <div className="text-2xl group-hover:opacity-100 opacity-80" aria-hidden="true">{icon}</div>
     </div>
   </Link>
 );
