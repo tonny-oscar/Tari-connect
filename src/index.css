@@ -121,6 +121,26 @@ html, body {
   box-shadow: 0 0 0 1px #16a34a !important;
 }
 
+/* Dark mode tables */
+.dark table {
+  background-color: #374151 !important;
+}
+
+.dark th {
+  background-color: #4b5563 !important;
+  color: #f9fafb !important;
+}
+
+.dark td {
+  border-color: #4b5563 !important;
+  color: #e5e7eb !important;
+}
+
+/* Dark mode modals */
+.dark .modal {
+  background-color: #374151 !important;
+}
+
 /* Dark mode hover states */
 .dark .hover\:bg-gray-50:hover { background-color: #4b5563 !important; }
 .dark .hover\:bg-gray-100:hover { background-color: #6b7280 !important; }

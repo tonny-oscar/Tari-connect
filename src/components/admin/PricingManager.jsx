@@ -133,20 +133,20 @@ const PricingManager = () => {
   }
 
   return (
-    <div className="bg-white rounded-lg shadow overflow-hidden">
-      <div className="p-4 border-b">
-        <h2 className="text-lg font-semibold">Pricing Management</h2>
-        <p className="text-sm text-gray-500">Update your pricing plans</p>
+    <div className="bg-white dark:bg-gray-800 rounded-lg shadow overflow-hidden">
+      <div className="p-4 border-b border-gray-200 dark:border-gray-700">
+        <h2 className="text-lg font-semibold text-gray-900 dark:text-white">Pricing Management</h2>
+        <p className="text-sm text-gray-500 dark:text-gray-400">Update your pricing plans</p>
       </div>
       
       {error && (
-        <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 m-4 rounded">
+        <div className="bg-red-100 dark:bg-red-900 border border-red-400 dark:border-red-600 text-red-700 dark:text-red-200 px-4 py-3 m-4 rounded">
           {error}
         </div>
       )}
       
       {success && (
-        <div className="bg-green-100 border border-green-400 text-green-700 px-4 py-3 m-4 rounded">
+        <div className="bg-green-100 dark:bg-green-900 border border-green-400 dark:border-green-600 text-green-700 dark:text-green-200 px-4 py-3 m-4 rounded">
           {success}
         </div>
       )}
@@ -157,12 +157,12 @@ const PricingManager = () => {
             <div 
               key={plan.id} 
               className={`border rounded-lg overflow-hidden ${
-                plan.isPopular ? 'border-blue-500 shadow-lg' : 'border-gray-200'
+                plan.isPopular ? 'border-blue-500 shadow-lg' : 'border-gray-200 dark:border-gray-700'
               }`}
             >
-              <div className={`p-4 ${plan.isPopular ? 'bg-blue-50' : 'bg-gray-50'}`}>
+              <div className={`p-4 ${plan.isPopular ? 'bg-blue-50 dark:bg-blue-900' : 'bg-gray-50 dark:bg-gray-700'}`}>
                 <div className="flex justify-between items-center">
-                  <h3 className="font-bold text-lg">{plan.name}</h3>
+                  <h3 className="font-bold text-lg text-gray-900 dark:text-white">{plan.name}</h3>
                   <button
                     onClick={() => handleEdit(plan)}
                     className="text-blue-600 hover:text-blue-800"
@@ -196,9 +196,9 @@ const PricingManager = () => {
       {/* Edit Plan Modal */}
       {editingPlan && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-lg shadow-xl w-full max-w-2xl max-h-[90vh] overflow-y-auto">
+          <div className="bg-white dark:bg-gray-800 rounded-lg shadow-xl w-full max-w-2xl max-h-[90vh] overflow-y-auto">
             <div className="p-4 border-b flex justify-between items-center">
-              <h3 className="text-lg font-semibold">Edit Pricing Plan</h3>
+              <h3 className="text-lg font-semibold text-gray-900 dark:text-white">Edit Pricing Plan</h3>
               <button 
                 onClick={handleCancelEdit}
                 className="text-gray-500 hover:text-gray-700"
