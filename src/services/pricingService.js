@@ -130,5 +130,45 @@ export const updatePricingPlan = async (planId, planData) => {
 
 // Format price with currency
 export const formatPrice = (price, currency = 'KSh') => {
-  return `${currency} ${price.toLocaleString()}`;
+  if (currency === 'USD' || currency === '$') {
+    return `$${price.toLocaleString()}`;
+  }
+  return `KSh ${price.toLocaleString()}`;
+};
+
+// Convert between currencies (approximate rates)
+export const convertCurrency = (amount, fromCurrency, toCurrency) => {
+  const rates = {
+    'KSh': 1,
+    'USD': 0.0067, // 1 KSh = 0.0067 USD (approximate)
+    '$': 0.0067
+  };
+  
+  if (fromCurrency === toCurrency) return amount;
+  
+  // Convert to base (KSh) then to target currency
+  const baseAmount = amount / rates[fromCurrency];
+  return Math.round(baseAmount * rates[toCurrency]);
+};
+
+// Get pricing plans with currency conversion
+export const getPricingPlansWithCurrency = async (targetCurrency = 'KSh') => {
+  try {
+    const { success, plans, error } = await getPricingPlans();
+    
+    if (!success) return { success, error };
+    
+    const convertedPlans = plans.map(plan => ({
+      ...plan,
+      price: convertCurrency(plan.price, plan.currency || 'KSh', targetCurrency),
+      currency: targetCurrency,
+      originalPrice: plan.price,
+      originalCurrency: plan.currency || 'KSh'
+    }));
+    
+    return { success: true, plans: convertedPlans };
+  } catch (error) {
+    console.error('Error getting pricing plans with currency:', error);
+    return { success: false, error: error.message };
+  }
 };

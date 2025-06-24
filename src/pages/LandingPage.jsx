@@ -22,7 +22,7 @@ import {
   FaQuoteLeft,
   FaPlay
 } from 'react-icons/fa';
-import { getPricingPlans, formatPrice } from '../services/pricingService';
+import { getPricingPlansWithCurrency, formatPrice } from '../services/pricingService';
 
 const LandingPage = () => {
   const { isAuthenticated, isAdmin } = useAuth();
@@ -31,6 +31,7 @@ const LandingPage = () => {
   const [pricingPlans, setPricingPlans] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [showContactModal, setShowContactModal] = useState(false);
+  const [currency, setCurrency] = useState('KSh');
 
   // Initialize theme on mount
   useEffect(() => {
@@ -40,7 +41,7 @@ const LandingPage = () => {
   // Fetch pricing plans
   useEffect(() => {
     const fetchPricingPlans = async () => {
-      const { success, plans } = await getPricingPlans();
+      const { success, plans } = await getPricingPlansWithCurrency(currency);
       if (success) {
         const sortedPlans = [...plans].sort((a, b) => a.order - b.order);
         setPricingPlans(sortedPlans);
@@ -49,7 +50,7 @@ const LandingPage = () => {
     };
     
     fetchPricingPlans();
-  }, []);
+  }, [currency]);
 
   const handleGetStarted = () => {
     if (isAuthenticated()) {
@@ -60,20 +61,20 @@ const LandingPage = () => {
   };
 
   return (
-    <div className="min-h-screen bg-white text-gray-900">
+    <div className="min-h-screen bg-white dark:bg-gray-900 text-gray-900 dark:text-white">
       {/* Navigation */}
-      <nav className="fixed top-0 left-0 right-0 z-50 bg-white shadow-lg border-b border-gray-200">
+      <nav className="fixed top-0 left-0 right-0 z-50 bg-white dark:bg-gray-800 shadow-lg border-b border-gray-200 dark:border-gray-700">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 py-4">
           <div className="flex justify-between items-center">
             <Link to="/" className="text-2xl font-bold flex items-center gap-2">
-              <span className="text-primary">Tari</span><span className="text-gray-900">Connect</span>
+              <span className="text-primary">Tari</span><span className="text-gray-900 dark:text-white">Connect</span>
             </Link>
             
             <div className="hidden md:flex items-center gap-6">
-              <a href="#features" className="text-gray-700 hover:text-primary transition-colors font-medium">Features</a>
-              <a href="#pricing" className="text-gray-700 hover:text-primary transition-colors font-medium">Pricing</a>
-              <a href="#testimonials" className="text-gray-700 hover:text-primary transition-colors font-medium">Reviews</a>
-              <button onClick={() => setShowContactModal(true)} className="text-gray-700 hover:text-primary transition-colors font-medium">Contact</button>
+              <a href="#features" className="text-gray-700 dark:text-gray-300 hover:text-primary transition-colors font-medium">Features</a>
+              <a href="#pricing" className="text-gray-700 dark:text-gray-300 hover:text-primary transition-colors font-medium">Pricing</a>
+              <a href="#testimonials" className="text-gray-700 dark:text-gray-300 hover:text-primary transition-colors font-medium">Reviews</a>
+              <button onClick={() => setShowContactModal(true)} className="text-gray-700 dark:text-gray-300 hover:text-primary transition-colors font-medium">Contact</button>
               <Link to="/free-trial" className="text-primary font-semibold hover:text-primary-dark transition-colors">Free Trial</Link>
             </div>
             
@@ -88,7 +89,7 @@ const LandingPage = () => {
                 </Link>
               ) : (
                 <>
-                  <Link to="/login" className="text-gray-700 hover:text-primary transition-colors font-medium">Login</Link>
+                  <Link to="/login" className="text-gray-700 dark:text-gray-300 hover:text-primary transition-colors font-medium">Login</Link>
                   <Link to="/register" className="bg-primary hover:bg-primary-dark text-white px-6 py-2 rounded-full transition-colors font-medium shadow-md">
                     Get Started
                   </Link>
@@ -108,10 +109,10 @@ const LandingPage = () => {
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.6 }}
             >
-              <h1 className="text-4xl sm:text-5xl md:text-7xl font-bold mb-6 text-gray-900 leading-tight">
+              <h1 className="text-4xl sm:text-5xl md:text-7xl font-bold mb-6 text-gray-900 dark:text-white leading-tight">
                 Unify Your <span className="bg-gradient-to-r from-primary via-primary-light to-accent bg-clip-text text-transparent">Business</span>
               </h1>
-              <p className="text-lg sm:text-xl md:text-2xl text-gray-700 mb-8 max-w-4xl mx-auto leading-relaxed">
+              <p className="text-lg sm:text-xl md:text-2xl text-gray-700 dark:text-gray-300 mb-8 max-w-4xl mx-auto leading-relaxed">
                 Streamline leads, quotes, invoices, and customer communications in one powerful platform. 
                 Built for modern businesses that want to grow faster.
               </p>
@@ -122,7 +123,7 @@ const LandingPage = () => {
                 >
                   Start Free Trial <FaArrowRight className="text-sm" />
                 </button>
-                <button className="w-full sm:w-auto border-2 border-primary hover:border-primary-dark hover:bg-primary/10 text-gray-800 hover:text-primary-dark px-8 py-4 rounded-full font-semibold text-lg transition-all duration-300 flex items-center justify-center gap-2 shadow-md">
+                <button className="w-full sm:w-auto border-2 border-primary hover:border-primary-dark hover:bg-primary/10 text-gray-800 dark:text-gray-200 hover:text-primary-dark px-8 py-4 rounded-full font-semibold text-lg transition-all duration-300 flex items-center justify-center gap-2 shadow-md">
                   <FaPlay className="text-sm" /> Watch Demo
                 </button>
               </div>
@@ -136,13 +137,13 @@ const LandingPage = () => {
             transition={{ duration: 0.8, delay: 0.2 }}
             className="relative max-w-6xl mx-auto"
           >
-            <div className="bg-gradient-to-r from-primary/5 via-primary-light/5 to-accent/5 rounded-3xl p-4 sm:p-8 backdrop-blur-sm border border-primary/10 shadow-xl">
-              <div className="bg-white rounded-2xl shadow-2xl overflow-hidden border border-gray-200">
-                <div className="bg-gray-50 px-4 sm:px-6 py-3 sm:py-4 flex items-center gap-2 border-b border-gray-200">
+            <div className="bg-gradient-to-r from-primary/5 via-primary-light/5 to-accent/5 dark:from-primary/10 dark:via-primary-light/10 dark:to-accent/10 rounded-3xl p-4 sm:p-8 backdrop-blur-sm border border-primary/10 dark:border-primary/20 shadow-xl">
+              <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-2xl overflow-hidden border border-gray-200 dark:border-gray-700">
+                <div className="bg-gray-50 dark:bg-gray-700 px-4 sm:px-6 py-3 sm:py-4 flex items-center gap-2 border-b border-gray-200 dark:border-gray-600">
                   <div className="w-3 h-3 rounded-full bg-red-500"></div>
                   <div className="w-3 h-3 rounded-full bg-yellow-500"></div>
                   <div className="w-3 h-3 rounded-full bg-green-500"></div>
-                  <div className="ml-4 text-sm font-medium text-gray-700">TariConnect Dashboard</div>
+                  <div className="ml-4 text-sm font-medium text-gray-700 dark:text-gray-300">TariConnect Dashboard</div>
                 </div>
                 <img src="/dashboard-preview.svg" alt="TariConnect Dashboard Preview" className="w-full h-auto" />
               </div>
@@ -152,11 +153,11 @@ const LandingPage = () => {
       </section>
 
       {/* Features Section */}
-      <section id="features" className="py-16 sm:py-20 px-4 sm:px-6 bg-white">
+      <section id="features" className="py-16 sm:py-20 px-4 sm:px-6 bg-white dark:bg-gray-900">
         <div className="max-w-7xl mx-auto">
           <div className="text-center mb-12 sm:mb-16">
-            <h2 className="text-3xl sm:text-4xl font-bold mb-4 text-gray-900">Everything You Need to Grow</h2>
-            <p className="text-lg sm:text-xl text-gray-700 max-w-3xl mx-auto leading-relaxed">
+            <h2 className="text-3xl sm:text-4xl font-bold mb-4 text-gray-900 dark:text-white">Everything You Need to Grow</h2>
+            <p className="text-lg sm:text-xl text-gray-700 dark:text-gray-300 max-w-3xl mx-auto leading-relaxed">
               Powerful features designed to streamline your business operations and boost productivity.
             </p>
           </div>
@@ -256,10 +257,10 @@ const LandingPage = () => {
       </section>
 
       {/* Testimonials */}
-      <section id="testimonials" className="py-16 sm:py-20 px-4 sm:px-6 bg-gray-50">
+      <section id="testimonials" className="py-16 sm:py-20 px-4 sm:px-6 bg-gray-50 dark:bg-gray-800">
         <div className="max-w-7xl mx-auto">
           <div className="text-center mb-12 sm:mb-16">
-            <h2 className="text-3xl sm:text-4xl font-bold mb-4 text-gray-900">Loved by Businesses Worldwide</h2>
+            <h2 className="text-3xl sm:text-4xl font-bold mb-4 text-gray-900 dark:text-white">Loved by Businesses Worldwide</h2>
             <p className="text-lg sm:text-xl text-gray-700">
               See what our customers have to say about TariConnect
             </p>
@@ -348,13 +349,31 @@ const LandingPage = () => {
       </section>
 
       {/* Pricing Section */}
-      <section id="pricing" className="py-16 sm:py-20 px-4 sm:px-6 bg-white">
+      <section id="pricing" className="py-16 sm:py-20 px-4 sm:px-6 bg-white dark:bg-gray-900">
         <div className="max-w-7xl mx-auto">
           <div className="text-center mb-12 sm:mb-16">
-            <h2 className="text-3xl sm:text-4xl font-bold mb-4 text-gray-900">Simple, Transparent Pricing</h2>
-            <p className="text-lg sm:text-xl text-gray-700">
+            <h2 className="text-3xl sm:text-4xl font-bold mb-4 text-gray-900 dark:text-white">Simple, Transparent Pricing</h2>
+            <p className="text-lg sm:text-xl text-gray-700 mb-6">
               Choose the plan that fits your business needs
             </p>
+            <div className="flex justify-center gap-2">
+              <button
+                onClick={() => setCurrency('KSh')}
+                className={`px-4 py-2 rounded-full text-sm font-medium transition-colors ${
+                  currency === 'KSh' ? 'bg-primary text-white' : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+                }`}
+              >
+                KSh (Kenyan Shilling)
+              </button>
+              <button
+                onClick={() => setCurrency('USD')}
+                className={`px-4 py-2 rounded-full text-sm font-medium transition-colors ${
+                  currency === 'USD' ? 'bg-primary text-white' : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+                }`}
+              >
+                USD (US Dollar)
+              </button>
+            </div>
           </div>
 
           {isLoading ? (

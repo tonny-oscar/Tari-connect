@@ -1,6 +1,8 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link, Outlet, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../store/useAuth';
+import { collection, onSnapshot, query, where } from 'firebase/firestore';
+import { db } from '../services/firebase';
 import ThemeToggle from './ThemeToggle';
 import { 
   FaInbox, 
@@ -27,6 +29,53 @@ function Layout() {
   const navigate = useNavigate();
   const location = useLocation();
   const [sidebarOpen, setSidebarOpen] = useState(true);
+  const [notificationCount, setNotificationCount] = useState(0);
+  const [showNotifications, setShowNotifications] = useState(false);
+
+  useEffect(() => {
+    if (!user) return;
+    
+    const unsubscribes = [];
+    
+    // Listen to invoices for overdue notifications
+    const invoicesQuery = query(collection(db, 'invoices'), where('userId', '==', user.uid));
+    const invoicesUnsub = onSnapshot(invoicesQuery, (snapshot) => {
+      const invoices = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+      const overdueCount = invoices.filter(i => {
+        if (i.status === 'paid' || !i.dueDate) return false;
+        try {
+          const dueDate = i.dueDate?.toDate ? i.dueDate.toDate() : new Date(i.dueDate);
+          return dueDate < new Date();
+        } catch (error) {
+          return false;
+        }
+      }).length;
+      
+      // Listen to quotes for pending notifications
+      const quotesQuery = query(collection(db, 'quotes'), where('userId', '==', user.uid));
+      const quotesUnsub = onSnapshot(quotesQuery, (snapshot) => {
+        const quotes = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+        const pendingCount = quotes.filter(q => q.status === 'pending' || q.status === 'draft').length;
+        
+        // Listen to leads for new notifications
+        const leadsQuery = query(collection(db, 'leads'), where('userId', '==', user.uid));
+        const leadsUnsub = onSnapshot(leadsQuery, (snapshot) => {
+          const leads = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+          const newLeadsCount = leads.filter(l => l.status === 'new').length;
+          
+          setNotificationCount(overdueCount + pendingCount + newLeadsCount);
+        });
+        
+        unsubscribes.push(leadsUnsub);
+      });
+      
+      unsubscribes.push(quotesUnsub);
+    });
+    
+    unsubscribes.push(invoicesUnsub);
+    
+    return () => unsubscribes.forEach(unsub => unsub());
+  }, [user]);
 
   const handleLogout = async () => {
     await logout();
@@ -53,7 +102,7 @@ function Layout() {
   ];
 
   return (
-    <div className="flex h-screen bg-gray-50">
+    <div className="flex h-screen bg-gray-50 dark:bg-gray-900">
       {/* Mobile overlay */}
       {sidebarOpen && (
         <div 
@@ -63,7 +112,7 @@ function Layout() {
       )}
       
       {/* Sidebar */}
-      <div className={`${sidebarOpen ? 'w-64' : 'w-20'} ${sidebarOpen ? 'fixed md:relative' : 'hidden md:flex'} bg-white border-r border-gray-200 transition-all duration-300 flex flex-col z-50 h-full`}>
+      <div className={`${sidebarOpen ? 'w-64' : 'w-20'} ${sidebarOpen ? 'fixed md:relative' : 'hidden md:flex'} bg-white dark:bg-gray-800 border-r border-gray-200 dark:border-gray-700 transition-all duration-300 flex flex-col z-50 h-full`}>
         {/* Logo */}
         <div className="p-4 border-b border-gray-200 flex items-center justify-between">
           {sidebarOpen && (
@@ -141,7 +190,7 @@ function Layout() {
       {/* Main content */}
       <div className="flex-1 flex flex-col overflow-hidden">
         {/* Header */}
-        <header className="bg-white border-b border-gray-200">
+        <header className="bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700">
           <div className="px-4 md:px-6 py-4 flex items-center justify-between">
             <div className="flex items-center">
               <button 
@@ -150,15 +199,24 @@ function Layout() {
               >
                 <FaBars />
               </button>
-              <h1 className="text-xl md:text-2xl font-semibold text-gray-900">
+              <h1 className="text-xl md:text-2xl font-semibold text-gray-900 dark:text-white">
                 {navItems.find(item => isActive(item.path))?.label || 'Dashboard'}
               </h1>
             </div>
             
             <div className="flex items-center space-x-2 md:space-x-4">
               <ThemeToggle />
-              <button className="p-2 text-gray-400 hover:text-gray-600 min-h-[44px] min-w-[44px] flex items-center justify-center">
+              <button 
+                onClick={() => navigate('/dashboard')}
+                className="relative p-2 text-gray-400 hover:text-gray-600 min-h-[44px] min-w-[44px] flex items-center justify-center"
+                title="View Notifications"
+              >
                 <FaBell />
+                {notificationCount > 0 && (
+                  <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center font-medium">
+                    {notificationCount > 9 ? '9+' : notificationCount}
+                  </span>
+                )}
               </button>
               <Link 
                 to="/profile" 
