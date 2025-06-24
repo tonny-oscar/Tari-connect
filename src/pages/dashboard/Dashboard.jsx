@@ -162,16 +162,16 @@ const StatCard = ({ title, value, subtitle, icon, color }) => (
 const QuickAction = ({ to, title, subtitle, icon }) => (
   <Link
     to={to}
-    className="group bg-gradient-to-r from-primary to-primary-dark text-white p-4 sm:p-6 rounded-xl shadow-lg hover:scale-105 transition transform duration-300 focus:outline-none focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-primary"
+    className="group bg-gradient-to-r from-primary to-primary-dark text-white p-4 sm:p-6 rounded-xl shadow-lg hover:scale-105 transition transform duration-300 focus:outline-none focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-primary block"
     aria-label={`${title}: ${subtitle}`}
     role="button"
   >
-    <div className="flex justify-between items-center">
-      <div className="flex-1 min-w-0">
-        <h3 className="text-base sm:text-lg font-semibold truncate">{title}</h3>
-        <p className="text-xs sm:text-sm mt-1 text-white/70 truncate">{subtitle}</p>
+    <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center">
+      <div className="flex-1">
+        <h3 className="text-base sm:text-lg font-semibold text-white mb-1">{title}</h3>
+        <p className="text-sm text-white/80 leading-relaxed">{subtitle}</p>
       </div>
-      <div className="text-xl sm:text-2xl group-hover:opacity-100 opacity-80 flex-shrink-0 ml-3" aria-hidden="true">{icon}</div>
+      <div className="text-2xl sm:text-3xl group-hover:opacity-100 opacity-80 mt-2 sm:mt-0 sm:ml-4 self-start sm:self-center" aria-hidden="true">{icon}</div>
     </div>
   </Link>
 );

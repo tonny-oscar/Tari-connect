@@ -144,29 +144,7 @@ const LandingPage = () => {
                   <div className="w-3 h-3 rounded-full bg-green-500"></div>
                   <div className="ml-4 text-sm font-medium text-gray-700">TariConnect Dashboard</div>
                 </div>
-                <div className="p-4 sm:p-8">
-                  <div className="grid grid-cols-2 md:grid-cols-4 gap-3 sm:gap-4 mb-6">
-                    <div className="bg-primary/10 p-3 sm:p-4 rounded-lg border border-primary/20 text-center">
-                      <div className="text-xl sm:text-2xl font-bold text-primary">247</div>
-                      <div className="text-xs sm:text-sm text-gray-700 font-medium">Leads</div>
-                    </div>
-                    <div className="bg-accent/10 p-3 sm:p-4 rounded-lg border border-accent/20 text-center">
-                      <div className="text-xl sm:text-2xl font-bold text-accent">KSh 2.4M</div>
-                      <div className="text-xs sm:text-sm text-gray-700 font-medium">Revenue</div>
-                    </div>
-                    <div className="bg-primary-light/10 p-3 sm:p-4 rounded-lg border border-primary-light/20 text-center">
-                      <div className="text-xl sm:text-2xl font-bold text-primary-light">89</div>
-                      <div className="text-xs sm:text-sm text-gray-700 font-medium">Quotes</div>
-                    </div>
-                    <div className="bg-primary-dark/10 p-3 sm:p-4 rounded-lg border border-primary-dark/20 text-center">
-                      <div className="text-xl sm:text-2xl font-bold text-primary-dark">156</div>
-                      <div className="text-xs sm:text-sm text-gray-700 font-medium">Invoices</div>
-                    </div>
-                  </div>
-                  <div className="h-24 sm:h-32 bg-gradient-to-r from-primary/5 via-primary-light/5 to-accent/5 rounded-lg flex items-center justify-center border border-primary/10">
-                    <FaChartLine className="text-3xl sm:text-4xl text-primary" />
-                  </div>
-                </div>
+                <img src="/dashboard-preview.svg" alt="TariConnect Dashboard Preview" className="w-full h-auto" />
               </div>
             </div>
           </motion.div>
