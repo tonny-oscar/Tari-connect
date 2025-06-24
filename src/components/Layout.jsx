@@ -86,6 +86,7 @@ function Layout() {
               <Link
                 key={item.path}
                 to={item.path}
+                onClick={() => window.innerWidth < 768 && setSidebarOpen(false)}
                 className={`flex items-center px-3 py-2.5 rounded-lg transition-colors ${
                   isActive(item.path)
                     ? 'bg-primary text-white'
