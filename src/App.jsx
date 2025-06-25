@@ -32,6 +32,8 @@ import {
 
 import ContactDetails from './components/ContactDetails';
 import FreeTrial from './pages/FreeTrial';
+import PaymentVerification from './pages/PaymentVerification';
+import SubscriptionGate from './components/SubscriptionGate';
 
 function App() {
   const { isLoading, isAuthenticated, hasTrialExpired } = useAuth();
@@ -87,21 +89,22 @@ function App() {
         <Route path="/register" element={<Register />} />
         <Route path="/forgot-password" element={<ForgotPassword />} />
         <Route path="/free-trial" element={<FreeTrial />} />
+        <Route path="/payment/verify" element={<PaymentVerification />} />
         
         <Route element={<PrivateRoute />}>
-          <Route path="/dashboard" element={<Dashboard />} />
-          <Route path="/inbox" element={<Inbox />} />
-          <Route path="/chat/:conversationId" element={<Chat />} />
-          <Route path="/tickets" element={<Tickets />} />
-          <Route path="/ai-agent" element={<AIAgent />} />
-          <Route path="/combined" element={<CombinedView />} />
-          <Route path="/combined/:conversationId" element={<CombinedView />} />
-          <Route path="/leads" element={<Leads />} />
-          <Route path="/quotes" element={<Quotes />} />
-          <Route path="/invoices" element={<Invoices />} />
-          <Route path="/items" element={<Items />} />
-          <Route path="/tasks" element={<Tasks />} />
-          <Route path="/file-manager" element={<FileManager />} />
+          <Route path="/dashboard" element={<SubscriptionGate><Dashboard /></SubscriptionGate>} />
+          <Route path="/inbox" element={<SubscriptionGate><Inbox /></SubscriptionGate>} />
+          <Route path="/chat/:conversationId" element={<SubscriptionGate><Chat /></SubscriptionGate>} />
+          <Route path="/tickets" element={<SubscriptionGate><Tickets /></SubscriptionGate>} />
+          <Route path="/ai-agent" element={<SubscriptionGate><AIAgent /></SubscriptionGate>} />
+          <Route path="/combined" element={<SubscriptionGate><CombinedView /></SubscriptionGate>} />
+          <Route path="/combined/:conversationId" element={<SubscriptionGate><CombinedView /></SubscriptionGate>} />
+          <Route path="/leads" element={<SubscriptionGate><Leads /></SubscriptionGate>} />
+          <Route path="/quotes" element={<SubscriptionGate><Quotes /></SubscriptionGate>} />
+          <Route path="/invoices" element={<SubscriptionGate><Invoices /></SubscriptionGate>} />
+          <Route path="/items" element={<SubscriptionGate><Items /></SubscriptionGate>} />
+          <Route path="/tasks" element={<SubscriptionGate><Tasks /></SubscriptionGate>} />
+          <Route path="/file-manager" element={<SubscriptionGate><FileManager /></SubscriptionGate>} />
           <Route path="/support" element={<Support />} />
           <Route path="/settings/*" element={<Settings />} />
           <Route path="/profile" element={<Profile />} />
