@@ -23,12 +23,12 @@ exports.initializePaystackPayment = functions.https.onCall(async (data, context)
     }
 
     const plan = planDoc.data();
-    const amount = plan.price * 100; // Convert to kobo
+    const amount = plan.currency === 'KSh' ? plan.price * 100 : plan.price * 100; // Convert to cents/kobo
 
     const response = await axios.post('https://api.paystack.co/transaction/initialize', {
       email,
       amount,
-      currency: 'NGN',
+      currency: plan.currency === 'KSh' ? 'KES' : 'USD',
       reference: `sub_${userId}_${Date.now()}`,
       callback_url: `${functions.config().app.url}/payment/verify`,
       metadata: {

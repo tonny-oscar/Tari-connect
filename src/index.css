@@ -14,7 +14,7 @@
 
 html, body {
   background-color: #ffffff;
-  color: #1f2937;
+  color: #111827;
   font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
   margin: 0;
   padding: 0;
@@ -90,11 +90,28 @@ html, body {
   color: #f9fafb !important;
 }
 
+/* Default text colors for better contrast */
+body, p, span, div {
+  color: #111827;
+}
+
+.dark body, .dark p, .dark span, .dark div {
+  color: #f9fafb;
+}
+
 /* Dark mode backgrounds */
 .dark .bg-white { background-color: #374151 !important; }
 .dark .bg-gray-50 { background-color: #1f2937 !important; }
 .dark .bg-gray-100 { background-color: #374151 !important; }
 .dark .bg-gray-200 { background-color: #4b5563 !important; }
+
+/* Light mode text - darker colors */
+.text-gray-900 { color: #111827 !important; }
+.text-gray-800 { color: #1f2937 !important; }
+.text-gray-700 { color: #374151 !important; }
+.text-gray-600 { color: #4b5563 !important; }
+.text-gray-500 { color: #6b7280 !important; }
+.text-gray-400 { color: #9ca3af !important; }
 
 /* Dark mode text */
 .dark .text-gray-900 { color: #f9fafb !important; }

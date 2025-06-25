@@ -1,7 +1,7 @@
 import React, { useEffect } from 'react';
 import { useAuth } from '../store/useAuth';
 import { useSubscription } from '../store/useSubscription';
-import { createSubscription, createPortalSession } from '../services/stripeService';
+import { createPaystackPayment, createPortalSession } from '../services/stripeService';
 import { FaCreditCard, FaSpinner } from 'react-icons/fa';
 
 const SubscriptionGate = ({ children }) => {
@@ -17,7 +17,9 @@ const SubscriptionGate = ({ children }) => {
   }, [user, loadSubscription, subscribeToUpdates]);
 
   const handleSubscribe = async (priceId) => {
-    await createSubscription(priceId);
+    if (user?.email) {
+      await createPaystackPayment(priceId, user.email);
+    }
   };
 
   const handleManageBilling = async () => {
@@ -34,25 +36,25 @@ const SubscriptionGate = ({ children }) => {
 
   if (!hasAccess()) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
-        <div className="max-w-md w-full bg-white rounded-lg shadow-lg p-6 text-center">
-          <FaCreditCard className="mx-auto text-4xl text-blue-500 mb-4" />
-          <h2 className="text-2xl font-bold mb-2">Subscription Required</h2>
-          <p className="text-gray-600 mb-6">
+      <div className="min-h-screen bg-gray-50 dark:bg-gray-900 flex items-center justify-center p-4">
+        <div className="max-w-md w-full bg-white dark:bg-gray-800 rounded-lg shadow-lg p-6 text-center border dark:border-gray-700">
+          <FaCreditCard className="mx-auto text-4xl text-blue-500 dark:text-blue-400 mb-4" />
+          <h2 className="text-2xl font-bold mb-2 text-gray-900 dark:text-white">Subscription Required</h2>
+          <p className="text-gray-800 dark:text-gray-300 mb-6">
             You need an active subscription to access the CRM dashboard.
           </p>
           
           <div className="space-y-4">
             <button
-              onClick={() => handleSubscribe('price_monthly')}
-              className="w-full bg-blue-600 text-white py-3 px-4 rounded-lg hover:bg-blue-700 transition-colors"
+              onClick={() => handleSubscribe('monthly')}
+              className="w-full bg-blue-600 hover:bg-blue-700 text-white py-3 px-4 rounded-lg transition-colors font-medium"
             >
               Subscribe Monthly - $29/month
             </button>
             
             <button
-              onClick={() => handleSubscribe('price_yearly')}
-              className="w-full bg-green-600 text-white py-3 px-4 rounded-lg hover:bg-green-700 transition-colors"
+              onClick={() => handleSubscribe('yearly')}
+              className="w-full bg-green-600 hover:bg-green-700 text-white py-3 px-4 rounded-lg transition-colors font-medium"
             >
               Subscribe Yearly - $290/year
             </button>
@@ -60,7 +62,7 @@ const SubscriptionGate = ({ children }) => {
             {subscription?.status === 'past_due' && (
               <button
                 onClick={handleManageBilling}
-                className="w-full bg-orange-600 text-white py-3 px-4 rounded-lg hover:bg-orange-700 transition-colors"
+                className="w-full bg-orange-600 hover:bg-orange-700 text-white py-3 px-4 rounded-lg transition-colors font-medium"
               >
                 Update Payment Method
               </button>

@@ -12,6 +12,7 @@
   "dependencies": {
     "@stripe/stripe-js": "^7.4.0",
     "@tailwindcss/vite": "^4.1.10",
+    "cors": "^2.8.5",
     "dom": "^0.0.3",
     "emoji-picker-react": "^4.12.2",
     "firebase": "^11.9.1",
