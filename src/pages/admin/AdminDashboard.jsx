@@ -11,6 +11,7 @@ const AdminDashboard = () => {
   const [users, setUsers] = useState([]);
   const [conversations, setConversations] = useState([]);
   const [tasks, setTasks] = useState([]);
+  const [contactMessages, setContactMessages] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState('');
   const [activeTab, setActiveTab] = useState('overview');
@@ -22,7 +23,8 @@ const AdminDashboard = () => {
     activeUsers: 0,
     totalConversations: 0,
     totalTasks: 0,
-    completedTasks: 0
+    completedTasks: 0,
+    totalMessages: 0
   });
 
   // Initialize pricing plans
@@ -108,6 +110,31 @@ const AdminDashboard = () => {
         }));
       } catch (err) {
         console.error('Error fetching tasks:', err);
+      }
+    });
+    
+    return () => unsubscribe();
+  }, []);
+
+  // Fetch contact messages
+  useEffect(() => {
+    const q = query(collection(db, 'contactMessages'), orderBy('createdAt', 'desc'));
+    
+    const unsubscribe = onSnapshot(q, (snapshot) => {
+      try {
+        const messagesList = snapshot.docs.map(doc => ({
+          id: doc.id,
+          ...doc.data()
+        }));
+        setContactMessages(messagesList);
+        
+        // Update stats
+        setStats(prev => ({
+          ...prev,
+          totalMessages: messagesList.length
+        }));
+      } catch (err) {
+        console.error('Error fetching contact messages:', err);
       }
     });
     
@@ -201,8 +228,8 @@ const AdminDashboard = () => {
         </div>
         
         <div className="bg-white p-4 rounded shadow">
-          <h3 className="text-lg font-medium text-gray-700">Completed Tasks</h3>
-          <p className="text-3xl font-bold text-green-600">{stats.completedTasks}</p>
+          <h3 className="text-lg font-medium text-gray-700">Contact Messages</h3>
+          <p className="text-3xl font-bold text-orange-600">{stats.totalMessages}</p>
         </div>
       </div>
       
@@ -284,6 +311,12 @@ const AdminDashboard = () => {
             onClick={() => setActiveTab('pricing')}
           >
             Pricing Management
+          </button>
+          <button
+            className={`py-2 px-4 ${activeTab === 'messages' ? 'border-b-2 border-blue-600 text-blue-600' : 'text-gray-500'}`}
+            onClick={() => setActiveTab('messages')}
+          >
+            Contact Messages
           </button>
         </div>
       </div>
@@ -460,6 +493,38 @@ const AdminDashboard = () => {
       
       {activeTab === 'pricing' && (
         <PricingManager />
+      )}
+      
+      {activeTab === 'messages' && (
+        <div className="bg-white rounded-lg shadow overflow-hidden">
+          <div className="p-4 border-b">
+            <h2 className="text-lg font-semibold">Contact Messages</h2>
+            <p className="text-sm text-gray-500">Total messages: {contactMessages.length}</p>
+          </div>
+          
+          <div className="divide-y divide-gray-200">
+            {contactMessages.map(message => (
+              <div key={message.id} className="p-4">
+                <div className="flex justify-between items-start mb-2">
+                  <div>
+                    <h3 className="font-medium text-gray-900">{message.name}</h3>
+                    <p className="text-sm text-gray-600">{message.email}</p>
+                  </div>
+                  <span className="text-xs text-gray-500">
+                    {message.createdAt ? new Date(message.createdAt.toDate()).toLocaleDateString() : 'N/A'}
+                  </span>
+                </div>
+                <p className="text-gray-800">{message.message}</p>
+              </div>
+            ))}
+            
+            {contactMessages.length === 0 && (
+              <div className="p-8 text-center text-gray-500">
+                No contact messages found
+              </div>
+            )}
+          </div>
+        </div>
       )}
     </div>
   );

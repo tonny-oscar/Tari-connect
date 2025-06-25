@@ -9,9 +9,11 @@ const Profile = () => {
   const { user, userData } = useAuth();
   const [isEditing, setIsEditing] = useState(false);
   const [name, setName] = useState(userData?.name || '');
+  const [originalName, setOriginalName] = useState(userData?.name || '');
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
+  const [showSaveButton, setShowSaveButton] = useState(false);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -30,6 +32,11 @@ const Profile = () => {
 
       setSuccess('Profile updated successfully!');
       setIsEditing(false);
+      setShowSaveButton(false);
+      setOriginalName(name);
+      
+      // Hide success message after 3 seconds
+      setTimeout(() => setSuccess(''), 3000);
     } catch (err) {
       console.error('Profile update error:', err);
       setError('Failed to update profile. Please try again.');
@@ -68,7 +75,10 @@ const Profile = () => {
           </div>
 
           <button
-            onClick={() => setIsEditing(true)}
+            onClick={() => {
+              setIsEditing(true);
+              setShowSaveButton(false);
+            }}
             className="ml-auto bg-primary/10 text-primary p-2 rounded-full hover:bg-primary/20"
           >
             <FaEdit />
@@ -85,7 +95,10 @@ const Profile = () => {
                 id="name"
                 type="text"
                 value={name}
-                onChange={(e) => setName(e.target.value)}
+                onChange={(e) => {
+                  setName(e.target.value);
+                  setShowSaveButton(e.target.value !== originalName);
+                }}
                 className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
                 placeholder="Your name"
                 required
@@ -96,19 +109,25 @@ const Profile = () => {
             <div className="flex items-center justify-end">
               <button
                 type="button"
-                onClick={() => setIsEditing(false)}
+                onClick={() => {
+                  setIsEditing(false);
+                  setName(originalName);
+                  setShowSaveButton(false);
+                }}
                 className="bg-gray-300 hover:bg-gray-400 text-gray-800 font-bold py-2 px-4 rounded mr-2"
                 disabled={isLoading}
               >
                 Cancel
               </button>
-              <button
-                type="submit"
-                className="bg-primary hover:bg-primary-dark text-white font-bold py-2 px-4 rounded"
-                disabled={isLoading}
-              >
-                {isLoading ? 'Saving...' : 'Save Changes'}
-              </button>
+              {showSaveButton && (
+                <button
+                  type="submit"
+                  className="bg-primary hover:bg-primary-dark text-white font-bold py-2 px-4 rounded"
+                  disabled={isLoading}
+                >
+                  {isLoading ? 'Saving...' : 'Save Changes'}
+                </button>
+              )}
             </div>
           </form>
         ) : (
