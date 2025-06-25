@@ -1,0 +1,43 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // Users can read/write their own data
+    match /users/{userId} {
+      allow read, write: if request.auth != null && request.auth.uid == userId;
+    }
+    
+    // Subscription data - users can read their own, functions can write
+    match /subscriptions/{userId} {
+      allow read: if request.auth != null && request.auth.uid == userId;
+      allow write: if false; // Only functions can write subscription data
+    }
+    
+    // Settings - users can read/write their own
+    match /settings/{userId} {
+      allow read, write: if request.auth != null && request.auth.uid == userId;
+    }
+    
+    // Pricing plans - read-only for authenticated users
+    match /pricing/{planId} {
+      allow read: if request.auth != null;
+      allow write: if request.auth != null && 
+        exists(/databases/$(database)/documents/users/$(request.auth.uid)) &&
+        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin';
+    }
+    
+    // CRM data - only accessible with active subscription
+    match /{collection}/{document} {
+      allow read, write: if request.auth != null && 
+        collection in ['contacts', 'leads', 'quotes', 'invoices', 'items', 'tasks'] &&
+        hasActiveSubscription(request.auth.uid);
+    }
+    
+    // Function to check active subscription
+    function hasActiveSubscription(userId) {
+      let subscription = get(/databases/$(database)/documents/subscriptions/$(userId));
+      return subscription != null && 
+             subscription.data.status == 'active' &&
+             subscription.data.currentPeriodEnd.toMillis() > request.time.toMillis();
+    }
+  }
+}
