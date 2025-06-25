@@ -90,13 +90,13 @@ html, body {
   color: #f9fafb !important;
 }
 
-/* Default text colors for better contrast */
-body, p, span, div {
-  color: #111827;
+/* Consistent text colors */
+body, p, span, div, h1, h2, h3, h4, h5, h6 {
+  color: #1f2937;
 }
 
-.dark body, .dark p, .dark span, .dark div {
-  color: #f9fafb;
+.dark body, .dark p, .dark span, .dark div, .dark h1, .dark h2, .dark h3, .dark h4, .dark h5, .dark h6 {
+  color: #f3f4f6;
 }
 
 /* Dark mode backgrounds */
@@ -105,13 +105,13 @@ body, p, span, div {
 .dark .bg-gray-100 { background-color: #374151 !important; }
 .dark .bg-gray-200 { background-color: #4b5563 !important; }
 
-/* Light mode text - darker colors */
+/* Light mode text - consistent darker colors */
 .text-gray-900 { color: #111827 !important; }
 .text-gray-800 { color: #1f2937 !important; }
 .text-gray-700 { color: #374151 !important; }
-.text-gray-600 { color: #4b5563 !important; }
-.text-gray-500 { color: #6b7280 !important; }
-.text-gray-400 { color: #9ca3af !important; }
+.text-gray-600 { color: #374151 !important; }
+.text-gray-500 { color: #4b5563 !important; }
+.text-gray-400 { color: #6b7280 !important; }
 
 /* Dark mode text */
 .dark .text-gray-900 { color: #f9fafb !important; }
