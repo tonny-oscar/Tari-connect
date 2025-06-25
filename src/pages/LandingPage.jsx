@@ -101,7 +101,7 @@ const LandingPage = () => {
       </nav>
 
       {/* Hero Section */}
-      <section className="pt-24 pb-20 px-4 sm:px-6 bg-gradient-to-br from-white via-gray-50 to-primary/5">
+      <section className="pt-24 pb-20 px-4 sm:px-6 bg-gradient-to-br from-white via-gray-50 to-primary/5 dark:from-gray-900 dark:via-gray-800 dark:to-primary/10">
         <div className="max-w-7xl mx-auto">
           <div className="text-center mb-16">
             <motion.div
@@ -167,13 +167,13 @@ const LandingPage = () => {
               initial={{ opacity: 0, y: 20 }}
               whileInView={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.5 }}
-              className="bg-white p-6 sm:p-8 rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 border border-gray-100 hover:border-primary/20"
+              className="bg-white dark:bg-gray-800 p-6 sm:p-8 rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 border border-gray-100 dark:border-gray-700 hover:border-primary/20"
             >
               <div className="bg-primary/10 p-4 rounded-xl w-fit mb-6">
                 <FaUserFriends className="text-2xl text-primary" />
               </div>
-              <h3 className="text-xl font-semibold mb-4 text-gray-900">Lead Management</h3>
-              <p className="text-gray-700 leading-relaxed">
+              <h3 className="text-xl font-semibold mb-4 text-gray-900 dark:text-white">Lead Management</h3>
+              <p className="text-gray-700 dark:text-gray-300 leading-relaxed">
                 Capture, track, and nurture leads with our intelligent CRM system. Convert more prospects into customers.
               </p>
             </motion.div>
@@ -182,13 +182,13 @@ const LandingPage = () => {
               initial={{ opacity: 0, y: 20 }}
               whileInView={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.5, delay: 0.1 }}
-              className="bg-white p-6 sm:p-8 rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 border border-gray-100 hover:border-accent/20"
+              className="bg-white dark:bg-gray-800 p-6 sm:p-8 rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 border border-gray-100 dark:border-gray-700 hover:border-accent/20"
             >
               <div className="bg-accent/10 p-4 rounded-xl w-fit mb-6">
                 <FaFileInvoiceDollar className="text-2xl text-accent" />
               </div>
-              <h3 className="text-xl font-semibold mb-4 text-gray-900">Smart Invoicing</h3>
-              <p className="text-gray-700 leading-relaxed">
+              <h3 className="text-xl font-semibold mb-4 text-gray-900 dark:text-white">Smart Invoicing</h3>
+              <p className="text-gray-700 dark:text-gray-300 leading-relaxed">
                 Create professional invoices, track payments, and manage your cash flow with automated reminders.
               </p>
             </motion.div>
@@ -197,13 +197,13 @@ const LandingPage = () => {
               initial={{ opacity: 0, y: 20 }}
               whileInView={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.5, delay: 0.2 }}
-              className="bg-white p-6 sm:p-8 rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 border border-gray-100 hover:border-primary-light/20"
+              className="bg-white dark:bg-gray-800 p-6 sm:p-8 rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 border border-gray-100 dark:border-gray-700 hover:border-primary-light/20"
             >
               <div className="bg-primary-light/10 p-4 rounded-xl w-fit mb-6">
                 <FaRobot className="text-2xl text-primary-light" />
               </div>
-              <h3 className="text-xl font-semibold mb-4 text-gray-900">AI Assistant</h3>
-              <p className="text-gray-700 leading-relaxed">
+              <h3 className="text-xl font-semibold mb-4 text-gray-900 dark:text-white">AI Assistant</h3>
+              <p className="text-gray-700 dark:text-gray-300 leading-relaxed">
                 Let AI handle routine tasks, generate content, and provide insights to help you make better decisions.
               </p>
             </motion.div>
@@ -212,13 +212,13 @@ const LandingPage = () => {
               initial={{ opacity: 0, y: 20 }}
               whileInView={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.5, delay: 0.3 }}
-              className="bg-white p-6 sm:p-8 rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 border border-gray-100 hover:border-primary-dark/20"
+              className="bg-white dark:bg-gray-800 p-6 sm:p-8 rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 border border-gray-100 dark:border-gray-700 hover:border-primary-dark/20"
             >
               <div className="bg-primary-dark/10 p-4 rounded-xl w-fit mb-6">
                 <FaComments className="text-2xl text-primary-dark" />
               </div>
-              <h3 className="text-xl font-semibold mb-4 text-gray-900">Unified Communications</h3>
-              <p className="text-gray-700 leading-relaxed">
+              <h3 className="text-xl font-semibold mb-4 text-gray-900 dark:text-white">Unified Communications</h3>
+              <p className="text-gray-700 dark:text-gray-300 leading-relaxed">
                 Manage all customer conversations from multiple channels in one centralized inbox.
               </p>
             </motion.div>
@@ -232,8 +232,8 @@ const LandingPage = () => {
               <div className="bg-accent/10 p-4 rounded-xl w-fit mb-6">
                 <FaChartLine className="text-2xl text-accent" />
               </div>
-              <h3 className="text-xl font-semibold mb-4 text-gray-900">Analytics & Reports</h3>
-              <p className="text-gray-700 leading-relaxed">
+              <h3 className="text-xl font-semibold mb-4 text-gray-900 dark:text-white">Analytics & Reports</h3>
+              <p className="text-gray-700 dark:text-gray-300 leading-relaxed">
                 Get detailed insights into your business performance with comprehensive analytics and reporting.
               </p>
             </motion.div>
@@ -247,8 +247,8 @@ const LandingPage = () => {
               <div className="bg-primary/10 p-4 rounded-xl w-fit mb-6">
                 <FaBoxOpen className="text-2xl text-primary" />
               </div>
-              <h3 className="text-xl font-semibold mb-4 text-gray-900">Product Catalog</h3>
-              <p className="text-gray-700 leading-relaxed">
+              <h3 className="text-xl font-semibold mb-4 text-gray-900 dark:text-white">Product Catalog</h3>
+              <p className="text-gray-700 dark:text-gray-300 leading-relaxed">
                 Organize your products and services with detailed catalogs, pricing, and inventory management.
               </p>
             </motion.div>
@@ -261,7 +261,7 @@ const LandingPage = () => {
         <div className="max-w-7xl mx-auto">
           <div className="text-center mb-12 sm:mb-16">
             <h2 className="text-3xl sm:text-4xl font-bold mb-4 text-gray-900 dark:text-white">Loved by Businesses Worldwide</h2>
-            <p className="text-lg sm:text-xl text-gray-700">
+            <p className="text-lg sm:text-xl text-gray-700 dark:text-gray-300">
               See what our customers have to say about TariConnect
             </p>
           </div>
@@ -271,7 +271,7 @@ const LandingPage = () => {
               initial={{ opacity: 0, scale: 0.9 }}
               whileInView={{ opacity: 1, scale: 1 }}
               transition={{ duration: 0.5 }}
-              className="bg-white p-6 sm:p-8 rounded-2xl shadow-lg border border-gray-100 hover:shadow-xl transition-shadow duration-300"
+              className="bg-white dark:bg-gray-800 p-6 sm:p-8 rounded-2xl shadow-lg border border-gray-100 dark:border-gray-700 hover:shadow-xl transition-shadow duration-300"
             >
               <div className="flex items-center mb-4">
                 {[...Array(5)].map((_, i) => (
@@ -279,7 +279,7 @@ const LandingPage = () => {
                 ))}
               </div>
               <FaQuoteLeft className="text-primary text-2xl mb-4" />
-              <p className="text-gray-700 mb-6 leading-relaxed">
+              <p className="text-gray-700 dark:text-gray-300 mb-6 leading-relaxed">
                 "TariConnect transformed our business operations. We've increased our conversion rate by 40% and saved 10 hours per week on administrative tasks."
               </p>
               <div className="flex items-center">
@@ -287,8 +287,8 @@ const LandingPage = () => {
                   JD
                 </div>
                 <div className="ml-4">
-                  <div className="font-semibold text-gray-900">John Doe</div>
-                  <div className="text-sm text-gray-600">Tech Solutions</div>
+                  <div className="font-semibold text-gray-900 dark:text-white">John Doe</div>
+                  <div className="text-sm text-gray-600 dark:text-gray-400">Tech Solutions</div>
                 </div>
               </div>
             </motion.div>
@@ -353,14 +353,14 @@ const LandingPage = () => {
         <div className="max-w-7xl mx-auto">
           <div className="text-center mb-12 sm:mb-16">
             <h2 className="text-3xl sm:text-4xl font-bold mb-4 text-gray-900 dark:text-white">Simple, Transparent Pricing</h2>
-            <p className="text-lg sm:text-xl text-gray-700 mb-6">
+            <p className="text-lg sm:text-xl text-gray-700 dark:text-gray-300 mb-6">
               Choose the plan that fits your business needs
             </p>
             <div className="flex justify-center gap-2">
               <button
                 onClick={() => setCurrency('KSh')}
                 className={`px-4 py-2 rounded-full text-sm font-medium transition-colors ${
-                  currency === 'KSh' ? 'bg-primary text-white' : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+                  currency === 'KSh' ? 'bg-primary text-white' : 'bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-300 dark:hover:bg-gray-600'
                 }`}
               >
                 KSh (Kenyan Shilling)
@@ -368,7 +368,7 @@ const LandingPage = () => {
               <button
                 onClick={() => setCurrency('USD')}
                 className={`px-4 py-2 rounded-full text-sm font-medium transition-colors ${
-                  currency === 'USD' ? 'bg-primary text-white' : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+                  currency === 'USD' ? 'bg-primary text-white' : 'bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-300 dark:hover:bg-gray-600'
                 }`}
               >
                 USD (US Dollar)

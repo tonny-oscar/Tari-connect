@@ -9,7 +9,7 @@ export const submitContactForm = async (formData) => {
       status: 'new'
     };
 
-    const docRef = await addDoc(collection(db, 'contacts'), contactData);
+    const docRef = await addDoc(collection(db, 'contactMessages'), contactData);
     
     return {
       success: true,

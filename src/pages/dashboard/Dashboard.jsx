@@ -340,9 +340,9 @@ const QuickAction = ({ to, title, subtitle, icon }) => (
     <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center">
       <div className="flex-1">
         <h3 className="text-base sm:text-lg font-semibold text-white mb-1">{title}</h3>
-        <p className="text-sm text-white/80 leading-relaxed">{subtitle}</p>
+        <p className="text-sm text-white opacity-90 leading-relaxed">{subtitle}</p>
       </div>
-      <div className="text-2xl sm:text-3xl group-hover:opacity-100 opacity-80 mt-2 sm:mt-0 sm:ml-4 self-start sm:self-center" aria-hidden="true">{icon}</div>
+      <div className="text-2xl sm:text-3xl text-white group-hover:opacity-100 opacity-90 mt-2 sm:mt-0 sm:ml-4 self-start sm:self-center" aria-hidden="true">{icon}</div>
     </div>
   </Link>
 );

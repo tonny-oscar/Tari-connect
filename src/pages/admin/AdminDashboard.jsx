@@ -116,7 +116,7 @@ const AdminDashboard = () => {
     return () => unsubscribe();
   }, []);
 
-  // Fetch contact messages
+  // Fetch contact messages and conversations
   useEffect(() => {
     const q = query(collection(db, 'contactMessages'), orderBy('createdAt', 'desc'));
     
@@ -507,14 +507,17 @@ const AdminDashboard = () => {
               <div key={message.id} className="p-4">
                 <div className="flex justify-between items-start mb-2">
                   <div>
-                    <h3 className="font-medium text-gray-900">{message.name}</h3>
-                    <p className="text-sm text-gray-600">{message.email}</p>
+                    <h3 className="font-medium text-gray-900 dark:text-white">{message.name}</h3>
+                    <p className="text-sm text-gray-600 dark:text-gray-400">{message.email}</p>
+                    {message.subject && (
+                      <p className="text-sm font-medium text-gray-700 dark:text-gray-300 mt-1">{message.subject}</p>
+                    )}
                   </div>
-                  <span className="text-xs text-gray-500">
+                  <span className="text-xs text-gray-500 dark:text-gray-400">
                     {message.createdAt ? new Date(message.createdAt.toDate()).toLocaleDateString() : 'N/A'}
                   </span>
                 </div>
-                <p className="text-gray-800">{message.message}</p>
+                <p className="text-gray-800 dark:text-gray-200">{message.message}</p>
               </div>
             ))}
             
