@@ -51,13 +51,13 @@ const PaymentVerification = () => {
   const getStatusIcon = () => {
     switch (status) {
       case 'verifying':
-        return <FaSpinner className="animate-spin text-blue-500 text-4xl" />;
+        return <FaSpinner className="animate-spin text-blue-500 dark:text-blue-400 text-4xl" />;
       case 'success':
-        return <FaCheckCircle className="text-green-500 text-4xl" />;
+        return <FaCheckCircle className="text-green-500 dark:text-green-400 text-4xl" />;
       case 'error':
-        return <FaTimesCircle className="text-red-500 text-4xl" />;
+        return <FaTimesCircle className="text-red-500 dark:text-red-400 text-4xl" />;
       default:
-        return <FaSpinner className="animate-spin text-blue-500 text-4xl" />;
+        return <FaSpinner className="animate-spin text-blue-500 dark:text-blue-400 text-4xl" />;
     }
   };
 
@@ -74,7 +74,7 @@ const PaymentVerification = () => {
 
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900 flex items-center justify-center p-4">
-      <div className="bg-white dark:bg-gray-800 rounded-lg shadow-xl p-8 max-w-md w-full text-center">
+      <div className="bg-white dark:bg-gray-800 rounded-lg shadow-xl p-8 max-w-md w-full text-center border dark:border-gray-700">
         <div className="mb-6">
           {getStatusIcon()}
         </div>
@@ -88,7 +88,7 @@ const PaymentVerification = () => {
         </p>
         
         {status === 'success' && (
-          <div className="text-sm text-gray-600 dark:text-gray-400">
+          <div className="text-sm text-gray-800 dark:text-gray-300 bg-green-50 dark:bg-green-900/20 p-3 rounded-lg">
             Redirecting to dashboard in a few seconds...
           </div>
         )}
@@ -97,13 +97,13 @@ const PaymentVerification = () => {
           <div className="space-y-4">
             <button
               onClick={() => navigate('/dashboard')}
-              className="w-full bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 transition-colors"
+              className="w-full bg-blue-600 hover:bg-blue-700 text-white px-4 py-3 rounded-md transition-colors font-medium"
             >
               Go to Dashboard
             </button>
             <button
               onClick={() => navigate('/dashboard/settings')}
-              className="w-full bg-gray-600 text-white px-4 py-2 rounded-md hover:bg-gray-700 transition-colors"
+              className="w-full bg-gray-600 hover:bg-gray-700 text-white px-4 py-3 rounded-md transition-colors font-medium"
             >
               Try Again
             </button>

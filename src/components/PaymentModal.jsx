@@ -29,7 +29,7 @@ const PaymentModal = ({ isOpen, onClose, plan }) => {
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-      <div className="bg-white dark:bg-gray-800 rounded-lg shadow-xl w-full max-w-md">
+      <div className="bg-white dark:bg-gray-800 rounded-lg shadow-xl w-full max-w-md border dark:border-gray-700">
         <div className="p-6 border-b dark:border-gray-700 flex justify-between items-center">
           <h3 className="text-lg font-semibold dark:text-white">Complete Payment</h3>
           <button 
@@ -48,7 +48,7 @@ const PaymentModal = ({ isOpen, onClose, plan }) => {
               {plan.currency} {plan.price.toLocaleString()}
               <span className="text-sm font-normal text-gray-600 dark:text-gray-400">/{plan.billingPeriod}</span>
             </p>
-            <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">{plan.description}</p>
+            <p className="text-sm text-gray-800 dark:text-gray-400 mt-1">{plan.description}</p>
           </div>
 
           {error && (
@@ -68,7 +68,7 @@ const PaymentModal = ({ isOpen, onClose, plan }) => {
             <div className="mb-4">
               <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Payment Method</label>
               <div className="space-y-2">
-                <label className="flex items-center p-3 border rounded-lg cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-700 dark:border-gray-600">
+                <label className="flex items-center p-3 border border-gray-300 dark:border-gray-600 rounded-lg cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-700 bg-white dark:bg-gray-800">
                   <input
                     type="radio"
                     name="paymentMethod"
@@ -77,10 +77,10 @@ const PaymentModal = ({ isOpen, onClose, plan }) => {
                     onChange={(e) => setPaymentMethod(e.target.value)}
                     className="mr-3"
                   />
-                  <FaCreditCard className="text-blue-600 mr-2" />
+                  <FaCreditCard className="text-blue-600 dark:text-blue-400 mr-2" />
                   <div>
                     <div className="font-medium dark:text-white">Credit/Debit Card</div>
-                    <div className="text-sm text-gray-600 dark:text-gray-400">Pay securely with Paystack</div>
+                    <div className="text-sm text-gray-800 dark:text-gray-400">Pay securely with Paystack</div>
                   </div>
                 </label>
               </div>
@@ -101,13 +101,13 @@ const PaymentModal = ({ isOpen, onClose, plan }) => {
                 className="flex-1 bg-blue-600 text-white px-4 py-3 rounded-md hover:bg-blue-700 transition-colors disabled:opacity-50 flex items-center justify-center gap-2"
               >
                 {isLoading && <FaSpinner className="animate-spin" />}
-                Pay ₦{(plan.price * 100).toLocaleString()}
+                Pay {plan.currency} {plan.price.toLocaleString()}
               </button>
             </div>
           </form>
 
           {paymentMethod === 'paystack' && (
-            <div className="mt-4 p-3 bg-blue-50 dark:bg-blue-900 rounded-lg">
+            <div className="mt-4 p-3 bg-blue-50 dark:bg-blue-900/30 rounded-lg border border-blue-200 dark:border-blue-700">
               <p className="text-sm text-blue-800 dark:text-blue-200">
                 <strong>Note:</strong> You will be redirected to Paystack's secure payment page to complete your transaction.
               </p>

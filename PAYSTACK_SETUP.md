@@ -71,18 +71,10 @@ firebase deploy --only functions
 
 ## Currency Configuration
 
-The current setup uses Nigerian Naira (NGN). To change currency:
-
-1. Update the currency in `functions/index.js`:
-```javascript
-currency: 'USD', // or your preferred currency
-```
-
-2. Update the price conversion in PaymentModal.jsx:
-```javascript
-// Remove the * 100 conversion for non-kobo currencies
-Pay ${plan.currency} {plan.price.toLocaleString()}
-```
+The setup supports USD and KSh (Kenyan Shilling) currencies:
+- USD payments use Paystack's USD processing
+- KSh payments are converted to KES for Paystack
+- Currency is determined by the plan's currency field in Firestore
 
 ## Subscription Management
 
