@@ -1,8 +1,25 @@
 import { httpsCallable } from 'firebase/functions';
 import { functions } from './firebase';
+import { PAYSTACK_CONFIG } from '../config/paystack';
+import { getPricingPlan } from './pricingService';
 
 // Create Paystack payment
 export const createPaystackPayment = async (planId, email, phoneNumber = null) => {
+  // Get the Paystack plan ID from the pricing plan
+  let paystackPlanId;
+  try {
+    const { success, plan } = await getPricingPlan(planId);
+    if (success && plan && plan.paystackPlanId) {
+      paystackPlanId = plan.paystackPlanId;
+    } else {
+      // Fallback to the config if the plan is not found in the database
+      paystackPlanId = PAYSTACK_CONFIG.plans[planId] || planId;
+    }
+  } catch (error) {
+    console.error('Error getting Paystack plan ID:', error);
+    // Fallback to the provided planId
+    paystackPlanId = planId;
+  }
   try {
     // Check if we're in development mode
     if (import.meta.env.DEV) {
@@ -15,7 +32,7 @@ export const createPaystackPayment = async (planId, email, phoneNumber = null) =
           headers: {
             'Content-Type': 'application/json',
           },
-          body: JSON.stringify({ data: { planId, email, phoneNumber } })
+          body: JSON.stringify({ data: { planId: paystackPlanId, email, phoneNumber } })
         });
         
         if (!response.ok) {
@@ -34,10 +51,25 @@ export const createPaystackPayment = async (planId, email, phoneNumber = null) =
       }
     }
     
+    // Check if we're in development mode with emulators configured but not running
+    if (import.meta.env.DEV && import.meta.env.VITE_USE_FIREBASE_EMULATOR === 'true') {
+      console.log('Using mock payment data since emulators are configured but not running');
+      // Create a mock successful response
+      const mockResponse = {
+        authorization_url: 'https://checkout.paystack.com/mock-' + Date.now(),
+        access_code: 'mock_access_code',
+        reference: `mock_${Date.now()}`
+      };
+      
+      // Redirect to mock payment page
+      window.location.href = mockResponse.authorization_url;
+      return { success: true };
+    }
+    
     // Direct function call (will work in production or with emulator)
     try {
       const initializePayment = httpsCallable(functions, 'initializePaystackPayment');
-      const { data } = await initializePayment({ planId, email, phoneNumber });
+      const { data } = await initializePayment({ planId: paystackPlanId, email, phoneNumber });
       
       // Redirect to Paystack payment page
       if (data && data.authorization_url) {
@@ -51,7 +83,8 @@ export const createPaystackPayment = async (planId, email, phoneNumber = null) =
       console.error('Function call error:', functionError);
       
       // If we're in production and getting CORS errors, try a direct fetch with mode: 'no-cors'
-      if (functionError.message && functionError.message.includes('CORS')) {
+      if (functionError.message && functionError.message.includes('CORS') || 
+          functionError.message && functionError.message.includes('REFUSED')) {
         try {
           console.log('Attempting direct fetch with no-cors mode');
           
@@ -70,7 +103,7 @@ export const createPaystackPayment = async (planId, email, phoneNumber = null) =
             headers: {
               'Content-Type': 'application/json',
             },
-            body: JSON.stringify({ planId, email, phoneNumber })
+            body: JSON.stringify({ planId: paystackPlanId, email, phoneNumber })
           });
           
           // Use the mock response
@@ -129,6 +162,23 @@ export const verifyPaystackPayment = async (reference) => {
       }
     }
     
+    // Check if we're in development mode with emulators configured but not running
+    if (import.meta.env.DEV && import.meta.env.VITE_USE_FIREBASE_EMULATOR === 'true') {
+      console.log('Using mock verification data since emulators are configured but not running');
+      // Create a mock successful response
+      return {
+        success: true,
+        data: {
+          status: 'success',
+          reference: reference,
+          amount: 2900 * 100,
+          currency: 'KES',
+          transaction_date: new Date().toISOString(),
+          message: 'Payment verification successful'
+        }
+      };
+    }
+    
     // Direct function call (will work in production or with emulator)
     try {
       const verifyPayment = httpsCallable(functions, 'verifyPaystackPayment');
@@ -139,7 +189,8 @@ export const verifyPaystackPayment = async (reference) => {
       console.error('Function call error:', functionError);
       
       // If we're in production and getting CORS errors, try a direct fetch with mode: 'no-cors'
-      if (functionError.message && functionError.message.includes('CORS')) {
+      if (functionError.message && functionError.message.includes('CORS') || 
+          functionError.message && functionError.message.includes('REFUSED')) {
         try {
           console.log('Attempting direct fetch with no-cors mode for verification');
           
