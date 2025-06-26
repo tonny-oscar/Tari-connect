@@ -8,6 +8,7 @@ import {
 } from 'firebase/firestore';
 import { db } from './firebase';
 import { createDualDocument, updateDualDocument } from './dualDatabaseService';
+import { PAYSTACK_CONFIG } from '../config/paystack';
 
 // Default pricing plans
 const defaultPlans = [
@@ -25,7 +26,8 @@ const defaultPlans = [
       'Email support'
     ],
     isPopular: false,
-    order: 1
+    order: 1,
+    paystackPlanId: PAYSTACK_CONFIG.plans.starter
   },
   {
     id: 'professional',
@@ -42,7 +44,8 @@ const defaultPlans = [
       'AI-powered responses'
     ],
     isPopular: true,
-    order: 2
+    order: 2,
+    paystackPlanId: PAYSTACK_CONFIG.plans.professional
   },
   {
     id: 'enterprise',
@@ -59,7 +62,8 @@ const defaultPlans = [
       'Custom integrations'
     ],
     isPopular: false,
-    order: 3
+    order: 3,
+    paystackPlanId: PAYSTACK_CONFIG.plans.enterprise
   }
 ];
 
@@ -134,6 +138,11 @@ export const formatPrice = (price, currency = 'KSh') => {
     return `$${price.toLocaleString()}`;
   }
   return `KSh ${price.toLocaleString()}`;
+};
+
+// Get Paystack public key
+export const getPaystackPublicKey = () => {
+  return PAYSTACK_CONFIG.publicKey;
 };
 
 // Convert between currencies (approximate rates)
