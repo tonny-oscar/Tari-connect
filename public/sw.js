@@ -1,10 +1,10 @@
 const CACHE_NAME = 'tariconnect-v1';
 const urlsToCache = [
   '/',
-  '/static/js/bundle.js',
-  '/static/css/main.css',
+  '/index.html',
   '/logo.png',
   '/manifest.json'
+  // Remove bundle.js and main.css if xxxx
 ];
 
 self.addEventListener('install', (event) => {

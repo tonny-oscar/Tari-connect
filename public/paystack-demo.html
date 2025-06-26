@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Paystack Direct Integration Demo</title>
+  <script src="https://js.paystack.co/v1/inline.js"></script>
+  <style>
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+      max-width: 600px;
+      margin: 0 auto;
+      padding: 20px;
+    }
+    .form-group {
+      margin-bottom: 15px;
+    }
+    label {
+      display: block;
+      margin-bottom: 5px;
+    }
+    input {
+      width: 100%;
+      padding: 8px;
+      box-sizing: border-box;
+    }
+    button {
+      background-color: #0066cc;
+      color: white;
+      border: none;
+      padding: 10px 15px;
+      cursor: pointer;
+      border-radius: 4px;
+    }
+    button:hover {
+      background-color: #0055aa;
+    }
+    .result {
+      margin-top: 20px;
+      padding: 15px;
+      background-color: #f5f5f5;
+      border-radius: 4px;
+      display: none;
+    }
+  </style>
+</head>
+<body>
+  <h1>Paystack Direct Integration Demo</h1>
+  <p>This demo shows how to integrate Paystack directly without using the problematic access_code verification.</p>
+  
+  <div class="form-group">
+    <label for="email">Email Address</label>
+    <input type="email" id="email" value="customer@example.com">
+  </div>
+  
+  <div class="form-group">
+    <label for="amount">Amount (KSh)</label>
+    <input type="number" id="amount" value="2900">
+  </div>
+  
+  <button onclick="payWithPaystack()">Pay Now</button>
+  
+  <div id="result" class="result"></div>
+  
+  <script>
+    function payWithPaystack() {
+      const email = document.getElementById('email').value;
+      const amount = document.getElementById('amount').value;
+      const reference = 'pay_' + Date.now() + '_' + Math.floor(Math.random() * 1000000);
+      
+      const handler = PaystackPop.setup({
+        key: 'pk_live_246755067091552451fa9db67be759f0f6f3e94d', // Replace with your public key
+        email: email,
+        amount: amount * 100, // Convert to kobo/cents
+        currency: 'KES',
+        ref: reference,
+        metadata: {
+          custom_fields: [
+            {
+              display_name: "Demo Payment",
+              variable_name: "demo_payment",
+              value: "true"
+            }
+          ]
+        },
+        callback: function(response) {
+          const resultDiv = document.getElementById('result');
+          resultDiv.style.display = 'block';
+          resultDiv.innerHTML = `
+            <h3>Payment Successful!</h3>
+            <p><strong>Reference:</strong> ${response.reference}</p>
+            <p><strong>Transaction:</strong> ${response.transaction}</p>
+            <p>You can now redirect to a success page or verify the payment server-side.</p>
+          `;
+        },
+        onClose: function() {
+          const resultDiv = document.getElementById('result');
+          resultDiv.style.display = 'block';
+          resultDiv.innerHTML = `
+            <h3>Payment Cancelled</h3>
+            <p>The payment window was closed before completion.</p>
+          `;
+        }
+      });
+      
+      handler.openIframe();
+    }
+  </script>
+</body>
+</html>
