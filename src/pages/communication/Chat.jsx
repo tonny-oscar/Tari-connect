@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useRef } from 'react';
+import React, { useEffect, useState, useRef, useCallback } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { doc, getDoc } from 'firebase/firestore';
 import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
@@ -57,12 +57,25 @@ function Chat() {
       setTypingUsers(otherUsersTyping);
     });
     
-    return unsubscribe;
+    // Clean up typing status when component unmounts
+    return () => {
+      unsubscribe();
+      if (user?.uid) {
+        setTypingStatus(conversationId, user.uid, false);
+      }
+    };
   }, [conversationId, user?.uid]);
 
   // Auto-scroll to bottom when new messages arrive
   useEffect(() => {
-    scrollRef.current?.scrollTo(0, scrollRef.current.scrollHeight);
+    if (scrollRef.current) {
+      setTimeout(() => {
+        scrollRef.current.scrollTo({
+          top: scrollRef.current.scrollHeight,
+          behavior: 'smooth'
+        });
+      }, 100);
+    }
   }, [messages]);
 
   const handleEmojiClick = (emoji) => {
@@ -119,14 +132,27 @@ function Chat() {
     }
   };
 
-  const handleTyping = async (e) => {
+  // Debounced typing indicator
+  const typingTimeoutRef = useRef(null);
+  
+  const handleTyping = useCallback(async (e) => {
     setNewMessage(e.target.value);
     
-    // Set typing indicator
+    // Set typing indicator with debounce
     if (user?.uid) {
       await setTypingStatus(conversationId, user.uid, true);
+      
+      // Clear previous timeout
+      if (typingTimeoutRef.current) {
+        clearTimeout(typingTimeoutRef.current);
+      }
+      
+      // Set new timeout to clear typing status after 2 seconds of inactivity
+      typingTimeoutRef.current = setTimeout(async () => {
+        await setTypingStatus(conversationId, user.uid, false);
+      }, 2000);
     }
-  };
+  }, [conversationId, user]);
 
   return (
     <div className="bg-white rounded shadow h-full">
@@ -141,7 +167,7 @@ function Chat() {
             <FaTasks />
           </button>
           <Link 
-            to={`/contact/${conversationId}`}
+            to={`/contacts/${conversationId}`}
             className="text-primary flex items-center gap-1 hover:text-primary-dark transition-colors"
           >
             <FaUser />
@@ -159,7 +185,7 @@ function Chat() {
       )}
 
       {/* Messages area */}
-      <div ref={scrollRef} className="h-[500px] overflow-y-scroll p-4">
+      <div ref={scrollRef} className="h-[calc(100vh-200px)] min-h-[400px] overflow-y-scroll p-4">
         {messages.map((msg) => (
           <div
             key={msg.id}
@@ -193,8 +219,12 @@ function Chat() {
         
         {/* Typing indicators */}
         {typingUsers.length > 0 && (
-          <div className="text-sm text-gray-500 italic">
-            {typingUsers.map(user => user.name).join(', ')} is typing...
+          <div className="text-sm text-gray-500 italic mb-2">
+            {typingUsers.length === 1 
+              ? `${typingUsers[0].name || 'Someone'} is typing...` 
+              : `${typingUsers.length} people are typing...`
+            }
+            <span className="inline-block animate-pulse">...</span>
           </div>
         )}
       </div>

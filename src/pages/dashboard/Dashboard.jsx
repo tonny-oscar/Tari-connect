@@ -5,7 +5,7 @@ import { useNavigate, Link } from 'react-router-dom';
 import {
   FaUserPlus, FaArrowUp, FaChartLine, FaFileAlt, FaFileInvoiceDollar,
   FaBoxOpen, FaUserCheck, FaComments, FaTasks, FaDatabase, FaEye,
-  FaClock, FaExclamationTriangle, FaCheckCircle, FaBell
+  FaClock, FaExclamationTriangle, FaCheckCircle, FaBell, FaInbox
 } from 'react-icons/fa';
 import { useAuth } from '../../store/useAuth';
 
@@ -14,6 +14,8 @@ function Dashboard() {
   const [quotes, setQuotes] = useState([]);
   const [invoices, setInvoices] = useState([]);
   const [items, setItems] = useState([]);
+  const [conversations, setConversations] = useState([]);
+  const [tasks, setTasks] = useState([]);
   const [loading, setLoading] = useState(true);
   const [notifications, setNotifications] = useState([]);
 
@@ -36,6 +38,8 @@ function Dashboard() {
     setupSnapshot('quotes', setQuotes);
     setupSnapshot('invoices', setInvoices);
     setupSnapshot('items', setItems);
+    setupSnapshot('conversations', setConversations);
+    setupSnapshot('tasks', setTasks);
 
     setLoading(false);
 
@@ -63,11 +67,29 @@ function Dashboard() {
       .reduce((sum, i) => sum + (i.total || 0), 0),
     pendingRevenue: invoices
       .filter(i => i.status !== 'paid')
-      .reduce((sum, i) => sum + (i.total || 0), 0)
+      .reduce((sum, i) => sum + (i.total || 0), 0),
+    totalConversations: conversations.length,
+    activeConversations: conversations.filter(c => c.status === 'active').length,
+    pendingTasks: tasks.filter(t => t.status === 'pending').length,
+    totalTasks: tasks.length
   };
 
   const recentLeads = leads.slice(0, 5);
-  const upcomingTasks = quotes.filter(q => q.validUntil && new Date(q.validUntil) > new Date()).slice(0, 3);
+  const recentConversations = [...conversations]
+    .sort((a, b) => {
+      const aTime = a.lastUpdated?.toDate ? a.lastUpdated.toDate() : new Date(a.lastUpdated || 0);
+      const bTime = b.lastUpdated?.toDate ? b.lastUpdated.toDate() : new Date(b.lastUpdated || 0);
+      return bTime - aTime;
+    })
+    .slice(0, 5);
+  const pendingTasksList = [...tasks]
+    .filter(t => t.status === 'pending')
+    .sort((a, b) => {
+      const aDate = a.dueDate ? new Date(a.dueDate) : new Date(9999, 11, 31);
+      const bDate = b.dueDate ? new Date(b.dueDate) : new Date(9999, 11, 31);
+      return aDate - bDate;
+    })
+    .slice(0, 3);
 
   // Generate notifications based on business data
   useEffect(() => {
@@ -108,8 +130,30 @@ function Dashboard() {
       });
     }
     
+    if (stats.pendingTasks > 0) {
+      newNotifications.push({
+        id: 'pending-tasks',
+        type: 'warning',
+        title: `${stats.pendingTasks} Pending Task${stats.pendingTasks > 1 ? 's' : ''}`,
+        message: 'Tasks need attention',
+        action: '/tasks',
+        icon: <FaTasks />
+      });
+    }
+    
+    if (stats.activeConversations > 0) {
+      newNotifications.push({
+        id: 'active-conversations',
+        type: 'success',
+        title: `${stats.activeConversations} Active Conversation${stats.activeConversations > 1 ? 's' : ''}`,
+        message: 'Ongoing communications',
+        action: '/inbox',
+        icon: <FaComments />
+      });
+    }
+    
     setNotifications(newNotifications);
-  }, [leads.length, quotes.length, invoices.length, loading]);
+  }, [leads.length, quotes.length, invoices.length, tasks.length, conversations.length, loading]);
 
   if (loading) {
     return (
@@ -168,6 +212,20 @@ function Dashboard() {
             icon={<FaFileInvoiceDollar aria-hidden="true" />}
             color="orange"
           />
+          <StatCard
+            title="Conversations"
+            value={stats.totalConversations}
+            subtitle={`${stats.activeConversations} active`}
+            icon={<FaComments aria-hidden="true" />}
+            color="green"
+          />
+          <StatCard
+            title="Tasks"
+            value={stats.totalTasks}
+            subtitle={`${stats.pendingTasks} pending`}
+            icon={<FaTasks aria-hidden="true" />}
+            color="yellow"
+          />
         </div>
       </section>
 
@@ -177,7 +235,17 @@ function Dashboard() {
           <QuickAction to="/leads" title="Manage Leads" subtitle="Track prospects & opportunities" icon={<FaUserPlus aria-hidden="true" />} />
           <QuickAction to="/quotes" title="Create Quotes" subtitle="Generate professional quotes" icon={<FaFileAlt aria-hidden="true" />} />
           <QuickAction to="/invoices" title="Manage Invoices" subtitle="Track payments & billing" icon={<FaFileInvoiceDollar aria-hidden="true" />} />
+          <QuickAction to="/inbox" title="Communications" subtitle="Messages & conversations" icon={<FaComments aria-hidden="true" />} />
+        </nav>
+      </section>
+      
+      <section aria-labelledby="secondary-actions-title" className="mt-4">
+        <h2 id="secondary-actions-title" className="sr-only">Secondary Actions</h2>
+        <nav className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4" role="navigation" aria-label="Secondary action navigation">
           <QuickAction to="/items" title="Product Catalog" subtitle="Manage items & services" icon={<FaBoxOpen aria-hidden="true" />} />
+          <QuickAction to="/tasks" title="Tasks" subtitle="Manage assignments & todos" icon={<FaTasks aria-hidden="true" />} />
+          <QuickAction to="/support" title="Support" subtitle="Help & resources" icon={<FaUserCheck aria-hidden="true" />} />
+          <QuickAction to="/settings" title="Settings" subtitle="Configure your account" icon={<FaDatabase aria-hidden="true" />} />
         </nav>
       </section>
 
@@ -292,7 +360,107 @@ function Dashboard() {
           </div>
         </section>
       </div>
-
+      
+      {/* Recent Communications & Tasks */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mt-6">
+        {/* Recent Conversations */}
+        <section className="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6">
+          <div className="flex justify-between items-center mb-4">
+            <h3 className="text-lg font-semibold text-gray-900 dark:text-white flex items-center gap-2">
+              <FaInbox className="text-primary" />
+              Recent Conversations
+            </h3>
+            <Link to="/inbox" className="text-primary hover:text-primary-dark text-sm font-medium">
+              View All
+            </Link>
+          </div>
+          {recentConversations.length > 0 ? (
+            <div className="space-y-3 max-h-64 overflow-y-auto">
+              {recentConversations.map(convo => (
+                <Link
+                  key={convo.id}
+                  to={`/inbox/chat/${convo.id}`}
+                  className="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-700 hover:bg-gray-100 dark:hover:bg-gray-600 rounded-lg transition-colors"
+                >
+                  <div className="flex-1 min-w-0">
+                    <p className="font-medium text-gray-900 dark:text-white truncate">{convo.contactName || 'Unknown Contact'}</p>
+                    <p className="text-sm text-gray-600 dark:text-gray-400 truncate">{convo.lastMessage || 'No messages yet'}</p>
+                  </div>
+                  <span className={`px-3 py-1 text-xs font-medium rounded-full ml-3 flex-shrink-0 ${
+                    convo.status === 'active' ? 'bg-green-100 text-green-800' :
+                    convo.status === 'pending' ? 'bg-yellow-100 text-yellow-800' :
+                    'bg-gray-100 text-gray-800'
+                  }`}>
+                    {convo.status || 'active'}
+                  </span>
+                </Link>
+              ))}
+            </div>
+          ) : (
+            <div className="text-center py-8">
+              <FaComments className="mx-auto text-4xl text-gray-400 mb-3" />
+              <p className="text-gray-700 dark:text-gray-300 font-medium mb-2">No conversations yet</p>
+              <Link 
+                to="/inbox" 
+                className="inline-flex items-center text-primary hover:text-primary-dark font-medium transition-colors"
+              >
+                <FaComments className="mr-2" />
+                Start a conversation
+              </Link>
+            </div>
+          )}
+        </section>
+        
+        {/* Pending Tasks */}
+        <section className="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6">
+          <div className="flex justify-between items-center mb-4">
+            <h3 className="text-lg font-semibold text-gray-900 dark:text-white flex items-center gap-2">
+              <FaTasks className="text-primary" />
+              Pending Tasks
+            </h3>
+            <Link to="/tasks" className="text-primary hover:text-primary-dark text-sm font-medium">
+              View All
+            </Link>
+          </div>
+          {pendingTasksList.length > 0 ? (
+            <div className="space-y-3 max-h-64 overflow-y-auto">
+              {pendingTasksList.map(task => (
+                <Link
+                  key={task.id}
+                  to="/tasks"
+                  className="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-700 hover:bg-gray-100 dark:hover:bg-gray-600 rounded-lg transition-colors"
+                >
+                  <div className="flex-1 min-w-0">
+                    <p className="font-medium text-gray-900 dark:text-white truncate">{task.title || 'Untitled Task'}</p>
+                    <p className="text-sm text-gray-600 dark:text-gray-400 truncate">
+                      {task.dueDate ? `Due: ${new Date(task.dueDate).toLocaleDateString()}` : 'No due date'}
+                    </p>
+                  </div>
+                  <span className={`px-3 py-1 text-xs font-medium rounded-full ml-3 flex-shrink-0 ${
+                    task.priority === 'high' ? 'bg-red-100 text-red-800' :
+                    task.priority === 'medium' ? 'bg-yellow-100 text-yellow-800' :
+                    'bg-green-100 text-green-800'
+                  }`}>
+                    {task.priority || 'medium'}
+                  </span>
+                </Link>
+              ))}
+            </div>
+          ) : (
+            <div className="text-center py-8">
+              <FaTasks className="mx-auto text-4xl text-gray-400 mb-3" />
+              <p className="text-gray-700 dark:text-gray-300 font-medium mb-2">No pending tasks</p>
+              <Link 
+                to="/tasks" 
+                className="inline-flex items-center text-primary hover:text-primary-dark font-medium transition-colors"
+              >
+                <FaTasks className="mr-2" />
+                Create a task
+              </Link>
+            </div>
+          )}
+        </section>
+      </div>
 
     </main>
   );

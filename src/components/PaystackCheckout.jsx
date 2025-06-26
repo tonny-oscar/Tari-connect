@@ -12,21 +12,10 @@ const PaystackCheckout = ({ planId, email, phoneNumber, onSuccess, onClose }) =>
   const [plan, setPlan] = useState(null);
 
   useEffect(() => {
-    // Load the Paystack script
-    const loadPaystackScript = () => {
-      return new Promise((resolve, reject) => {
-        if (window.PaystackPop) {
-          resolve();
-          return;
-        }
-        
-        const script = document.createElement('script');
-        script.src = 'https://js.paystack.co/v1/inline.js';
-        script.async = true;
-        script.onload = () => resolve();
-        script.onerror = () => reject(new Error('Failed to load Paystack script'));
-        document.body.appendChild(script);
-      });
+    // Import the loadPaystackScript function
+    const loadPaystackScript = async () => {
+      const { loadPaystackScript } = await import('../services/paystackFix');
+      return loadPaystackScript();
     };
 
     // Load plan details and Paystack script
@@ -56,45 +45,35 @@ const PaystackCheckout = ({ planId, email, phoneNumber, onSuccess, onClose }) =>
     initialize();
   }, [planId]);
 
-  const handlePayment = () => {
-    if (!plan || !window.PaystackPop) {
+  const handlePayment = async () => {
+    if (!plan) {
       setError('Payment system not initialized');
       return;
     }
     
     try {
-      // Create a reference
-      const reference = `pay_${Date.now()}_${Math.floor(Math.random() * 1000000)}`;
+      // Import the direct payment processor
+      const { processPayment } = await import('../services/paystackFix');
       
-      // Initialize Paystack inline
-      const handler = window.PaystackPop.setup({
-        key: PAYSTACK_CONFIG.publicKey,
-        email: email,
-        amount: plan.price * 100, // Paystack expects amount in kobo/cents
-        currency: plan.currency === 'KSh' ? 'KES' : plan.currency,
-        ref: reference,
-        metadata: {
-          planId: plan.id,
-          planName: plan.name,
-          ...(phoneNumber && { phoneNumber })
-        },
-        callback: function(response) {
-          // Handle successful payment
-          console.log('Payment complete! Reference:', response.reference);
-          if (onSuccess) {
-            onSuccess(response);
-          }
-        },
-        onClose: function() {
-          console.log('Payment window closed');
-          if (onClose) {
-            onClose();
-          }
-        }
+      // Use direct payment instead
+      const result = await processPayment(email, plan.price, {
+        planId: plan.id,
+        planName: plan.name,
+        ...(phoneNumber && { phoneNumber })
       });
       
-      // Open the payment modal
-      handler.openIframe();
+      if (result.success) {
+        // Handle successful payment
+        console.log('Payment complete! Reference:', result.reference);
+        if (onSuccess) {
+          onSuccess(result);
+        }
+      } else {
+        console.log('Payment window closed');
+        if (onClose) {
+          onClose();
+        }
+      }
     } catch (err) {
       console.error('Paystack payment error:', err);
       setError(err.message);

@@ -10,6 +10,7 @@ import {
 } from 'firebase/firestore';
 import { db } from '../services/firebase';
 import { createMessageNotification } from '../services/notificationService';
+import { createTask } from '../services/dataService';
 import { FaTimes } from 'react-icons/fa';
 
 function TaskForm({ conversationId, contactName, onClose }) {
@@ -44,7 +45,6 @@ function TaskForm({ conversationId, contactName, onClose }) {
   const handleCreateTask = async (e) => {
     e.preventDefault();
 
-    const taskRef = doc(collection(db, 'tasks'));
     const taskData = {
       ...newTask,
       createdAt: serverTimestamp(),
@@ -52,7 +52,11 @@ function TaskForm({ conversationId, contactName, onClose }) {
     };
 
     try {
-      await setDoc(taskRef, taskData);
+      const result = await createTask(taskData);
+      
+      if (!result.success) {
+        throw new Error(result.error || 'Failed to create task');
+      }
 
       // Notify assigned agent
       if (newTask.assignedTo) {

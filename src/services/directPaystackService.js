@@ -19,7 +19,7 @@ export const initializeDirectPaystackPayment = async (planId, email, phoneNumber
       throw new Error('Paystack script not loaded');
     }
     
-    // Create a reference - don't use 'mock' prefix as it causes verification issues
+    // Create a reference - avoid using test- or mock- prefixes as they cause verification issues
     const reference = `pay_${Date.now()}_${Math.floor(Math.random() * 1000000)}`;
     
     // Initialize Paystack inline
