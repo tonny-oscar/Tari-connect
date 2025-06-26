@@ -7,12 +7,12 @@ admin.initializeApp();
 const PAYSTACK_SECRET_KEY = functions.config().paystack.secret_key;
 
 // Initialize Paystack payment
-exports.initializePaystackPayment = functions.https.onCall(async (data, context) => {
+exports.initializePaystackPayment = functions.https.onCall({ cors: true }, async (data, context) => {
   if (!context.auth) {
     throw new functions.https.HttpsError('unauthenticated', 'User must be authenticated');
   }
 
-  const { planId, email } = data;
+  const { planId, email, phoneNumber } = data;
   const userId = context.auth.uid;
 
   try {
@@ -25,7 +25,7 @@ exports.initializePaystackPayment = functions.https.onCall(async (data, context)
     const plan = planDoc.data();
     const amount = plan.currency === 'KSh' ? plan.price * 100 : plan.price * 100; // Convert to cents/kobo
 
-    const response = await axios.post('https://api.paystack.co/transaction/initialize', {
+    const paymentData = {
       email,
       amount,
       currency: plan.currency === 'KSh' ? 'KES' : 'USD',
@@ -36,7 +36,20 @@ exports.initializePaystackPayment = functions.https.onCall(async (data, context)
         planId,
         planName: plan.name
       }
-    }, {
+    };
+
+    // Add mobile money specific configuration for M-Pesa
+    if (phoneNumber) {
+      paymentData.channels = ['mobile_money'];
+      paymentData.mobile_money = {
+        phone: phoneNumber
+      };
+      paymentData.metadata.phoneNumber = phoneNumber;
+    } else {
+      paymentData.channels = ['card'];
+    }
+
+    const response = await axios.post('https://api.paystack.co/transaction/initialize', paymentData, {
       headers: {
         Authorization: `Bearer ${PAYSTACK_SECRET_KEY}`,
         'Content-Type': 'application/json'
@@ -51,7 +64,7 @@ exports.initializePaystackPayment = functions.https.onCall(async (data, context)
 });
 
 // Verify Paystack payment
-exports.verifyPaystackPayment = functions.https.onCall(async (data, context) => {
+exports.verifyPaystackPayment = functions.https.onCall({ cors: true }, async (data, context) => {
   if (!context.auth) {
     throw new functions.https.HttpsError('unauthenticated', 'User must be authenticated');
   }

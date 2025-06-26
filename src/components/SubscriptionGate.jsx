@@ -1,7 +1,7 @@
 import React, { useEffect } from 'react';
 import { useAuth } from '../store/useAuth';
 import { useSubscription } from '../store/useSubscription';
-import { createPaystackPayment, createPortalSession } from '../services/stripeService';
+import { createPaystackPayment, createPortalSession } from '../services/paystackService';
 import { FaCreditCard, FaSpinner } from 'react-icons/fa';
 
 const SubscriptionGate = ({ children }) => {
