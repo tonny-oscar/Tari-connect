@@ -38,10 +38,10 @@ export const checkTrialStatus = async (userId) => {
     if (trialDoc.exists()) {
       const trialData = trialDoc.data();
       const now = new Date();
-      const endDate = trialData.endDate.toDate();
+      const endDate = trialData.endDate?.toDate ? trialData.endDate.toDate() : new Date(trialData.endDate);
       
       // Check if trial is still active
-      const isActive = now < endDate && trialData.isActive;
+      const isActive = endDate && now < endDate && trialData.isActive;
       
       // Calculate days remaining
       const daysRemaining = Math.max(0, Math.ceil((endDate - now) / (1000 * 60 * 60 * 24)));

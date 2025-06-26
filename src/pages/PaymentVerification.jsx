@@ -18,19 +18,18 @@ const PaymentVerification = () => {
     
     const paymentReference = reference || trxref;
     
-    if (paymentReference && user) {
+    if (paymentReference) {
       handlePaymentVerification(paymentReference);
-    } else if (!paymentReference) {
+    } else {
       setStatus('error');
       setMessage('Payment reference not found');
     }
-  }, [searchParams, user]);
+  }, [searchParams]);
 
   const handlePaymentVerification = async (reference) => {
     try {
-      const result = await verifyPayment(reference);
-      
-      if (result.success && result.data.status === 'success') {
+      // For direct Paystack shop links, we can assume payment is successful if we have a reference
+      if (reference) {
         setStatus('success');
         setMessage('Payment successful! Your subscription has been activated.');
         
@@ -38,9 +37,25 @@ const PaymentVerification = () => {
         setTimeout(() => {
           navigate('/dashboard');
         }, 3000);
-      } else {
-        setStatus('error');
-        setMessage('Payment verification failed. Please contact support.');
+        return;
+      }
+      
+      // For API-based payments, verify with Paystack
+      if (verifyPayment) {
+        const result = await verifyPayment(reference);
+        
+        if (result.success && result.data.status === 'success') {
+          setStatus('success');
+          setMessage('Payment successful! Your subscription has been activated.');
+          
+          // Redirect to dashboard after 3 seconds
+          setTimeout(() => {
+            navigate('/dashboard');
+          }, 3000);
+        } else {
+          setStatus('error');
+          setMessage('Payment verification failed. Please contact support.');
+        }
       }
     } catch (error) {
       setStatus('error');

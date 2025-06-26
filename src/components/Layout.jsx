@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import { Link, Outlet, useNavigate, useLocation } from 'react-router-dom';
+import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../store/useAuth';
-import { collection, onSnapshot, query, where } from 'firebase/firestore';
+import { collection, onSnapshot, query, where, getDocs } from 'firebase/firestore';
 import { db } from '../services/firebase';
 import ThemeToggle from './ThemeToggle';
 import { 
@@ -24,7 +24,7 @@ import {
   FaBell
 } from 'react-icons/fa';
 
-function Layout() {
+function Layout({ children }) {
   const { user, userData, logout } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
@@ -38,6 +38,7 @@ function Layout() {
     const unsubscribes = [];
     
     // Listen to invoices for overdue notifications
+    // Listen to invoices for overdue notifications
     const invoicesQuery = query(collection(db, 'invoices'), where('userId', '==', user.uid));
     const invoicesUnsub = onSnapshot(invoicesQuery, (snapshot) => {
       const invoices = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
@@ -50,29 +51,64 @@ function Layout() {
           return false;
         }
       }).length;
-      
-      // Listen to quotes for pending notifications
-      const quotesQuery = query(collection(db, 'quotes'), where('userId', '==', user.uid));
-      const quotesUnsub = onSnapshot(quotesQuery, (snapshot) => {
-        const quotes = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-        const pendingCount = quotes.filter(q => q.status === 'pending' || q.status === 'draft').length;
-        
-        // Listen to leads for new notifications
-        const leadsQuery = query(collection(db, 'leads'), where('userId', '==', user.uid));
-        const leadsUnsub = onSnapshot(leadsQuery, (snapshot) => {
-          const leads = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-          const newLeadsCount = leads.filter(l => l.status === 'new').length;
-          
-          setNotificationCount(overdueCount + pendingCount + newLeadsCount);
-        });
-        
-        unsubscribes.push(leadsUnsub);
-      });
-      
-      unsubscribes.push(quotesUnsub);
+      updateNotificationCount();
     });
-    
     unsubscribes.push(invoicesUnsub);
+    
+    // Listen to quotes for pending notifications
+    const quotesQuery = query(collection(db, 'quotes'), where('userId', '==', user.uid));
+    const quotesUnsub = onSnapshot(quotesQuery, (snapshot) => {
+      const quotes = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+      const pendingCount = quotes.filter(q => q.status === 'pending' || q.status === 'draft').length;
+      updateNotificationCount();
+    });
+    unsubscribes.push(quotesUnsub);
+    
+    // Listen to leads for new notifications
+    const leadsQuery = query(collection(db, 'leads'), where('userId', '==', user.uid));
+    const leadsUnsub = onSnapshot(leadsQuery, (snapshot) => {
+      const leads = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+      const newLeadsCount = leads.filter(l => l.status === 'new').length;
+      updateNotificationCount();
+    });
+    unsubscribes.push(leadsUnsub);
+    
+    // Function to update notification count
+    function updateNotificationCount() {
+      // Get counts from each collection
+      const getOverdueInvoices = async () => {
+        const snapshot = await getDocs(invoicesQuery);
+        const invoices = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+        return invoices.filter(i => {
+          if (i.status === 'paid' || !i.dueDate) return false;
+          try {
+            const dueDate = i.dueDate?.toDate ? i.dueDate.toDate() : new Date(i.dueDate);
+            return dueDate < new Date();
+          } catch (error) {
+            return false;
+          }
+        }).length;
+      };
+      
+      const getPendingQuotes = async () => {
+        const snapshot = await getDocs(quotesQuery);
+        const quotes = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+        return quotes.filter(q => q.status === 'pending' || q.status === 'draft').length;
+      };
+      
+      const getNewLeads = async () => {
+        const snapshot = await getDocs(leadsQuery);
+        const leads = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+        return leads.filter(l => l.status === 'new').length;
+      };
+      
+      // Update notification count
+      Promise.all([getOverdueInvoices(), getPendingQuotes(), getNewLeads()])
+        .then(([overdueCount, pendingCount, newLeadsCount]) => {
+          setNotificationCount(overdueCount + pendingCount + newLeadsCount);
+        })
+        .catch(error => console.error('Error updating notification count:', error));
+    }
     
     return () => unsubscribes.forEach(unsub => unsub());
   }, [user]);
@@ -237,7 +273,7 @@ function Layout() {
 
         {/* Page content */}
         <main className="flex-1 overflow-auto p-4 md:p-6">
-          <Outlet />
+          {children}
         </main>
       </div>
     </div>
