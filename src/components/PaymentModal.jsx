@@ -6,7 +6,8 @@ import { useAuth } from '../store/useAuth';
 const PaymentModal = ({ isOpen, onClose, plan }) => {
   const { user } = useAuth();
   const { payWithPaystack, isLoading, error, success, clearMessages } = useBilling();
-  const [paymentMethod, setPaymentMethod] = useState('paystack');
+  const [paymentMethod, setPaymentMethod] = useState('card');
+  const [phoneNumber, setPhoneNumber] = useState('');
 
   const handlePayment = async (e) => {
     e.preventDefault();
@@ -15,11 +16,18 @@ const PaymentModal = ({ isOpen, onClose, plan }) => {
     
     clearMessages();
     
-    if (paymentMethod === 'paystack') {
+    if (paymentMethod === 'card') {
       const result = await payWithPaystack(user.email, plan.id, user.uid);
       
       if (result.success) {
         // Payment will redirect to Paystack, no need to close modal
+        // The redirect happens automatically in the service
+      }
+    } else if (paymentMethod === 'mpesa') {
+      const result = await payWithPaystack(user.email, plan.id, user.uid, phoneNumber);
+      
+      if (result.success) {
+        // Payment will redirect to Paystack with M-Pesa option
         // The redirect happens automatically in the service
       }
     }
@@ -72,8 +80,8 @@ const PaymentModal = ({ isOpen, onClose, plan }) => {
                   <input
                     type="radio"
                     name="paymentMethod"
-                    value="paystack"
-                    checked={paymentMethod === 'paystack'}
+                    value="card"
+                    checked={paymentMethod === 'card'}
                     onChange={(e) => setPaymentMethod(e.target.value)}
                     className="mr-3"
                   />
@@ -83,8 +91,43 @@ const PaymentModal = ({ isOpen, onClose, plan }) => {
                     <div className="text-sm text-gray-800 dark:text-gray-400">Pay securely with Paystack</div>
                   </div>
                 </label>
+                <label className="flex items-center p-3 border border-gray-300 dark:border-gray-600 rounded-lg cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-700 bg-white dark:bg-gray-800">
+                  <input
+                    type="radio"
+                    name="paymentMethod"
+                    value="mpesa"
+                    checked={paymentMethod === 'mpesa'}
+                    onChange={(e) => setPaymentMethod(e.target.value)}
+                    className="mr-3"
+                  />
+                  <div className="text-green-600 dark:text-green-400 mr-2 text-lg">📱</div>
+                  <div>
+                    <div className="font-medium dark:text-white">M-Pesa</div>
+                    <div className="text-sm text-gray-800 dark:text-gray-400">Pay with mobile money</div>
+                  </div>
+                </label>
               </div>
             </div>
+
+            {/* Phone Number for M-Pesa */}
+            {paymentMethod === 'mpesa' && (
+              <div className="mb-4">
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                  M-Pesa Phone Number
+                </label>
+                <input
+                  type="tel"
+                  value={phoneNumber}
+                  onChange={(e) => setPhoneNumber(e.target.value)}
+                  className="w-full p-3 border border-gray-300 dark:border-gray-600 rounded-md focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white"
+                  placeholder="254712345678"
+                  required
+                />
+                <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                  Enter your M-Pesa registered phone number
+                </p>
+              </div>
+            )}
 
             <div className="flex gap-4">
               <button
@@ -97,7 +140,7 @@ const PaymentModal = ({ isOpen, onClose, plan }) => {
               </button>
               <button
                 type="submit"
-                disabled={isLoading}
+                disabled={isLoading || (paymentMethod === 'mpesa' && !phoneNumber)}
                 className="flex-1 bg-blue-600 text-white px-4 py-3 rounded-md hover:bg-blue-700 transition-colors disabled:opacity-50 flex items-center justify-center gap-2"
               >
                 {isLoading && <FaSpinner className="animate-spin" />}
@@ -106,10 +149,18 @@ const PaymentModal = ({ isOpen, onClose, plan }) => {
             </div>
           </form>
 
-          {paymentMethod === 'paystack' && (
+          {paymentMethod === 'card' && (
             <div className="mt-4 p-3 bg-blue-50 dark:bg-blue-900/30 rounded-lg border border-blue-200 dark:border-blue-700">
               <p className="text-sm text-blue-800 dark:text-blue-200">
                 <strong>Note:</strong> You will be redirected to Paystack's secure payment page to complete your transaction.
+              </p>
+            </div>
+          )}
+          
+          {paymentMethod === 'mpesa' && (
+            <div className="mt-4 p-3 bg-green-50 dark:bg-green-900/30 rounded-lg border border-green-200 dark:border-green-700">
+              <p className="text-sm text-green-800 dark:text-green-200">
+                <strong>Note:</strong> You will receive an M-Pesa prompt on your phone to complete the payment.
               </p>
             </div>
           )}

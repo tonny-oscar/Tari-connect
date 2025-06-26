@@ -2,10 +2,10 @@ import { httpsCallable } from 'firebase/functions';
 import { functions } from './firebase';
 
 // Create Paystack payment
-export const createPaystackPayment = async (planId, email) => {
+export const createPaystackPayment = async (planId, email, phoneNumber = null) => {
   try {
     const initializePayment = httpsCallable(functions, 'initializePaystackPayment');
-    const { data } = await initializePayment({ planId, email });
+    const { data } = await initializePayment({ planId, email, phoneNumber });
     
     // Redirect to Paystack payment page
     window.location.href = data.authorization_url;
@@ -28,7 +28,7 @@ export const verifyPaystackPayment = async (reference) => {
 };
 
 // Create subscription (legacy compatibility)
-export const createSubscription = createPaystackPayment;
+export const createSubscription = (planId, email, phoneNumber) => createPaystackPayment(planId, email, phoneNumber);
 
 // Create customer portal session (simplified for Paystack)
 export const createPortalSession = async () => {

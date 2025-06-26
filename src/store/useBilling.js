@@ -120,23 +120,22 @@ export const useBilling = create((set, get) => ({
   },
 
   // Initiate Paystack payment
-  payWithPaystack: async (email, planId, userId) => {
+  payWithPaystack: async (email, planId, userId, phoneNumber = null) => {
     set({ isLoading: true, error: null, success: null });
     
     try {
-      const { success, paymentId, message, error } = await initiatePaystackPayment(
-        email, planId, userId
-      );
+      const { createPaystackPayment } = await import('../services/paystackService');
+      const result = await createPaystackPayment(planId, email, phoneNumber);
       
-      if (success) {
+      if (result.success) {
         set({ 
-          success: message,
+          success: 'Redirecting to payment page...',
           isLoading: false 
         });
-        return { success: true, paymentId };
+        return { success: true };
       } else {
-        set({ error, isLoading: false });
-        return { success: false, error };
+        set({ error: result.error, isLoading: false });
+        return { success: false, error: result.error };
       }
     } catch (err) {
       set({ error: err.message, isLoading: false });

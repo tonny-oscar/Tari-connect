@@ -158,7 +158,7 @@ export const getPaymentHistory = async (userId) => {
 // Initialize Paystack payment
 export const initiatePaystackPayment = async (email, planId, userId) => {
   try {
-    const { createPaystackPayment } = await import('./stripeService');
+    const { createPaystackPayment } = await import('./paystackService');
     const result = await createPaystackPayment(planId, email);
     
     if (result.success) {
@@ -192,7 +192,7 @@ export const initiatePaystackPayment = async (email, planId, userId) => {
 // Verify Paystack payment
 export const verifyPaystackPayment = async (reference) => {
   try {
-    const { verifyPaystackPayment } = await import('./stripeService');
+    const { verifyPaystackPayment } = await import('./paystackService');
     return await verifyPaystackPayment(reference);
   } catch (error) {
     console.error('Error verifying Paystack payment:', error);
