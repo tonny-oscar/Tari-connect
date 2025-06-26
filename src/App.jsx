@@ -1,7 +1,8 @@
 import React, { useEffect, useState } from 'react';
-import { Routes, Route, Navigate } from 'react-router-dom';
+import { Routes, Route, Navigate, Outlet } from 'react-router-dom';
 import { useAuth, initAuth } from './store/useAuth';
 import { useTheme } from './store/useTheme';
+import './App.css';
 import { initializePricingPlans } from './services/pricingService';
 import { initializeAdminUsers } from './services/authService';
 import PrivateRoute from './components/PrivateRoute';
@@ -60,7 +61,7 @@ function App() {
   }, [initTheme]);
   
   useEffect(() => {
-    if (hasTrialExpired()) {
+    if (hasTrialExpired && hasTrialExpired()) {
       setShowTrialExpiredModal(true);
     }
   }, [hasTrialExpired]);
@@ -91,32 +92,32 @@ function App() {
         <Route path="/free-trial" element={<FreeTrial />} />
         <Route path="/payment/verify" element={<PaymentVerification />} />
         
-        <Route element={<PrivateRoute />}>
-          <Route path="/dashboard" element={<SubscriptionGate><Dashboard /></SubscriptionGate>} />
-          <Route path="/inbox" element={<SubscriptionGate><Inbox /></SubscriptionGate>} />
-          <Route path="/chat/:conversationId" element={<SubscriptionGate><Chat /></SubscriptionGate>} />
-          <Route path="/tickets" element={<SubscriptionGate><Tickets /></SubscriptionGate>} />
-          <Route path="/ai-agent" element={<SubscriptionGate><AIAgent /></SubscriptionGate>} />
-          <Route path="/combined" element={<SubscriptionGate><CombinedView /></SubscriptionGate>} />
-          <Route path="/combined/:conversationId" element={<SubscriptionGate><CombinedView /></SubscriptionGate>} />
-          <Route path="/leads" element={<SubscriptionGate><Leads /></SubscriptionGate>} />
-          <Route path="/quotes" element={<SubscriptionGate><Quotes /></SubscriptionGate>} />
-          <Route path="/invoices" element={<SubscriptionGate><Invoices /></SubscriptionGate>} />
-          <Route path="/items" element={<SubscriptionGate><Items /></SubscriptionGate>} />
-          <Route path="/tasks" element={<SubscriptionGate><Tasks /></SubscriptionGate>} />
-          <Route path="/file-manager" element={<SubscriptionGate><FileManager /></SubscriptionGate>} />
-          <Route path="/support" element={<Support />} />
-          <Route path="/settings/*" element={<Settings />} />
-          <Route path="/profile" element={<Profile />} />
-          <Route path="/contact/:conversationId" element={<ContactDetails />} />
+        <Route path="/" element={<PrivateRoute />}>
+          <Route path="dashboard" element={<SubscriptionGate><Dashboard /></SubscriptionGate>} />
+          <Route path="inbox" element={<SubscriptionGate><Inbox /></SubscriptionGate>} />
+          <Route path="chat/:conversationId" element={<SubscriptionGate><Chat /></SubscriptionGate>} />
+          <Route path="tickets" element={<SubscriptionGate><Tickets /></SubscriptionGate>} />
+          <Route path="ai-agent" element={<SubscriptionGate><AIAgent /></SubscriptionGate>} />
+          <Route path="combined" element={<SubscriptionGate><CombinedView /></SubscriptionGate>} />
+          <Route path="combined/:conversationId" element={<SubscriptionGate><CombinedView /></SubscriptionGate>} />
+          <Route path="leads" element={<SubscriptionGate><Leads /></SubscriptionGate>} />
+          <Route path="quotes" element={<SubscriptionGate><Quotes /></SubscriptionGate>} />
+          <Route path="invoices" element={<SubscriptionGate><Invoices /></SubscriptionGate>} />
+          <Route path="items" element={<SubscriptionGate><Items /></SubscriptionGate>} />
+          <Route path="tasks" element={<SubscriptionGate><Tasks /></SubscriptionGate>} />
+          <Route path="file-manager" element={<SubscriptionGate><FileManager /></SubscriptionGate>} />
+          <Route path="support" element={<Support />} />
+          <Route path="settings/*" element={<Settings />} />
+          <Route path="profile" element={<Profile />} />
+          <Route path="contact/:conversationId" element={<ContactDetails />} />
         </Route>
         
-        <Route element={<PrivateRoute requireAdmin={true} />}>
-          <Route path="/admin" element={<AdminDashboard />} />
-          <Route path="/admin/pricing" element={<AdminDashboard />} />
+        <Route path="admin" element={<PrivateRoute requireAdmin={true} />}>
+          <Route index element={<AdminDashboard />} />
+          <Route path="pricing" element={<AdminDashboard />} />
         </Route>
         
-        <Route path="*" element={<Navigate to={isAuthenticated() ? "/dashboard" : "/"} />} />
+        <Route path="*" element={<Navigate to={isAuthenticated && isAuthenticated() ? "/dashboard" : "/"} />} />
       </Routes>
     </>
   );

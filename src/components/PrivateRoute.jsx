@@ -25,7 +25,11 @@ const PrivateRoute = ({ requireAdmin = false }) => {
     return <Navigate to="/dashboard" />;
   }
   
-  return <Layout />;
+  return (
+    <Layout>
+      <Outlet />
+    </Layout>
+  );
 };
 
 export default PrivateRoute;

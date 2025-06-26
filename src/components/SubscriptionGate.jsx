@@ -45,19 +45,32 @@ const SubscriptionGate = ({ children }) => {
           </p>
           
           <div className="space-y-4">
-            <button
-              onClick={() => handleSubscribe('monthly')}
-              className="w-full bg-blue-600 hover:bg-blue-700 text-white py-3 px-4 rounded-lg transition-colors font-medium"
+            <a
+              href="https://paystack.shop/pay/r-i8pq-8tk"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="block w-full bg-blue-600 hover:bg-blue-700 text-white py-3 px-4 rounded-lg transition-colors font-medium text-center"
             >
               Subscribe Monthly - $29/month
-            </button>
+            </a>
             
-            <button
-              onClick={() => handleSubscribe('yearly')}
-              className="w-full bg-green-600 hover:bg-green-700 text-white py-3 px-4 rounded-lg transition-colors font-medium"
+            <a
+              href="https://paystack.shop/pay/yeru84kx5i"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="block w-full bg-green-600 hover:bg-green-700 text-white py-3 px-4 rounded-lg transition-colors font-medium text-center"
             >
               Subscribe Yearly - $290/year
-            </button>
+            </a>
+            
+            <a
+              href="https://paystack.shop/pay/0t6ohcvmbo"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="block w-full bg-purple-600 hover:bg-purple-700 text-white py-3 px-4 rounded-lg transition-colors font-medium text-center"
+            >
+              Premium Plan - $490/year
+            </a>
             
             {subscription?.status === 'past_due' && (
               <button

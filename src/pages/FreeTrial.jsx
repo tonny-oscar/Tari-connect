@@ -89,10 +89,117 @@ const FreeTrial = () => {
           </div>
         </div>
         
-        <div className="text-center text-gray-600">
-          <p>
-            After your free trial ends, you can choose from our flexible pricing plans to continue using TariConnect.
-          </p>
+        <div className="mt-12">
+          <h2 className="text-2xl font-bold text-center mb-6">Our Subscription Plans</h2>
+          
+          <div className="grid md:grid-cols-3 gap-6">
+            {/* Monthly Plan */}
+            <div className="bg-white rounded-lg shadow-lg border border-gray-200 overflow-hidden">
+              <div className="bg-blue-600 text-white p-4 text-center">
+                <h3 className="text-xl font-bold">Monthly Plan</h3>
+              </div>
+              <div className="p-6">
+                <div className="text-center mb-4">
+                  <span className="text-3xl font-bold">$29</span>
+                  <span className="text-gray-600">/month</span>
+                </div>
+                <ul className="space-y-2 mb-6">
+                  <li className="flex items-center gap-2">
+                    <FaCheck className="text-blue-600 flex-shrink-0" />
+                    <span className="text-sm">All core features</span>
+                  </li>
+                  <li className="flex items-center gap-2">
+                    <FaCheck className="text-blue-600 flex-shrink-0" />
+                    <span className="text-sm">Monthly billing</span>
+                  </li>
+                  <li className="flex items-center gap-2">
+                    <FaCheck className="text-blue-600 flex-shrink-0" />
+                    <span className="text-sm">Cancel anytime</span>
+                  </li>
+                </ul>
+                <a
+                  href="https://paystack.shop/pay/r-i8pq-8tk"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="block w-full bg-blue-600 hover:bg-blue-700 text-white py-2 px-4 rounded-lg transition-colors font-medium text-center"
+                >
+                  Subscribe Now
+                </a>
+              </div>
+            </div>
+            
+            {/* Yearly Plan */}
+            <div className="bg-white rounded-lg shadow-lg border border-gray-200 overflow-hidden">
+              <div className="bg-green-600 text-white p-4 text-center">
+                <h3 className="text-xl font-bold">Yearly Plan</h3>
+                <span className="text-xs bg-white text-green-600 px-2 py-1 rounded-full font-bold">SAVE 17%</span>
+              </div>
+              <div className="p-6">
+                <div className="text-center mb-4">
+                  <span className="text-3xl font-bold">$290</span>
+                  <span className="text-gray-600">/year</span>
+                </div>
+                <ul className="space-y-2 mb-6">
+                  <li className="flex items-center gap-2">
+                    <FaCheck className="text-green-600 flex-shrink-0" />
+                    <span className="text-sm">All core features</span>
+                  </li>
+                  <li className="flex items-center gap-2">
+                    <FaCheck className="text-green-600 flex-shrink-0" />
+                    <span className="text-sm">Annual billing</span>
+                  </li>
+                  <li className="flex items-center gap-2">
+                    <FaCheck className="text-green-600 flex-shrink-0" />
+                    <span className="text-sm">Priority support</span>
+                  </li>
+                </ul>
+                <a
+                  href="https://paystack.shop/pay/yeru84kx5i"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="block w-full bg-green-600 hover:bg-green-700 text-white py-2 px-4 rounded-lg transition-colors font-medium text-center"
+                >
+                  Subscribe Now
+                </a>
+              </div>
+            </div>
+            
+            {/* Premium Plan */}
+            <div className="bg-white rounded-lg shadow-lg border border-gray-200 overflow-hidden">
+              <div className="bg-purple-600 text-white p-4 text-center">
+                <h3 className="text-xl font-bold">Premium Plan</h3>
+                <span className="text-xs bg-white text-purple-600 px-2 py-1 rounded-full font-bold">BEST VALUE</span>
+              </div>
+              <div className="p-6">
+                <div className="text-center mb-4">
+                  <span className="text-3xl font-bold">$490</span>
+                  <span className="text-gray-600">/year</span>
+                </div>
+                <ul className="space-y-2 mb-6">
+                  <li className="flex items-center gap-2">
+                    <FaCheck className="text-purple-600 flex-shrink-0" />
+                    <span className="text-sm">All core features</span>
+                  </li>
+                  <li className="flex items-center gap-2">
+                    <FaCheck className="text-purple-600 flex-shrink-0" />
+                    <span className="text-sm">Advanced AI capabilities</span>
+                  </li>
+                  <li className="flex items-center gap-2">
+                    <FaCheck className="text-purple-600 flex-shrink-0" />
+                    <span className="text-sm">Dedicated support</span>
+                  </li>
+                </ul>
+                <a
+                  href="https://paystack.shop/pay/0t6ohcvmbo"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="block w-full bg-purple-600 hover:bg-purple-700 text-white py-2 px-4 rounded-lg transition-colors font-medium text-center"
+                >
+                  Subscribe Now
+                </a>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
     </div>

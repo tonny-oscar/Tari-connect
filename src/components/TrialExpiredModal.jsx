@@ -16,7 +16,7 @@ const TrialExpiredModal = ({ isOpen, onClose }) => {
   
   const handleSubscribe = () => {
     resetTrialExpiredFlag();
-    navigate('/pricing');
+    navigate('/free-trial');
     onClose();
   };
 
@@ -39,7 +39,7 @@ const TrialExpiredModal = ({ isOpen, onClose }) => {
             onClick={handleSubscribe}
             className="w-full bg-blue-600 hover:bg-blue-700 text-white py-3 rounded-lg transition-colors font-medium"
           >
-            View Pricing Plans
+            View Subscription Plans
           </button>
           <button
             onClick={handleClose}
