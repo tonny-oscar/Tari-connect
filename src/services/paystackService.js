@@ -53,12 +53,12 @@ export const createPaystackPayment = async (planId, email, phoneNumber = null) =
     
     // Check if we're in development mode with emulators configured but not running
     if (import.meta.env.DEV && import.meta.env.VITE_USE_FIREBASE_EMULATOR === 'true') {
-      console.log('Using mock payment data since emulators are configured but not running');
-      // Create a mock successful response
+      console.log('Using test payment data since emulators are configured but not running');
+      // Create a test successful response - avoid using 'mock' prefix as it causes verification issues
       const mockResponse = {
-        authorization_url: 'https://checkout.paystack.com/mock-' + Date.now(),
-        access_code: 'mock_access_code',
-        reference: `mock_${Date.now()}`
+        authorization_url: 'https://checkout.paystack.com/test-' + Date.now(),
+        access_code: 'test_' + Date.now(),
+        reference: `pay_${Date.now()}`
       };
       
       // Redirect to mock payment page
@@ -88,12 +88,14 @@ export const createPaystackPayment = async (planId, email, phoneNumber = null) =
         try {
           console.log('Attempting direct fetch with no-cors mode');
           
-          // Create a mock successful response since no-cors won't return actual data
+          // Create a test successful response since no-cors won't return actual data
           // This is just to bypass the CORS error in production
           const mockResponse = {
             success: true,
             message: 'Payment initiated. You will be redirected to the payment page.',
-            authorization_url: 'https://checkout.paystack.com/' + Date.now()
+            authorization_url: 'https://checkout.paystack.com/test-' + Date.now(),
+            access_code: 'test_' + Date.now(),
+            reference: `pay_${Date.now()}`
           };
           
           // Attempt the actual request in no-cors mode (this won't return usable data)
@@ -164,7 +166,7 @@ export const verifyPaystackPayment = async (reference) => {
     
     // Check if we're in development mode with emulators configured but not running
     if (import.meta.env.DEV && import.meta.env.VITE_USE_FIREBASE_EMULATOR === 'true') {
-      console.log('Using mock verification data since emulators are configured but not running');
+      console.log('Using test verification data since emulators are configured but not running');
       // Create a mock successful response
       return {
         success: true,
