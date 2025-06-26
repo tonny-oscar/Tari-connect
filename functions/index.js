@@ -7,12 +7,7 @@ admin.initializeApp();
 
 // Configure CORS with specific origins
 const corsHandler = cors({
-  origin: [
-    'https://tari-connect-gz5u.vercel.app',
-    'https://tari-connect.vercel.app',
-    'http://localhost:5173',
-    'http://localhost:3000'
-  ],
+  origin: true, // Allow requests from any origin
   methods: ['GET', 'POST', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization'],
   credentials: true
@@ -21,7 +16,7 @@ const corsHandler = cors({
 // Helper function to handle CORS
 const handleCors = (req, res, fn) => {
   // Set CORS headers for preflight requests
-  res.set('Access-Control-Allow-Origin', 'https://tari-connect-gz5u.vercel.app');
+  res.set('Access-Control-Allow-Origin', '*'); // Allow any origin
   res.set('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
   res.set('Access-Control-Allow-Headers', 'Content-Type, Authorization');
   res.set('Access-Control-Max-Age', '3600');
