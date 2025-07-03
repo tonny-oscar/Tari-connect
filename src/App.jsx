@@ -5,8 +5,10 @@ import { useTheme } from './store/useTheme';
 import './App.css';
 import { initializePricingPlans } from './services/pricingService';
 import { initializeAdminUsers } from './services/authService';
+import { startTrialCleanup } from './utils/trialCleanup';
 import PrivateRoute from './components/PrivateRoute';
 import TrialExpiredModal from './components/TrialExpiredModal';
+import TrialStatus from './components/TrialStatus';
 
 import {
   Login,
@@ -52,6 +54,7 @@ function App() {
       try {
         await initializeAdminUsers();
         await initializePricingPlans();
+        startTrialCleanup();
       } catch (error) {
         console.error('Error initializing app:', error);
       }

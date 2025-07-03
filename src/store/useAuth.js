@@ -11,7 +11,7 @@ import {
   resetPassword as resetPasswordService,
   getCurrentUserData
 } from '../services/authService';
-import { checkTrialStatus } from '../services/trialService';
+import { getTrialStatus } from '../services/freeTrialService';
 
 // Initialize auth state
 export const initAuth = () => {
@@ -21,29 +21,21 @@ export const initAuth = () => {
       const { success, userData } = await getCurrentUserData(user.uid);
       
       // Check trial status
-      const trialStatus = await checkTrialStatus(user.uid);
+      const trialResult = await getTrialStatus(user.uid);
+      const trialStatus = trialResult.success && trialResult.trial ? trialResult.trial : { isExpired: false, daysRemaining: 14 };
       
-      // If trial has expired, log the user out
-      if (!trialStatus.isActive && trialStatus.daysRemaining === 0 && userData?.hasTrial) {
-        firebaseSignOut(auth);
-        useAuth.setState({ 
-          user: null, 
-          userData: null, 
-          isLoading: false,
-          trialActive: false,
-          trialDaysRemaining: 0,
-          trialExpired: true
-        });
-        return;
-      }
+      // Don't apply trial restrictions to admin users
+      const isAdmin = userData?.role === 'admin';
+      
+      // Don't block access during trial - just track status for cleanup
       
       // Update auth store
       useAuth.setState({ 
         user, 
         userData: success ? userData : null,
         isLoading: false,
-        trialActive: trialStatus.isActive || false,
-        trialDaysRemaining: trialStatus.daysRemaining || 0,
+        trialActive: true, // Always active during trial period
+        trialDaysRemaining: isAdmin ? 999 : (trialStatus?.daysRemaining || 0),
         trialExpired: false
       });
     } else {
