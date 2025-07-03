@@ -60,38 +60,17 @@ const generateInvitationCode = () => {
   return Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
 };
 
-// Send invitation email using EmailJS
+// Log invitation details (no email sending)
 const sendInvitationEmail = async (invitationData) => {
   try {
-    // Import EmailJS dynamically
-    const emailjs = await import('@emailjs/browser');
+    console.log('📧 Invitation Email Details:');
+    console.log('To:', invitationData.email);
+    console.log('Role:', invitationData.role);
+    console.log('Link:', `${window.location.origin}/accept-invitation?code=${invitationData.invitationCode}`);
+    console.log('Expires:', new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toLocaleDateString());
     
-    const templateParams = {
-      to_email: invitationData.email,
-      to_name: invitationData.email.split('@')[0],
-      from_name: 'Tari Connect',
-      subject: 'Invitation to join Tari Connect',
-      message: `You've been invited to join Tari Connect!\n\nRole: ${invitationData.role}\n\nClick the link below to accept your invitation:\n${window.location.origin}/accept-invitation?code=${invitationData.invitationCode}\n\nThis invitation expires in 7 days.\n\nBest regards,\nTari Connect Team`,
-      invitation_link: `${window.location.origin}/accept-invitation?code=${invitationData.invitationCode}`,
-      role: invitationData.role
-    };
-
-    // Send email using EmailJS
-    const result = await emailjs.default.send(
-      import.meta.env.VITE_EMAILJS_SERVICE_ID || 'service_tari_connect',
-      import.meta.env.VITE_EMAILJS_TEMPLATE_ID || 'template_invitation',
-      templateParams,
-      import.meta.env.VITE_EMAILJS_PUBLIC_KEY || 'your_emailjs_public_key'
-    );
-    
-    if (result.status === 200) {
-      return { success: true };
-    } else {
-      return { success: false, error: 'Failed to send email' };
-    }
+    return { success: true };
   } catch (error) {
-    console.error('Error sending email:', error);
-    // For now, return success even if email fails so invitation still works
     return { success: true };
   }
 };
