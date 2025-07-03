@@ -36,13 +36,28 @@
     }
   },
   "hosting": {
+    "public": "dist",
+    "ignore": [
+      "firebase.json",
+      "**/.*",
+      "**/node_modules/**"
+    ],
     "headers": [
       {
-        "source": "**/*.@(js|html)",
+        "source": "**/*.@(js|css|html)",
         "headers": [
           {
             "key": "Cache-Control",
-            "value": "max-age=0"
+            "value": "public,max-age=0,must-revalidate"
+          }
+        ]
+      },
+      {
+        "source": "/manifest.json",
+        "headers": [
+          {
+            "key": "Cache-Control",
+            "value": "public,max-age=3600"
           }
         ]
       },
@@ -54,6 +69,12 @@
             "value": "*"
           }
         ]
+      }
+    ],
+    "rewrites": [
+      {
+        "source": "**",
+        "destination": "/index.html"
       }
     ]
   }

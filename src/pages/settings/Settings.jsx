@@ -6,6 +6,7 @@ import { useSettings } from '../../store/useSettings';
 import { useTheme } from '../../store/useTheme';
 import { getTimezones, getIndustries } from '../../services/settingsService';
 import PaymentModal from '../../components/PaymentModal';
+import MetaAPITest from '../../components/MetaAPITest';
 
 // Settings sub-pages
 const CompanyProfile = () => {
@@ -139,9 +140,11 @@ const CompanyProfile = () => {
 
 const Integrations = () => {
   const { user } = useAuth();
-  const { settings, connectWhatsApp, disconnectWhatsApp, isLoading, error, success, clearMessages } = useSettings();
+  const { settings, connectWhatsApp, disconnectWhatsApp, connectMeta, disconnectMeta, isLoading, error, success, clearMessages } = useSettings();
   const [whatsappForm, setWhatsappForm] = useState({ businessId: '', accessToken: '' });
   const [showWhatsappForm, setShowWhatsappForm] = useState(false);
+  const [metaForm, setMetaForm] = useState({ appId: '', appSecret: '', accessToken: '', webhookToken: '', pageId: '' });
+  const [showMetaForm, setShowMetaForm] = useState(false);
 
   useEffect(() => {
     if (success || error) {
@@ -167,7 +170,22 @@ const Integrations = () => {
     }
   };
 
+  const handleMetaConnect = async (e) => {
+    e.preventDefault();
+    if (user && metaForm.appId && metaForm.appSecret && metaForm.accessToken) {
+      await connectMeta(user.uid, metaForm.appId, metaForm.appSecret, metaForm.accessToken, metaForm.webhookToken, metaForm.pageId);
+      setMetaForm({ appId: '', appSecret: '', accessToken: '', webhookToken: '', pageId: '' });
+    }
+  };
+
+  const handleMetaDisconnect = async () => {
+    if (user) {
+      await disconnectMeta(user.uid);
+    }
+  };
+
   const isWhatsappConnected = settings?.integrations?.whatsapp?.connected;
+  const isMetaConnected = settings?.integrations?.meta?.connected;
 
   return (
     <div>
@@ -275,8 +293,131 @@ const Integrations = () => {
               </form>
             )}
           </div>
+          
+          <div className="p-6">
+            <div className="flex items-center justify-between mb-4">
+              <div className="flex items-center">
+                <div className="w-12 h-12 bg-blue-100 dark:bg-blue-900 rounded-md flex items-center justify-center mr-4">
+                  <span className="text-blue-600 dark:text-blue-400 text-xl font-bold">M</span>
+                </div>
+                <div>
+                  <h4 className="font-medium dark:text-white">Meta API (Facebook/Instagram)</h4>
+                  <p className="text-sm text-gray-600 dark:text-gray-400">
+                    {isMetaConnected ? 'Connected and ready to use' : 'Connect your Meta API for Facebook and Instagram integration'}
+                  </p>
+                  {isMetaConnected && (
+                    <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200 mt-1">
+                      Connected
+                    </span>
+                  )}
+                </div>
+              </div>
+              <div className="flex gap-2">
+                {isMetaConnected ? (
+                  <button 
+                    onClick={handleMetaDisconnect}
+                    disabled={isLoading}
+                    className="bg-red-600 text-white px-4 py-2 rounded-md hover:bg-red-700 transition-colors disabled:opacity-50"
+                  >
+                    {isLoading ? <FaSpinner className="animate-spin" /> : 'Disconnect'}
+                  </button>
+                ) : (
+                  <button 
+                    onClick={() => setShowMetaForm(!showMetaForm)}
+                    className="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 transition-colors"
+                  >
+                    Connect
+                  </button>
+                )}
+              </div>
+            </div>
+            
+            {showMetaForm && !isMetaConnected && (
+              <form onSubmit={handleMetaConnect} className="mt-4 p-4 bg-gray-50 dark:bg-gray-700 rounded-md">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">App ID</label>
+                    <input
+                      type="text"
+                      value={metaForm.appId}
+                      onChange={(e) => setMetaForm({...metaForm, appId: e.target.value})}
+                      className="w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-600 dark:text-white"
+                      placeholder="Your Meta App ID"
+                      required
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">App Secret</label>
+                    <input
+                      type="password"
+                      value={metaForm.appSecret}
+                      onChange={(e) => setMetaForm({...metaForm, appSecret: e.target.value})}
+                      className="w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-600 dark:text-white"
+                      placeholder="Your App Secret"
+                      required
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Access Token</label>
+                    <input
+                      type="password"
+                      value={metaForm.accessToken}
+                      onChange={(e) => setMetaForm({...metaForm, accessToken: e.target.value})}
+                      className="w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-600 dark:text-white"
+                      placeholder="Your Access Token"
+                      required
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Webhook Token</label>
+                    <input
+                      type="password"
+                      value={metaForm.webhookToken}
+                      onChange={(e) => setMetaForm({...metaForm, webhookToken: e.target.value})}
+                      className="w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-600 dark:text-white"
+                      placeholder="Your Webhook Token (optional)"
+                    />
+                  </div>
+                  <div className="md:col-span-2">
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Page ID</label>
+                    <input
+                      type="text"
+                      value={metaForm.pageId}
+                      onChange={(e) => setMetaForm({...metaForm, pageId: e.target.value})}
+                      className="w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-600 dark:text-white"
+                      placeholder="Your Facebook Page ID (optional)"
+                    />
+                  </div>
+                </div>
+                <div className="mt-4 flex gap-2">
+                  <button
+                    type="submit"
+                    disabled={isLoading}
+                    className="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 transition-colors disabled:opacity-50 flex items-center gap-2"
+                  >
+                    {isLoading && <FaSpinner className="animate-spin" />}
+                    Connect Meta API
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setShowMetaForm(false)}
+                    className="bg-gray-600 text-white px-4 py-2 rounded-md hover:bg-gray-700 transition-colors"
+                  >
+                    Cancel
+                  </button>
+                </div>
+              </form>
+            )}
+          </div>
         </div>
       </div>
+      
+      {/* Meta API Test Section */}
+      {isMetaConnected && (
+        <div className="mt-6">
+          <MetaAPITest />
+        </div>
+      )}
     </div>
   );
 };
@@ -437,12 +578,12 @@ const Billing = () => {
       )}
       
       {/* Current Subscription */}
-      <div className="bg-white dark:bg-gray-800 rounded-lg shadow mb-6">
-        <div className="p-6 border-b dark:border-gray-700">
+      <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-700 rounded-lg shadow mb-6">
+        <div className="p-6 border-b border-blue-200 dark:border-blue-700">
           <div className="flex justify-between items-center">
             <div>
-              <h3 className="text-lg font-medium dark:text-white">Current Plan</h3>
-              <p className="text-gray-600 dark:text-gray-400">Manage your subscription and billing details</p>
+              <h3 className="text-lg font-medium text-blue-900 dark:text-blue-100">Current Plan</h3>
+              <p className="text-blue-700 dark:text-blue-300">Manage your subscription and billing details</p>
             </div>
             {subscription && (
               <span className={`px-3 py-1 rounded-full text-sm font-medium ${getStatusColor(subscription.status)}`}>
@@ -456,21 +597,21 @@ const Billing = () => {
           <div className="p-6">
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
               <div>
-                <h4 className="font-medium text-gray-900 dark:text-white">Plan Details</h4>
-                <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
+                <h4 className="font-medium text-blue-900 dark:text-blue-100">Plan Details</h4>
+                <p className="text-sm text-blue-700 dark:text-blue-300 mt-1">
                   {subscription.planName} - {subscription.currency} {subscription.price.toLocaleString()}
                   {subscription.billingPeriod !== 'trial' && `/${subscription.billingPeriod}`}
                 </p>
               </div>
               <div>
-                <h4 className="font-medium text-gray-900 dark:text-white">Status</h4>
-                <p className="text-sm text-gray-600 dark:text-gray-400 mt-1 capitalize">
+                <h4 className="font-medium text-blue-900 dark:text-blue-100">Status</h4>
+                <p className="text-sm text-blue-700 dark:text-blue-300 mt-1 capitalize">
                   {subscription.status}
                 </p>
               </div>
               <div>
-                <h4 className="font-medium text-gray-900 dark:text-white">Next Billing</h4>
-                <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
+                <h4 className="font-medium text-blue-900 dark:text-blue-100">Next Billing</h4>
+                <p className="text-sm text-blue-700 dark:text-blue-300 mt-1">
                   {new Date(subscription.endDate).toLocaleDateString()}
                 </p>
               </div>
@@ -478,11 +619,11 @@ const Billing = () => {
             
             {subscription.features && (
               <div className="mt-6">
-                <h4 className="font-medium text-gray-900 dark:text-white mb-2">Plan Features</h4>
-                <ul className="text-sm text-gray-600 dark:text-gray-400 space-y-1">
+                <h4 className="font-medium text-blue-900 dark:text-blue-100 mb-2">Plan Features</h4>
+                <ul className="text-sm text-blue-700 dark:text-blue-300 space-y-1">
                   {subscription.features.map((feature, index) => (
                     <li key={index} className="flex items-center gap-2">
-                      <span className="text-green-500">✓</span>
+                      <span className="text-blue-500">✓</span>
                       {feature}
                     </li>
                   ))}
@@ -494,26 +635,26 @@ const Billing = () => {
       </div>
       
       {/* Available Plans */}
-      <div className="bg-white dark:bg-gray-800 rounded-lg shadow mb-6">
-        <div className="p-6 border-b dark:border-gray-700">
-          <h3 className="text-lg font-medium dark:text-white">Available Plans</h3>
-          <p className="text-gray-600 dark:text-gray-400">Upgrade or change your subscription plan</p>
+      <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-700 rounded-lg shadow mb-6">
+        <div className="p-6 border-b border-blue-200 dark:border-blue-700">
+          <h3 className="text-lg font-medium text-blue-900 dark:text-blue-100">Available Plans</h3>
+          <p className="text-blue-700 dark:text-blue-300">Upgrade or change your subscription plan</p>
         </div>
         <div className="p-6">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             {pricingPlans.map(plan => (
-              <div key={plan.id} className={`border rounded-lg p-4 ${plan.isPopular ? 'border-blue-500 bg-blue-50 dark:bg-blue-900' : 'border-gray-200 dark:border-gray-700'}`}>
-                <h4 className="font-bold text-lg dark:text-white">{plan.name}</h4>
-                <p className="text-2xl font-bold mt-2 dark:text-white">
+              <div key={plan.id} className={`border rounded-lg p-4 ${plan.isPopular ? 'border-blue-500 bg-blue-50 dark:bg-blue-900/20' : 'border-blue-200 dark:border-blue-700 bg-blue-50/30 dark:bg-blue-900/10'}`}>
+                <h4 className="font-bold text-lg text-blue-900 dark:text-blue-100">{plan.name}</h4>
+                <p className="text-2xl font-bold mt-2 text-blue-800 dark:text-blue-200">
                   {plan.currency} {plan.price.toLocaleString()}
-                  <span className="text-sm font-normal text-gray-600 dark:text-gray-400">/{plan.billingPeriod}</span>
+                  <span className="text-sm font-normal text-blue-600 dark:text-blue-400">/{plan.billingPeriod}</span>
                 </p>
-                <p className="text-gray-600 dark:text-gray-400 mt-2">{plan.description}</p>
+                <p className="text-blue-700 dark:text-blue-300 mt-2">{plan.description}</p>
                 <ul className="mt-4 space-y-2">
                   {plan.features.map((feature, index) => (
                     <li key={index} className="flex items-center gap-2 text-sm">
-                      <span className="text-green-500">✓</span>
-                      <span className="dark:text-gray-300">{feature}</span>
+                      <span className="text-blue-500">✓</span>
+                      <span className="text-blue-800 dark:text-blue-200">{feature}</span>
                     </li>
                   ))}
                 </ul>
@@ -522,7 +663,7 @@ const Billing = () => {
                   disabled={subscription?.planId === plan.id}
                   className={`w-full mt-4 px-4 py-2 rounded-md transition-colors ${
                     subscription?.planId === plan.id
-                      ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
+                      ? 'bg-blue-300 text-blue-600 cursor-not-allowed'
                       : 'bg-blue-600 text-white hover:bg-blue-700'
                   }`}
                 >
@@ -619,15 +760,18 @@ const Billing = () => {
 const UserManagement = () => {
   const { user, userData } = useAuth();
   const [teamMembers, setTeamMembers] = useState([]);
+  const [invitations, setInvitations] = useState([]);
   const [showAddUser, setShowAddUser] = useState(false);
   const [newUser, setNewUser] = useState({ email: '', role: 'user' });
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
+  const [invitationLink, setInvitationLink] = useState('');
 
   useEffect(() => {
     loadTeamMembers();
-  }, []);
+    loadInvitations();
+  }, []); 
 
   const loadTeamMembers = async () => {
     // In a real implementation, this would load team members from the database
@@ -644,6 +788,16 @@ const UserManagement = () => {
     }
   };
 
+  const loadInvitations = async () => {
+    if (user) {
+      const { getUserInvitations } = await import('../../services/invitationService');
+      const result = await getUserInvitations(user.uid);
+      if (result.success) {
+        setInvitations(result.invitations);
+      }
+    }
+  };
+
   const handleAddUser = async (e) => {
     e.preventDefault();
     setIsLoading(true);
@@ -651,15 +805,41 @@ const UserManagement = () => {
     setSuccess('');
     
     try {
-      // In a real implementation, this would send an invitation email
-      // For demo purposes, we'll just show a success message
-      setSuccess(`Invitation sent to ${newUser.email}`);
-      setNewUser({ email: '', role: 'user' });
-      setShowAddUser(false);
+      const { sendUserInvitation } = await import('../../services/invitationService');
+      const result = await sendUserInvitation(user.uid, newUser.email, newUser.role);
+      
+      if (result.success) {
+        const link = `${window.location.origin}/accept-invitation?code=${result.invitationCode}`;
+        setInvitationLink(link);
+        setSuccess(`Invitation sent to ${newUser.email}`);
+        setNewUser({ email: '', role: 'user' });
+        setShowAddUser(false);
+        loadInvitations();
+        
+        navigator.clipboard.writeText(link).catch(() => {});
+      } else {
+        setError(result.error || 'Failed to send invitation');
+      }
     } catch (err) {
       setError('Failed to send invitation');
     } finally {
       setIsLoading(false);
+    }
+  };
+
+  const handleCancelInvitation = async (invitationId) => {
+    try {
+      const { cancelInvitation } = await import('../../services/invitationService');
+      const result = await cancelInvitation(invitationId);
+      
+      if (result.success) {
+        setSuccess('Invitation cancelled');
+        loadInvitations(); // Refresh invitations list
+      } else {
+        setError('Failed to cancel invitation');
+      }
+    } catch (err) {
+      setError('Failed to cancel invitation');
     }
   };
 
@@ -747,6 +927,63 @@ const UserManagement = () => {
           </table>
         </div>
       </div>
+      
+      {/* Pending Invitations */}
+      {invitations.length > 0 && (
+        <div className="bg-white dark:bg-gray-800 rounded-lg shadow mt-6">
+          <div className="p-6 border-b dark:border-gray-700">
+            <h3 className="text-lg font-medium dark:text-white">Pending Invitations</h3>
+            <p className="text-gray-600 dark:text-gray-400">Manage sent invitations</p>
+          </div>
+          <div className="overflow-x-auto">
+            <table className="w-full">
+              <thead className="bg-gray-50 dark:bg-gray-700">
+                <tr>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Email</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Role</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Status</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Sent</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Actions</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-gray-200 dark:divide-gray-700">
+                {invitations.filter(inv => inv.status === 'pending').map(invitation => (
+                  <tr key={invitation.id}>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-300">
+                      {invitation.email}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <span className={`px-2 py-1 text-xs font-medium rounded-full ${
+                        invitation.role === 'admin' 
+                          ? 'bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-200'
+                          : 'bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-200'
+                      }`}>
+                        {invitation.role}
+                      </span>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <span className="px-2 py-1 text-xs font-medium rounded-full bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200">
+                        {invitation.status}
+                      </span>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-300">
+                      {new Date(invitation.createdAt).toLocaleDateString()}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                      <button 
+                        onClick={() => handleCancelInvitation(invitation.id)}
+                        className="text-red-600 hover:text-red-900 dark:text-red-400 dark:hover:text-red-300"
+                      >
+                        Cancel
+                      </button>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      )}
       
       {/* Add User Modal */}
       {showAddUser && (

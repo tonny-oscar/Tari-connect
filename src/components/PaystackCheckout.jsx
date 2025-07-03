@@ -2,10 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { PAYSTACK_CONFIG } from '../config/paystack';
 import { getPricingPlan } from '../services/pricingService';
 
-/**
- * A component that renders a Paystack checkout button
- * This uses the Paystack standard integration which avoids the 404 errors
- */
+
 const PaystackCheckout = ({ planId, email, phoneNumber, onSuccess, onClose }) => {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);

@@ -6,7 +6,9 @@ import {
   updateSystemPreferences,
   updateIntegrationSettings,
   connectWhatsApp,
-  disconnectWhatsApp
+  disconnectWhatsApp,
+  connectMeta,
+  disconnectMeta
 } from '../services/settingsService';
 
 export const useSettings = create((set, get) => ({
@@ -143,6 +145,83 @@ export const useSettings = create((set, get) => ({
             }
           },
           success: 'WhatsApp disconnected successfully',
+          isLoading: false 
+        });
+        return { success: true };
+      } else {
+        set({ error, isLoading: false });
+        return { success: false, error };
+      }
+    } catch (err) {
+      set({ error: err.message, isLoading: false });
+      return { success: false, error: err.message };
+    }
+  },
+
+  // Connect Meta API
+  connectMeta: async (userId, appId, appSecret, accessToken, webhookToken, pageId) => {
+    set({ isLoading: true, error: null, success: null });
+    
+    try {
+      const { success, error } = await connectMeta(userId, appId, appSecret, accessToken, webhookToken, pageId);
+      
+      if (success) {
+        const currentSettings = get().settings;
+        set({ 
+          settings: { 
+            ...currentSettings, 
+            integrations: {
+              ...currentSettings.integrations,
+              meta: {
+                connected: true,
+                appId,
+                appSecret,
+                accessToken,
+                webhookToken,
+                pageId,
+                connectedAt: new Date().toISOString()
+              }
+            }
+          },
+          success: 'Meta API connected successfully',
+          isLoading: false 
+        });
+        return { success: true };
+      } else {
+        set({ error, isLoading: false });
+        return { success: false, error };
+      }
+    } catch (err) {
+      set({ error: err.message, isLoading: false });
+      return { success: false, error: err.message };
+    }
+  },
+
+  // Disconnect Meta API
+  disconnectMeta: async (userId) => {
+    set({ isLoading: true, error: null, success: null });
+    
+    try {
+      const { success, error } = await disconnectMeta(userId);
+      
+      if (success) {
+        const currentSettings = get().settings;
+        set({ 
+          settings: { 
+            ...currentSettings, 
+            integrations: {
+              ...currentSettings.integrations,
+              meta: {
+                connected: false,
+                appId: '',
+                appSecret: '',
+                accessToken: '',
+                webhookToken: '',
+                pageId: ''
+              }
+            }
+          },
+          success: 'Meta API disconnected successfully',
           isLoading: false 
         });
         return { success: true };

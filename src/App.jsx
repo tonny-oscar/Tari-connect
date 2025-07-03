@@ -35,6 +35,7 @@ import ContactDetails from './components/ContactDetails';
 import FreeTrial from './pages/FreeTrial';
 import PaymentVerification from './pages/PaymentVerification';
 import DirectPaymentDemo from './pages/DirectPaymentDemo';
+import AcceptInvitation from './pages/AcceptInvitation';
 import SubscriptionGate from './components/SubscriptionGate';
 
 function App() {
@@ -91,6 +92,7 @@ function App() {
         <Route path="/register" element={<Register />} />
         <Route path="/forgot-password" element={<ForgotPassword />} />
         <Route path="/free-trial" element={<FreeTrial />} />
+        <Route path="/accept-invitation" element={<AcceptInvitation />} />
         <Route path="/payment/verify" element={<PaymentVerification />} />
         <Route path="/payment/demo" element={<DirectPaymentDemo />} />
         

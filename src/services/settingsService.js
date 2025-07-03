@@ -24,6 +24,14 @@ const defaultSettings = {
       businessId: '',
       accessToken: ''
     },
+    meta: {
+      connected: false,
+      appId: '',
+      appSecret: '',
+      accessToken: '',
+      webhookToken: '',
+      pageId: ''
+    },
     email: {
       connected: false,
       provider: '',
@@ -170,6 +178,60 @@ export const getTimezones = () => {
     { value: 'Asia/Tokyo', label: 'Asia/Tokyo (GMT+9)' },
     { value: 'Australia/Sydney', label: 'Australia/Sydney (GMT+10)' }
   ];
+};
+
+// Connect Meta API integration
+export const connectMeta = async (userId, appId, appSecret, accessToken, webhookToken, pageId) => {
+  try {
+    const { success, settings } = await getUserSettings(userId);
+    if (!success) return { success: false, error: 'Failed to get current settings' };
+    
+    const updatedIntegrations = {
+      ...settings.integrations,
+      meta: {
+        connected: true,
+        appId,
+        appSecret,
+        accessToken,
+        webhookToken,
+        pageId,
+        connectedAt: new Date().toISOString()
+      }
+    };
+    
+    const result = await updateIntegrationSettings(userId, updatedIntegrations);
+    return result;
+  } catch (error) {
+    console.error('Error connecting Meta API:', error);
+    return { success: false, error: error.message };
+  }
+};
+
+// Disconnect Meta API integration
+export const disconnectMeta = async (userId) => {
+  try {
+    const { success, settings } = await getUserSettings(userId);
+    if (!success) return { success: false, error: 'Failed to get current settings' };
+    
+    const updatedIntegrations = {
+      ...settings.integrations,
+      meta: {
+        connected: false,
+        appId: '',
+        appSecret: '',
+        accessToken: '',
+        webhookToken: '',
+        pageId: '',
+        disconnectedAt: new Date().toISOString()
+      }
+    };
+    
+    const result = await updateIntegrationSettings(userId, updatedIntegrations);
+    return result;
+  } catch (error) {
+    console.error('Error disconnecting Meta API:', error);
+    return { success: false, error: error.message };
+  }
 };
 
 // Get available industries
