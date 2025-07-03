@@ -88,6 +88,7 @@ export const useAuth = create((set, get) => ({
     try {
       await firebaseSignOut(auth);
       set({ user: null, userData: null });
+      window.location.href = '/';
       return { success: true };
     } catch (error) {
       console.error('Error logging out:', error);
