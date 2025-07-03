@@ -1,7 +1,7 @@
 {
   "name": "TariConnect - Business Management",
   "short_name": "TariConnect",
-  "description": "Streamline leads, quotes, invoices, and customer communications",
+  "description": "Smart CRM to streamline leads, quotes, invoices, and customer communications.",
   "start_url": "/",
   "display": "standalone",
   "background_color": "#ffffff",

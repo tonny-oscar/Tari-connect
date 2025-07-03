@@ -13,6 +13,8 @@
     "dev:all": "concurrently \"npm run dev\" \"npm run proxy\" \"npm run emulators\""
   },
   "dependencies": {
+    "@emailjs/browser": "^4.4.1",
+    "dotenv": "^17.0.1",
     "emoji-picker-react": "^4.12.2",
     "firebase": "^9.22.0",
     "framer-motion": "^12.19.1",
