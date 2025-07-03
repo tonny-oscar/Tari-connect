@@ -16,6 +16,7 @@ import {
 } from 'firebase/firestore';
 import { auth, db } from './firebase';
 import { createDualDocument, updateDualDocument } from './dualDatabaseService';
+import { startFreeTrial } from './freeTrialService';
 
 // Make existing user admin
 export const makeUserAdmin = async (email) => {
@@ -82,8 +83,12 @@ export const registerUser = async (email, password, name) => {
       email,
       name,
       role,
-      status: 'active'
+      status: 'active',
+      createdAt: new Date().toISOString()
     });
+    
+    // Start 14-day free trial for new users
+    await startFreeTrial(user.uid);
     
     return { success: true, user };
   } catch (error) {
