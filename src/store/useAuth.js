@@ -12,6 +12,7 @@ import {
   getCurrentUserData
 } from '../services/authService';
 import { getTrialStatus } from '../services/freeTrialService';
+import { getSubscriptionWithPlan } from '../services/subscriptionService';
 
 // Initialize auth state
 export const initAuth = () => {
@@ -20,22 +21,34 @@ export const initAuth = () => {
       // Get user data from Firestore
       const { success, userData } = await getCurrentUserData(user.uid);
       
-      // Check trial status
-      const trialResult = await getTrialStatus(user.uid);
-      const trialStatus = trialResult.success && trialResult.trial ? trialResult.trial : { isExpired: false, daysRemaining: 14 };
+      // Check subscription status first
+      const subscriptionResult = await getSubscriptionWithPlan(user.uid);
+      let userSubscription = null;
       
-      // Don't apply trial restrictions to admin users
+      if (subscriptionResult.success) {
+        userSubscription = subscriptionResult.subscription;
+      } else {
+        // Check trial status if no subscription
+        const trialResult = await getTrialStatus(user.uid);
+        const trialStatus = trialResult.success && trialResult.trial ? trialResult.trial : { isExpired: false, daysRemaining: 14 };
+        userSubscription = {
+          planId: 'trial',
+          plan: { userLimit: 1, name: 'Free Trial' },
+          status: trialStatus.isExpired ? 'expired' : 'trial'
+        };
+      }
+      
+      // Don't apply restrictions to admin users
       const isAdmin = userData?.role === 'admin';
-      
-      // Don't block access during trial - just track status for cleanup
       
       // Update auth store
       useAuth.setState({ 
         user, 
         userData: success ? userData : null,
+        subscription: userSubscription,
         isLoading: false,
         trialActive: true, // Always active during trial period
-        trialDaysRemaining: isAdmin ? 999 : (trialStatus?.daysRemaining || 0),
+        trialDaysRemaining: isAdmin ? 999 : (userSubscription?.plan?.userLimit || 0),
         trialExpired: false
       });
     } else {
@@ -55,6 +68,7 @@ export const initAuth = () => {
 export const useAuth = create((set, get) => ({
   user: null,
   userData: null,
+  subscription: null,
   isLoading: true,
   trialActive: false,
   trialDaysRemaining: 0,
@@ -120,5 +134,38 @@ export const useAuth = create((set, get) => ({
   // Reset trial expired flag
   resetTrialExpiredFlag: () => {
     set({ trialExpired: false });
+  },
+  
+  // Get user subscription
+  getUserSubscription: () => {
+    return get().subscription;
+  },
+  
+  // Check if user can add more team members
+  canAddTeamMember: () => {
+    const { subscription, userData } = get();
+    
+    // Admin can always add users
+    if (userData?.role === 'admin') {
+      return { canAdd: true, remaining: -1 };
+    }
+    
+    if (!subscription || !subscription.plan) {
+      return { canAdd: false, remaining: 0, error: 'No active subscription' };
+    }
+    
+    const userLimit = subscription.plan.userLimit;
+    
+    // Unlimited users
+    if (userLimit === -1) {
+      return { canAdd: true, remaining: -1 };
+    }
+    
+    // For now, assume current user count is 1 (will be updated with real team data)
+    const currentUsers = 1;
+    const canAdd = currentUsers < userLimit;
+    const remaining = Math.max(0, userLimit - currentUsers);
+    
+    return { canAdd, remaining, current: currentUsers, limit: userLimit };
   }
 }));

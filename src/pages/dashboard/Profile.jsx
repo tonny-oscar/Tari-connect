@@ -142,7 +142,9 @@ const Profile = () => {
                 <p className="text-sm text-gray-500 dark:text-gray-400">Account Created</p>
                 <p className="text-gray-900 dark:text-gray-200">
                   {userData?.createdAt
-                    ? new Date(userData.createdAt.toDate()).toLocaleDateString()
+                    ? userData.createdAt.toDate
+                      ? new Date(userData.createdAt.toDate()).toLocaleDateString()
+                      : new Date(userData.createdAt).toLocaleDateString()
                     : 'N/A'}
                 </p>
               </div>
@@ -150,7 +152,9 @@ const Profile = () => {
                 <p className="text-sm text-gray-500 dark:text-gray-400">Last Login</p>
                 <p className="text-gray-900 dark:text-gray-200">
                   {userData?.lastLogin
-                    ? new Date(userData.lastLogin.toDate()).toLocaleDateString()
+                    ? userData.lastLogin.toDate
+                      ? new Date(userData.lastLogin.toDate()).toLocaleDateString()
+                      : new Date(userData.lastLogin).toLocaleDateString()
                     : 'N/A'}
                 </p>
               </div>

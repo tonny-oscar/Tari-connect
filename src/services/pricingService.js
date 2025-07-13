@@ -10,7 +10,7 @@ import { db } from './firebase';
 import { createDualDocument, updateDualDocument } from './dualDatabaseService';
 import { PAYSTACK_CONFIG } from '../config/paystack';
 
-// Default pricing plans
+// Default pricing plans with user limits
 const defaultPlans = [
   {
     id: 'starter',
@@ -18,13 +18,14 @@ const defaultPlans = [
     price: 2900,
     currency: 'KSh',
     billingPeriod: 'month',
-    description: 'Perfect for small businesses just getting started',
+    description: 'Perfect for individual users',
     features: [
       '2 social channels',
-      '1 team member',
+      '1 user only',
       'Basic analytics',
       'Email support'
     ],
+    userLimit: 1,
     isPopular: false,
     order: 1,
     paystackPlanId: PAYSTACK_CONFIG.plans.starter
@@ -35,14 +36,15 @@ const defaultPlans = [
     price: 7900,
     currency: 'KSh',
     billingPeriod: 'month',
-    description: 'Most popular for growing businesses',
+    description: 'Most popular for small teams',
     features: [
       'Unlimited social channels',
-      '5 team members',
+      'Up to 5 team members',
       'Advanced analytics',
       'Priority support',
       'AI-powered responses'
     ],
+    userLimit: 5,
     isPopular: true,
     order: 2,
     paystackPlanId: PAYSTACK_CONFIG.plans.professional
@@ -53,7 +55,7 @@ const defaultPlans = [
     price: 19900,
     currency: 'KSh',
     billingPeriod: 'month',
-    description: 'For large teams with advanced needs',
+    description: 'For large teams with unlimited access',
     features: [
       'Unlimited everything',
       'Unlimited team members',
@@ -61,6 +63,7 @@ const defaultPlans = [
       '24/7 dedicated support',
       'Custom integrations'
     ],
+    userLimit: -1, // -1 means unlimited
     isPopular: false,
     order: 3,
     paystackPlanId: PAYSTACK_CONFIG.plans.enterprise

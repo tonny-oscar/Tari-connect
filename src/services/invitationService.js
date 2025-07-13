@@ -1,10 +1,26 @@
 import { collection, addDoc, getDocs, query, where, updateDoc, doc } from 'firebase/firestore';
 import { db } from './firebase';
 import { createDualDocument, updateDualDocument } from './dualDatabaseService';
+import { addTeamMember } from './teamService';
+import { getSubscriptionWithPlan, canAddUser } from './subscriptionService';
 
 // Send user invitation
 export const sendUserInvitation = async (inviterUserId, email, role = 'user') => {
   try {
+    // Check subscription limits first
+    const canAddResult = await canAddUser(inviterUserId);
+    
+    if (!canAddResult.success) {
+      return { success: false, error: canAddResult.error };
+    }
+    
+    if (!canAddResult.canAdd) {
+      return { 
+        success: false, 
+        error: `User limit reached. Your plan allows ${canAddResult.limit} users. You currently have ${canAddResult.current} users.` 
+      };
+    }
+    
     // Check if invitation already exists
     const invitationsRef = collection(db, 'invitations');
     const existingQuery = query(invitationsRef, where('email', '==', email), where('status', '==', 'pending'));
@@ -29,6 +45,13 @@ export const sendUserInvitation = async (inviterUserId, email, role = 'user') =>
     const docRef = await addDoc(collection(db, 'invitations'), invitationData);
     
     if (docRef.id) {
+      // Add to team members with pending status
+      const teamResult = await addTeamMember(inviterUserId, {
+        email,
+        role,
+        invitedBy: inviterUserId
+      });
+      
       // Send email invitation
       const emailResult = await sendInvitationEmail(invitationData);
       
@@ -37,14 +60,17 @@ export const sendUserInvitation = async (inviterUserId, email, role = 'user') =>
         email: invitationData.email,
         role: invitationData.role,
         invitationLink: `${window.location.origin}/accept-invitation?code=${invitationData.invitationCode}`,
-        emailSent: emailResult.success
+        emailSent: emailResult.success,
+        teamMemberAdded: teamResult.success,
+        remaining: teamResult.remaining
       });
       
       return { 
         success: true, 
         invitationId: docRef.id, 
         invitationCode: invitationData.invitationCode,
-        emailSent: emailResult.success
+        emailSent: emailResult.success,
+        remaining: teamResult.remaining || 0
       };
     } else {
       return { success: false, error: 'Failed to create invitation' };

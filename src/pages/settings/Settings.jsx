@@ -7,6 +7,9 @@ import { useTheme } from '../../store/useTheme';
 import { getTimezones, getIndustries } from '../../services/settingsService';
 import PaymentModal from '../../components/PaymentModal';
 import MetaAPITest from '../../components/MetaAPITest';
+import { getUserSubscription, getPaymentHistory } from '../../services/billingService';
+import { getPricingPlans } from '../../services/pricingService';
+import { sendUserInvitation, getUserInvitations, cancelInvitation } from '../../services/invitationService';
 
 // Settings sub-pages
 const CompanyProfile = () => {
@@ -517,9 +520,8 @@ const Billing = () => {
     setIsLoading(true);
     try {
       // Load subscription
-      const { getUserSubscription } = await import('../../services/billingService');
+      const { getUserSubscription, getPaymentHistory } = await import('../../services/billingService');
       const { getPricingPlans } = await import('../../services/pricingService');
-      const { getPaymentHistory } = await import('../../services/billingService');
       
       const [subResult, plansResult, paymentsResult] = await Promise.all([
         getUserSubscription(user.uid),
@@ -790,7 +792,6 @@ const UserManagement = () => {
 
   const loadInvitations = async () => {
     if (user) {
-      const { getUserInvitations } = await import('../../services/invitationService');
       const result = await getUserInvitations(user.uid);
       if (result.success) {
         setInvitations(result.invitations);
@@ -805,13 +806,12 @@ const UserManagement = () => {
     setSuccess('');
     
     try {
-      const { sendUserInvitation } = await import('../../services/invitationService');
       const result = await sendUserInvitation(user.uid, newUser.email, newUser.role);
       
       if (result.success) {
         const link = `${window.location.origin}/accept-invitation?code=${result.invitationCode}`;
         setInvitationLink(link);
-        setSuccess(`Invitation sent to ${newUser.email}`);
+        setSuccess(`Invitation sent to ${newUser.email}. ${result.remaining !== undefined ? `You have ${result.remaining} invitation slots remaining.` : ''}`);
         setNewUser({ email: '', role: 'user' });
         setShowAddUser(false);
         loadInvitations();
@@ -829,7 +829,6 @@ const UserManagement = () => {
 
   const handleCancelInvitation = async (invitationId) => {
     try {
-      const { cancelInvitation } = await import('../../services/invitationService');
       const result = await cancelInvitation(invitationId);
       
       if (result.success) {
