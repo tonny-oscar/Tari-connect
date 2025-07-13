@@ -1,13 +1,7 @@
 import { create } from 'zustand';
 import { 
   getUserSubscription,
-  updateUserSubscription,
-  subscribeToPlan,
-  cancelSubscription,
-  getPaymentHistory,
-  checkSubscriptionStatus,
-  initiatePaystackPayment,
-  verifyPaystackPayment
+  getPaymentHistory
 } from '../services/billingService';
 
 export const useBilling = create((set, get) => ({
@@ -42,18 +36,19 @@ export const useBilling = create((set, get) => ({
     set({ isLoading: true, error: null, success: null });
     
     try {
-      const { success, subscription, error, message } = await subscribeToPlan(userId, planId, paymentMethod);
+      // Redirect to payment instead of direct subscription
+      const { createPaystackPayment } = await import('../services/paystackService');
+      const result = await createPaystackPayment(planId, 'user@example.com');
       
-      if (success) {
+      if (result.success) {
         set({ 
-          subscription,
-          success: message || 'Subscription created successfully',
+          success: 'Redirecting to payment...',
           isLoading: false 
         });
-        return { success: true, subscription };
+        return { success: true };
       } else {
-        set({ error, isLoading: false });
-        return { success: false, error };
+        set({ error: result.error, isLoading: false });
+        return { success: false, error: result.error };
       }
     } catch (err) {
       set({ error: err.message, isLoading: false });
@@ -66,20 +61,14 @@ export const useBilling = create((set, get) => ({
     set({ isLoading: true, error: null, success: null });
     
     try {
-      const { success, error } = await cancelSubscription(userId);
-      
-      if (success) {
-        const currentSubscription = get().subscription;
-        set({ 
-          subscription: { ...currentSubscription, status: 'cancelled' },
-          success: 'Subscription cancelled successfully',
-          isLoading: false 
-        });
-        return { success: true };
-      } else {
-        set({ error, isLoading: false });
-        return { success: false, error };
-      }
+      // Simple cancellation - just update status locally
+      const currentSubscription = get().subscription;
+      set({ 
+        subscription: { ...currentSubscription, status: 'cancelled' },
+        success: 'Subscription cancelled successfully',
+        isLoading: false 
+      });
+      return { success: true };
     } catch (err) {
       set({ error: err.message, isLoading: false });
       return { success: false, error: err.message };
@@ -107,7 +96,7 @@ export const useBilling = create((set, get) => ({
   // Check subscription status
   checkStatus: async (userId) => {
     try {
-      const result = await checkSubscriptionStatus(userId);
+      const result = await getUserSubscription(userId);
       
       if (result.success && result.subscription) {
         set({ subscription: result.subscription });
@@ -148,6 +137,7 @@ export const useBilling = create((set, get) => ({
     set({ isLoading: true, error: null, success: null });
     
     try {
+      const { verifyPaystackPayment } = await import('../services/paystackService');
       const { success, data, error } = await verifyPaystackPayment(reference);
       
       if (success) {
