@@ -3,6 +3,7 @@ import {
   getUserSubscription,
   getPaymentHistory
 } from '../services/billingService';
+import { createPaystackPayment, verifyPaystackPayment } from '../services/paystackService';
 
 export const useBilling = create((set, get) => ({
   subscription: null,
@@ -37,7 +38,6 @@ export const useBilling = create((set, get) => ({
     
     try {
       // Redirect to payment instead of direct subscription
-      const { createPaystackPayment } = await import('../services/paystackService');
       const result = await createPaystackPayment(planId, 'user@example.com');
       
       if (result.success) {
@@ -113,7 +113,6 @@ export const useBilling = create((set, get) => ({
     set({ isLoading: true, error: null, success: null });
     
     try {
-      const { createPaystackPayment } = await import('../services/paystackService');
       const result = await createPaystackPayment(planId, email, phoneNumber);
       
       if (result.success) {
@@ -137,7 +136,6 @@ export const useBilling = create((set, get) => ({
     set({ isLoading: true, error: null, success: null });
     
     try {
-      const { verifyPaystackPayment } = await import('../services/paystackService');
       const { success, data, error } = await verifyPaystackPayment(reference);
       
       if (success) {
