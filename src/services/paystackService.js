@@ -76,19 +76,11 @@ export const createPaystackPayment = async (planId, email, phoneNumber = null) =
       return { success: true };
     }
     
-    // Direct function call (will work in production or with emulator)
+    // Temporary workaround - redirect to demo payment page
     try {
-      const initializePayment = httpsCallable(functions, 'initializePaystackPayment');
-      const { data } = await initializePayment({ planId: paystackPlanId, email, phoneNumber });
-      
-      // Redirect to Paystack payment page
-      if (data && data.authorization_url) {
-        window.location.href = data.authorization_url;
-        return { success: true };
-      } else {
-        console.error('No authorization URL returned from Paystack');
-        return { success: false, error: 'Failed to get payment authorization URL' };
-      }
+      console.log('Redirecting to demo payment due to CORS issues');
+      window.location.href = `/payment/demo?plan=${paystackPlanId}&email=${encodeURIComponent(email)}&phone=${encodeURIComponent(phoneNumber || '')}`;
+      return { success: true };
     } catch (functionError) {
       console.error('Function call error:', functionError);
       

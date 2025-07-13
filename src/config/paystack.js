@@ -3,7 +3,8 @@
  */
 
 export const PAYSTACK_CONFIG = {
-  publicKey: 'pk_live_246755067091552451fa9db67be759f0f6f3e94d',
+  publicKey: import.meta.env.VITE_PAYSTACK_PUBLIC_KEY || 'pk_live_725c1c7270a1f315c5573b0faff083b679fac119',
+  secretKey: import.meta.env.VITE_PAYSTACK_SECRET_KEY || 'sk_live_your_secret_key_here',
   plans: {
     starter: 'PLN_knqyoasukw8mh51',
     professional: 'PLN_4h1cwvwa0urt81k',
