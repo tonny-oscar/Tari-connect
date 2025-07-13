@@ -57,15 +57,18 @@ export const sendMessage = async (conversationId, messageData) => {
 export const getUserConversations = (userId, callback) => {
   const q = query(
     collection(db, 'conversations'),
-    where('userId', '==', userId),
-    orderBy('lastUpdated', 'desc')
+    where('userId', '==', userId)
   );
 
   return onSnapshot(q, (snapshot) => {
     const conversations = snapshot.docs.map(doc => ({
       id: doc.id,
       ...doc.data()
-    }));
+    })).sort((a, b) => {
+      const aTime = a.lastUpdated?.toDate?.() || new Date(0);
+      const bTime = b.lastUpdated?.toDate?.() || new Date(0);
+      return bTime - aTime;
+    });
     callback(conversations);
   });
 };
