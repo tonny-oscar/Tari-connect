@@ -39,27 +39,27 @@ const Tickets = () => {
   });
 
   const priorities = [
-    { value: 'critical', label: '🔥 Critical', color: 'bg-red-500', icon: FaFire },
-    { value: 'high', label: '⚡ High', color: 'bg-orange-500', icon: FaBolt },
-    { value: 'medium', label: '⭐ Medium', color: 'bg-yellow-500', icon: FaStar },
-    { value: 'low', label: '❄️ Low', color: 'bg-blue-500', icon: FaSnowflake }
+    { value: 'critical', label: 'Critical', color: 'bg-red-500', icon: FaFire },
+    { value: 'high', label: 'High', color: 'bg-orange-500', icon: FaBolt },
+    { value: 'medium', label: 'Medium', color: 'bg-yellow-500', icon: FaStar },
+    { value: 'low', label: 'Low', color: 'bg-blue-500', icon: FaSnowflake }
   ];
 
   const statuses = [
-    { value: 'open', label: '🚀 Open', color: 'bg-green-500' },
-    { value: 'in-progress', label: '⚡ In Progress', color: 'bg-blue-500' },
-    { value: 'waiting', label: '⏳ Waiting', color: 'bg-yellow-500' },
-    { value: 'resolved', label: '✅ Resolved', color: 'bg-purple-500' },
-    { value: 'closed', label: '🎯 Closed', color: 'bg-gray-500' }
+    { value: 'open', label: 'Open', color: 'bg-green-500' },
+    { value: 'in-progress', label: 'In Progress', color: 'bg-blue-500' },
+    { value: 'waiting', label: 'Waiting', color: 'bg-yellow-500' },
+    { value: 'resolved', label: 'Resolved', color: 'bg-purple-500' },
+    { value: 'closed', label: 'Closed', color: 'bg-gray-500' }
   ];
 
   const categories = [
-    { value: 'bug', label: '🐛 Bug Report', icon: '🐛' },
-    { value: 'feature', label: '✨ Feature Request', icon: '✨' },
-    { value: 'support', label: '🆘 Support', icon: '🆘' },
-    { value: 'question', label: '❓ Question', icon: '❓' },
-    { value: 'improvement', label: '🚀 Improvement', icon: '🚀' },
-    { value: 'general', label: '💬 General', icon: '💬' }
+    { value: 'bug', label: 'Bug Report' },
+    { value: 'feature', label: 'Feature Request' },
+    { value: 'support', label: 'Support' },
+    { value: 'question', label: 'Question' },
+    { value: 'improvement', label: 'Improvement' },
+    { value: 'general', label: 'General' }
   ];
 
   const moods = ['😡', '😟', '😐', '😊', '🤩', '🥳', '🤖', '👑'];
@@ -243,14 +243,8 @@ const Tickets = () => {
         {/* Header */}
         <div className="p-4">
           <div className="flex items-center justify-between mb-2">
-            <div className="flex items-center gap-2">
-              <span className="text-2xl">{ticket.mood || '😐'}</span>
-              <span className="text-xs font-mono text-gray-500">{ticket.ticketNumber}</span>
-            </div>
-            <div className="flex items-center gap-1">
-              <PriorityIcon className={`w-4 h-4 ${priorities.find(p => p.value === ticket.priority)?.color.replace('bg-', 'text-')}`} />
-              <span className="text-xs">{categoryObj?.icon}</span>
-            </div>
+            <span className="text-xs font-mono text-gray-500">{ticket.ticketNumber}</span>
+            <PriorityIcon className={`w-4 h-4 ${priorities.find(p => p.value === ticket.priority)?.color.replace('bg-', 'text-')}`} />
           </div>
           
           <h3 className="font-semibold text-gray-900 mb-1 line-clamp-2">
@@ -340,26 +334,21 @@ const Tickets = () => {
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
         <div>
           <h1 className="text-3xl font-bold text-gray-900 flex items-center gap-3">
-            <div className="p-2 bg-gradient-to-r from-purple-500 to-pink-500 rounded-lg">
-              <FaTicketAlt className="text-white" />
-            </div>
-            Smart Tickets
-            <span className="text-sm bg-gradient-to-r from-purple-500 to-pink-500 text-white px-2 py-1 rounded-full">
-              AI Powered
-            </span>
+            <FaTicketAlt className="text-blue-600" />
+            Tickets
           </h1>
           <p className="text-gray-600 mt-1">
-            Next-gen ticket management with AI insights
+            Manage your support tickets
           </p>
         </div>
         
         <div className="flex gap-3">
           <button
             onClick={() => setShowForm(true)}
-            className="bg-gradient-to-r from-purple-500 to-pink-500 text-white px-6 py-3 rounded-lg flex items-center gap-2 hover:from-purple-600 hover:to-pink-600 transition-all duration-300 transform hover:scale-105 shadow-lg"
+            className="bg-blue-600 text-white px-6 py-3 rounded-lg flex items-center gap-2 hover:bg-blue-700 transition-colors"
           >
-            <FaRocket className="animate-pulse" />
-            Create Magic Ticket
+            <FaPlus />
+            Create Ticket
           </button>
         </div>
       </div>
@@ -371,7 +360,7 @@ const Tickets = () => {
           <FaSearch className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
           <input
             type="text"
-            placeholder="Search tickets with AI..."
+            placeholder="Search tickets..."
             className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-md focus:ring-primary focus:border-primary"
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
@@ -473,9 +462,8 @@ const Tickets = () => {
           <div className="bg-white rounded-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
             <div className="p-6">
               <div className="flex items-center justify-between mb-6">
-                <h2 className="text-2xl font-bold text-gray-900 flex items-center gap-2">
-                  <FaMagic className="text-purple-500" />
-                  {selectedTicket ? 'Edit Ticket' : 'Create Magic Ticket'}
+                <h2 className="text-2xl font-bold text-gray-900">
+                  {selectedTicket ? 'Edit Ticket' : 'Create Ticket'}
                 </h2>
                 <button
                   onClick={resetForm}
@@ -489,14 +477,14 @@ const Tickets = () => {
                 {/* Title */}
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
-                    ✨ Ticket Title
+                    Ticket Title
                   </label>
                   <input
                     type="text"
                     value={formData.title}
                     onChange={(e) => setFormData({...formData, title: e.target.value})}
                     className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-primary focus:border-primary"
-                    placeholder="What's the magic about?"
+                    placeholder="Enter ticket title"
                     required
                   />
                 </div>
@@ -504,14 +492,14 @@ const Tickets = () => {
                 {/* Description */}
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
-                    📝 Description
+                    Description
                   </label>
                   <textarea
                     value={formData.description}
                     onChange={(e) => setFormData({...formData, description: e.target.value})}
                     className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-primary focus:border-primary"
                     rows="4"
-                    placeholder="Tell us more about this magical request..."
+                    placeholder="Describe the issue or request..."
                     required
                   />
                 </div>
@@ -520,7 +508,7 @@ const Tickets = () => {
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-2">
-                      🔥 Priority
+                      Priority
                     </label>
                     <select
                       value={formData.priority}
@@ -537,7 +525,7 @@ const Tickets = () => {
 
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-2">
-                      📂 Category
+                      Category
                     </label>
                     <select
                       value={formData.category}
@@ -553,47 +541,7 @@ const Tickets = () => {
                   </div>
                 </div>
 
-                {/* Mood & Color */}
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      😊 Mood
-                    </label>
-                    <div className="flex gap-2">
-                      {moods.map(mood => (
-                        <button
-                          key={mood}
-                          type="button"
-                          onClick={() => setFormData({...formData, mood})}
-                          className={`text-2xl p-2 rounded-lg transition-all ${
-                            formData.mood === mood ? 'bg-purple-100 scale-125' : 'hover:scale-110'
-                          }`}
-                        >
-                          {mood}
-                        </button>
-                      ))}
-                    </div>
-                  </div>
 
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      🎨 Color
-                    </label>
-                    <div className="flex gap-2">
-                      {colors.map(color => (
-                        <button
-                          key={color}
-                          type="button"
-                          onClick={() => setFormData({...formData, color})}
-                          className={`w-8 h-8 rounded-full transition-all ${
-                            formData.color === color ? 'scale-125 ring-2 ring-gray-400' : 'hover:scale-110'
-                          }`}
-                          style={{ backgroundColor: color }}
-                        />
-                      ))}
-                    </div>
-                  </div>
-                </div>
 
                 {/* Submit */}
                 <div className="flex justify-end gap-4">
@@ -606,10 +554,10 @@ const Tickets = () => {
                   </button>
                   <button
                     type="submit"
-                    className="bg-gradient-to-r from-purple-500 to-pink-500 text-white px-8 py-3 rounded-lg hover:from-purple-600 hover:to-pink-600 transition-all duration-300 transform hover:scale-105 flex items-center gap-2"
+                    className="bg-blue-600 text-white px-8 py-3 rounded-lg hover:bg-blue-700 transition-colors flex items-center gap-2"
                   >
-                    <FaRocket />
-                    {selectedTicket ? 'Update Magic' : 'Create Magic'}
+                    <FaCheck />
+                    {selectedTicket ? 'Update Ticket' : 'Create Ticket'}
                   </button>
                 </div>
               </form>

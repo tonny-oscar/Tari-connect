@@ -3,6 +3,7 @@ import {
   signInWithEmailAndPassword, 
   signOut, 
   sendPasswordResetEmail,
+  sendEmailVerification,
   updateProfile,
   onAuthStateChanged
 } from 'firebase/auth';
@@ -68,6 +69,15 @@ export const registerUser = async (email, password, name) => {
     const userCredential = await createUserWithEmailAndPassword(auth, email, password);
     const user = userCredential.user;
     
+    // Send email verification
+    try {
+      await sendEmailVerification(user);
+      console.log('Verification email sent successfully');
+    } catch (emailError) {
+      console.error('Failed to send verification email:', emailError);
+      // Continue with registration even if email fails
+    }
+    
     // Update profile with display name
     await updateProfile(user, {
       displayName: name
@@ -84,13 +94,18 @@ export const registerUser = async (email, password, name) => {
       name,
       role,
       status: 'active',
+      emailVerified: user.emailVerified,
       createdAt: new Date().toISOString()
     });
     
     // Start 14-day free trial for new users
     await startFreeTrial(user.uid);
     
-    return { success: true, user };
+    return { 
+      success: true, 
+      user,
+      message: 'Registration successful! A verification email has been sent to confirm your email address.'
+    };
   } catch (error) {
     console.error('Error registering user:', error);
     return { success: false, error: error.message };
@@ -103,7 +118,7 @@ export const loginUser = async (email, password) => {
     const userCredential = await signInWithEmailAndPassword(auth, email, password);
     const user = userCredential.user;
     
-    // Update last login timestamp in both databases
+    // Update last login timestamp
     await updateDualDocument('users', user.uid, {
       lastLogin: new Date().toISOString()
     });
@@ -163,6 +178,22 @@ export const isUserAdmin = async (uid) => {
   } catch (error) {
     console.error('Error checking admin status:', error);
     return false;
+  }
+};
+
+// Resend verification email
+export const resendVerificationEmail = async () => {
+  try {
+    const user = auth.currentUser;
+    if (user && !user.emailVerified) {
+      await sendEmailVerification(user);
+      return { success: true, message: 'Verification email sent! Please check your inbox.' };
+    } else {
+      return { success: false, error: 'No user found or email already verified.' };
+    }
+  } catch (error) {
+    console.error('Error resending verification email:', error);
+    return { success: false, error: error.message };
   }
 };
 

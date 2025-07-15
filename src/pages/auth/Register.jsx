@@ -1,8 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { createUserWithEmailAndPassword, updateProfile } from 'firebase/auth';
-import { doc, setDoc, serverTimestamp } from 'firebase/firestore';
-import { auth, db } from '../../services/firebase';
+import { registerUser } from '../../services/authService';
 import { FaEye, FaEyeSlash, FaEnvelope, FaLock, FaUser, FaArrowRight } from 'react-icons/fa';
 
 const Register = () => {
@@ -17,6 +15,7 @@ const Register = () => {
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  const [success, setSuccess] = useState('');
   const [isDark, setIsDark] = useState(() => {
     if (typeof window !== 'undefined') {
       const saved = localStorage.getItem('theme');
@@ -66,25 +65,15 @@ const Register = () => {
     }
 
     try {
-      const userCredential = await createUserWithEmailAndPassword(
-        auth,
-        formData.email,
-        formData.password
-      );
-
-      await updateProfile(userCredential.user, {
-        displayName: formData.name
-      });
-
-      await setDoc(doc(db, 'users', userCredential.user.uid), {
-        name: formData.name,
-        email: formData.email,
-        role: 'user',
-        createdAt: serverTimestamp(),
-        lastLogin: serverTimestamp()
-      });
-
-      navigate('/dashboard');
+      const result = await registerUser(formData.email, formData.password, formData.name);
+      
+      if (result.success) {
+        setSuccess(result.message);
+        setError('');
+        // Don't navigate to dashboard - user needs to verify email first
+      } else {
+        setError(result.error);
+      }
     } catch (error) {
       setError(error.message);
     } finally {
@@ -120,6 +109,13 @@ const Register = () => {
           {error && (
             <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-lg">
               <p className="text-red-600 text-sm">{error}</p>
+            </div>
+          )}
+          
+          {/* Success Message */}
+          {success && (
+            <div className="mb-6 p-4 bg-green-50 border border-green-200 rounded-lg">
+              <p className="text-green-600 text-sm">{success}</p>
             </div>
           )}
 

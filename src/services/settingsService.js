@@ -238,6 +238,8 @@ export const disconnectMeta = async (userId) => {
 export const getIndustries = () => {
   return [
     'Technology',
+    'Construction',
+    'POS',
     'Retail',
     'Healthcare',
     'Finance',
