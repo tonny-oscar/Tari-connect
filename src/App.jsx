@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Routes, Route, Navigate, Outlet } from 'react-router-dom';
+import { Routes, Route, Navigate } from 'react-router-dom';
 import { useAuth, initAuth } from './store/useAuth';
 import { useTheme } from './store/useTheme';
 import './App.css';
@@ -8,7 +8,7 @@ import { initializeAdminUsers } from './services/authService';
 import { startTrialCleanup } from './utils/trialCleanup';
 import PrivateRoute from './components/PrivateRoute';
 import TrialExpiredModal from './components/TrialExpiredModal';
-import TrialStatus from './components/TrialStatus';
+import SubscriptionGate from './components/SubscriptionGate';
 
 import {
   Login,
@@ -38,10 +38,10 @@ import FreeTrial from './pages/FreeTrial';
 import PaymentVerification from './pages/PaymentVerification';
 import DirectPaymentDemo from './pages/DirectPaymentDemo';
 import AcceptInvitation from './pages/AcceptInvitation';
-import SubscriptionGate from './components/SubscriptionGate';
+import Integrations from './components/Intergrations'; 
 
 function App() {
-  const { isLoading, isAuthenticated, hasTrialExpired } = useAuth();
+  const { isLoading, isAuthenticated, hasTrialExpired, user } = useAuth(); // ✅ now user is defined
   const { initTheme } = useTheme();
   const [showTrialExpiredModal, setShowTrialExpiredModal] = useState(false);
   
@@ -117,6 +117,7 @@ function App() {
           <Route path="settings/*" element={<Settings />} />
           <Route path="profile" element={<Profile />} />
           <Route path="contact/:conversationId" element={<ContactDetails />} />
+          <Route path="integrations" element={<Integrations userId={user?.uid} />} /> {/* ✅ fixed */}
         </Route>
         
         <Route path="admin" element={<PrivateRoute requireAdmin={true} />}>

@@ -120,14 +120,14 @@ const Support = () => {
                 <FaEnvelope className="mx-auto text-3xl text-blue-600 mb-3" />
                 <h3 className="font-medium mb-2">Email Support</h3>
                 <p className="text-gray-600 mb-3">Get a response within 24 hours</p>
-                <a href="mailto:support@tariconnect.com" className="text-blue-600 font-medium">support@tariconnect.com</a>
+                <a href="mailto:support@tariconnect.com" className="text-blue-600 font-medium">hello@tari.africa</a>
               </div>
               
               <div className="bg-green-50 p-6 rounded-lg text-center">
                 <FaPhone className="mx-auto text-3xl text-green-600 mb-3" />
                 <h3 className="font-medium mb-2">Phone Support</h3>
                 <p className="text-gray-600 mb-3">Available Mon-Fri, 9am-5pm</p>
-                <a href="tel:+254123456789" className="text-green-600 font-medium">+254 123 456 789</a>
+                <a href="tel:+254123456789" className="text-green-600 font-medium">+254 757672936</a>
               </div>
               
               <div className="bg-purple-50 p-6 rounded-lg text-center">

@@ -36,5 +36,9 @@ export default defineConfig({
         dir: 'ltr'
       }
     })
-  ]
+  ],
+  server: {
+    port: 5175,  
+    open: true   
+  }
 });

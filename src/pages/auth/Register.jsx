@@ -70,7 +70,7 @@ const Register = () => {
       if (result.success) {
         setSuccess(result.message);
         setError('');
-        // Don't navigate to dashboard - user needs to verify email first
+
       } else {
         setError(result.error);
       }

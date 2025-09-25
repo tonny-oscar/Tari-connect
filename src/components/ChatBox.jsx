@@ -1,4 +1,3 @@
-// src/components/ChatBox.jsx
 import React, { useEffect, useRef, useState } from 'react';
 import { db } from '../services/firebase';
 import {

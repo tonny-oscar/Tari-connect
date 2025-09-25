@@ -4,6 +4,7 @@ import { useAuth } from '../store/useAuth';
 import { collection, onSnapshot, query, where, getDocs } from 'firebase/firestore';
 import { db } from '../services/firebase';
 import ThemeToggle from './ThemeToggle';
+import Integrations from "../components/Intergrations"
 import { 
   FaInbox, 
   FaUserFriends, 
@@ -135,6 +136,7 @@ function Layout({ children }) {
     { path: '/file-manager', icon: <FaFolder />, label: 'Files' },
     { path: '/settings', icon: <FaCog />, label: 'Settings' },
     { path: '/support', icon: <FaQuestionCircle />, label: 'Support' },
+    { path: '/integrations', icon: <FaRobot />, label: 'Integrations' }
   ];
 
   return (
