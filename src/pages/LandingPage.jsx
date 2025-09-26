@@ -110,11 +110,10 @@ const LandingPage = () => {
               transition={{ duration: 0.6 }}
             >
               <h1 className="text-4xl sm:text-5xl md:text-7xl font-bold mb-6 text-gray-900 dark:text-white leading-tight">
-                Unify Your <span className="bg-gradient-to-r from-primary via-primary-light to-accent bg-clip-text text-transparent">Business</span>
+             <span className="bg-gradient-to-r from-primary via-primary-light to-accent bg-clip-text text-transparent">All-in-One Business Management CRM</span>
               </h1>
               <p className="text-lg sm:text-xl md:text-2xl text-gray-700 dark:text-gray-300 mb-8 max-w-4xl mx-auto leading-relaxed">
-                Streamline leads, quotes, invoices, and customer communications in one powerful platform. 
-                Built for modern businesses that want to grow faster.
+                Streamline clients, projects, payments, and communications — all in one powerful platform.
               </p>
               <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
                 <button
