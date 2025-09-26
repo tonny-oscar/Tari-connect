@@ -8,6 +8,7 @@ import {
   FaClock, FaExclamationTriangle, FaCheckCircle, FaBell, FaInbox
 } from 'react-icons/fa';
 import { useAuth } from '../../store/useAuth';
+import ClockIn from '../../components/ClockIn';
 
 function Dashboard() {
   const [leads, setLeads] = useState([]);
@@ -180,6 +181,12 @@ function Dashboard() {
           </Link>
         )}
       </header>
+
+      {/* Clock In Section */}
+     <section aria-labelledby="clockin-title" className="mt-4">
+  <h2 id="clockin-title" className="sr-only">Clock In</h2>
+  <ClockIn />
+</section>
 
       <section aria-labelledby="stats-title">
         <h2 id="stats-title" className="sr-only">Business Statistics</h2>

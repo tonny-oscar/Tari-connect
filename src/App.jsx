@@ -39,6 +39,7 @@ import PaymentVerification from './pages/PaymentVerification';
 import DirectPaymentDemo from './pages/DirectPaymentDemo';
 import AcceptInvitation from './pages/AcceptInvitation';
 import Integrations from './components/Intergrations'; 
+import ClockIn from './components/ClockIn';
 
 function App() {
   const { isLoading, isAuthenticated, hasTrialExpired, user } = useAuth(); // ✅ now user is defined
@@ -101,6 +102,7 @@ function App() {
         
         <Route path="/" element={<PrivateRoute />}>
           <Route path="dashboard" element={<SubscriptionGate><Dashboard /></SubscriptionGate>} />
+          <Route path="clock-in" element={<SubscriptionGate><Dashboard /></SubscriptionGate>} />
           <Route path="inbox" element={<SubscriptionGate><Inbox /></SubscriptionGate>} />
           <Route path="chat/:conversationId" element={<SubscriptionGate><Chat /></SubscriptionGate>} />
           <Route path="tickets" element={<SubscriptionGate><Tickets /></SubscriptionGate>} />
