@@ -259,7 +259,7 @@ const LandingPage = () => {
       <section id="testimonials" className="py-16 sm:py-20 px-4 sm:px-6 bg-gray-50 dark:bg-gray-800">
         <div className="max-w-7xl mx-auto">
           <div className="text-center mb-12 sm:mb-16">
-            <h2 className="text-3xl sm:text-4xl font-bold mb-4 text-gray-900 dark:text-white">Loved by Businesses Worldwide</h2>
+            <h2 className="text-3xl sm:text-4xl font-bold mb-4 text-gray-900 dark:text-white">What Our Customers Say</h2>
             <p className="text-lg sm:text-xl text-gray-700 dark:text-gray-300">
               See what our customers have to say about TariConnect
             </p>
